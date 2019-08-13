@@ -1,0 +1,22 @@
+PATH
+  remote: .
+  specs:
+    selfid (0.0.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ed25519 (1.2.4)
+    rake (10.5.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 1.12)
+  ed25519
+  rake (~> 10.0)
+  selfid!
+
+BUNDLED WITH
+   1.17.3
