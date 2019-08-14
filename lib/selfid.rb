@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'securerandom'
 require "ed25519"
 require 'json'
@@ -6,7 +8,6 @@ require 'net/http'
 
 # Namespace for classes and modules that handle Self interactions.
 module Selfid
-
   # Abstract base class for CLI utilities. Provides some helper methods for
   # the option parser
   #
@@ -40,13 +41,13 @@ module Selfid
     def authenticate(user_id, callback_url, opts = {})
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       payload = {
-        callback:   callback_url,
-        url:        @self_url,
-        self_id:    @app_id,
-        user_id:    user_id,
-        created:    Time.now.utc,
-        expires:    Time.now.utc + 3600,
-        UUID:       uuid,
+        callback: callback_url,
+        url: @self_url,
+        self_id: @app_id,
+        user_id: user_id,
+        created: Time.now.utc,
+        expires: Time.now.utc + 3600,
+        UUID: uuid,
       }.to_json
 
       signature = sign("#{encode(default_jws_header)}.#{encode(payload)}")
@@ -57,46 +58,46 @@ module Selfid
       }.to_json
 
       auth jws
-      return uuid
+      uuid
     end
 
     private
-      # Sends an auth http request to self-api.
-      #
-      # @param body [string] the payload to be sent as body of request.
-      def auth(body)
-        uri = URI(@self_url)
-        http = Net::HTTP.new(uri.host, uri.port)
-        req = Net::HTTP::Post.new("/auth", {
-          'Content-Type' =>'application/json',
-          'Authorization' => "Bearer #{auth_token}"
-        })
-        req.body = body
-        res = http.request(req)
-        raise 'An error has occured' if res.code != "200"
-      rescue => e
-        puts "failed #{e}"
-        return {}
-      end
 
-      # The default jws header
-      def default_jws_header
-        { typ: "EdDSA" }.to_json
-      end
+    # Sends an auth http request to self-api.
+    #
+    # @param body [string] the payload to be sent as body of request.
+    def auth(body)
+      uri = URI(@self_url)
+      http = Net::HTTP.new(uri.host, uri.port)
+      req = Net::HTTP::Post.new("/auth",
+                                'Content-Type' => 'application/json',
+                                'Authorization' => "Bearer #{auth_token}")
+      req.body = body
+      res = http.request(req)
+      raise 'An error has occured' if res.code != "200"
+    rescue StandardError => e
+      puts "failed #{e}"
+      {}
+    end
 
-      # Encodes the input with base64
-      #
-      # @param input [string] the string to be encoded.
-      def encode(input)
-        Base64.encode64(input)
-      end
+    # The default jws header
+    def default_jws_header
+      { typ: "EdDSA" }.to_json
+    end
 
-      # Signs the given input with the configured Ed25519 key.
-      #
-      # @param input [string] the string to be signed.
-      def sign(input)
-        signing_key = Ed25519::SigningKey.new(@api_key)
-        signing_key.sign(input)
-      end
+    # Encodes the input with base64
+    #
+    # @param input [string] the string to be encoded.
+    def encode(input)
+      Base64.encode64(input)
+    end
+
+    # Signs the given input with the configured Ed25519 key.
+    #
+    # @param input [string] the string to be signed.
+    def sign(input)
+      signing_key = Ed25519::SigningKey.new(@api_key)
+      signing_key.sign(input)
+    end
   end
 end
