@@ -1,0 +1,12 @@
+lang: ruby
+
+before_install:
+  - export TZ=UTC
+  - bin/setup
+
+script:
+  - rake
+  - bundle exec rubocop
+
+rvm:
+    - 2.6.3
