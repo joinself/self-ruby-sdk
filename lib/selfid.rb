@@ -44,8 +44,8 @@ module Selfid
         url:        @self_url,
         self_id:    @app_id,
         user_id:    user_id,
-        created:    Time.now,
-        expires:    Time.now + 3600,
+        created:    Time.now.utc,
+        expires:    Time.now.utc + 3600,
         UUID:       uuid,
       }.to_json
 

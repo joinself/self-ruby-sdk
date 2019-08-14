@@ -1,5 +1,5 @@
 $:.push File.expand_path("../lib", __FILE__)
-require "mygem/version"
+require_relative "lib/version"
 
 Gem::Specification.new do |s|
   s.name = %q{selfid}
@@ -14,5 +14,8 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "rake", "~> 10.0"
+  s.add_development_dependency "minitest"
+  s.add_development_dependency "webmock"
+  s.add_development_dependency "timecop"
   s.add_development_dependency "ed25519"
 end

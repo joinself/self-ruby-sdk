@@ -1,0 +1,10 @@
+lang: ruby
+
+before_install:
+  - export TZ=UTC
+  - bin/setup
+
+script: rake
+
+rvm:
+    - 2.6.3

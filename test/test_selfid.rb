@@ -6,7 +6,7 @@ require 'timecop'
 
 class SelfidTest < Minitest::Test
   def setup
-    t = Time.local(2019, 9, 1, 10, 5, 0)
+    t = Time.local(2019, 9, 1, 10, 5, 0).utc
     Timecop.travel(t)
   end
   def teardown
@@ -32,22 +32,21 @@ class SelfidTest < Minitest::Test
   def test_authenticate
     stub_request(:post, "http://api.selfid.net:443/auth").
       with(
-        body: '{"payload":"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIs\nInVybCI6Imh0dHBzOi8vYXBpLnNlbGZpZC5uZXQiLCJzZWxmX2lkIjoibXlf\nYXBwX2lkIiwidXNlcl9pZCI6Inh4eHh4eHh4IiwiY3JlYXRlZCI6IjIwMTkt\nMDktMDEgMTA6MDU6MDAgKzAyMDAiLCJleHBpcmVzIjoiMjAxOS0wOS0wMSAx\nMTowNTowMCArMDIwMCIsIlVVSUQiOiJ1dWlkIn0=\n","protected":"eyJ0eXAiOiJFZERTQSJ9\n","signature":"LlN4Fsu6Zjpyg8kSgduw8bOzvQsFhKMk9MewIHTKdquKda5LEKm30zZF2Ane\nvunYxdG8GzRLcAuF5bXKw5JZBA==\n"}',
+        body: "{\"payload\":\"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIs\\nInVybCI6Imh0dHBzOi8vYXBpLnNlbGZpZC5uZXQiLCJzZWxmX2lkIjoibXlf\\nYXBwX2lkIiwidXNlcl9pZCI6Inh4eHh4eHh4IiwiY3JlYXRlZCI6IjIwMTkt\\nMDktMDEgMTA6MDU6MDAgVVRDIiwiZXhwaXJlcyI6IjIwMTktMDktMDEgMTE6\\nMDU6MDAgVVRDIiwiVVVJRCI6InV1aWQifQ==\\n\",\"protected\":\"eyJ0eXAiOiJFZERTQSJ9\\n\",\"signature\":\"xLCAqt+V1HkcFVHvckc3x2n/Anf2iSU2gfBNJO7XlvrTKVo5BMPWvytWxKbG\\ngJwqYhjAuKZma/gfCeBZFss6Bw==\\n\"}",
         headers: {
-      	  'Accept'=>'*/*',
-      	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-      	  'Authorization'=>'Bearer my_auth_token',
-      	  'Content-Type'=>'application/json',
-      	  'User-Agent'=>'Ruby'
+    	  'Accept'=>'*/*',
+    	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+    	  'Authorization'=>'Bearer my_auth_token',
+    	  'Content-Type'=>'application/json',
+    	  'User-Agent'=>'Ruby'
         }).
       to_return(status: 200, body: "", headers: {})
-
     seed = "\x86x4\x8E\xA5'\x11\xE9\xEB\x04\xD1\x1C\xD0O\xFC\xBCox;(m\x89\xC1N;Yb5\xD5\x9B\x11\x9A"
     app = Selfid::App.new("my_app_id", seed, "my_auth_token")
     app.authenticate("xxxxxxxx", "http://localhost:3000/callback", uuid: "uuid")
     assert_requested :post, "http://api.selfid.net:443/auth",
       headers: {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Authorization'=>'Bearer my_auth_token', 'Content-Type'=>'application/json', 'User-Agent'=>'Ruby'},
-      body: '{"payload":"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIs\nInVybCI6Imh0dHBzOi8vYXBpLnNlbGZpZC5uZXQiLCJzZWxmX2lkIjoibXlf\nYXBwX2lkIiwidXNlcl9pZCI6Inh4eHh4eHh4IiwiY3JlYXRlZCI6IjIwMTkt\nMDktMDEgMTA6MDU6MDAgKzAyMDAiLCJleHBpcmVzIjoiMjAxOS0wOS0wMSAx\nMTowNTowMCArMDIwMCIsIlVVSUQiOiJ1dWlkIn0=\n","protected":"eyJ0eXAiOiJFZERTQSJ9\n","signature":"LlN4Fsu6Zjpyg8kSgduw8bOzvQsFhKMk9MewIHTKdquKda5LEKm30zZF2Ane\nvunYxdG8GzRLcAuF5bXKw5JZBA==\n"}',
+      body: '{"payload":"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIs\nInVybCI6Imh0dHBzOi8vYXBpLnNlbGZpZC5uZXQiLCJzZWxmX2lkIjoibXlf\nYXBwX2lkIiwidXNlcl9pZCI6Inh4eHh4eHh4IiwiY3JlYXRlZCI6IjIwMTkt\nMDktMDEgMTA6MDU6MDAgVVRDIiwiZXhwaXJlcyI6IjIwMTktMDktMDEgMTE6\nMDU6MDAgVVRDIiwiVVVJRCI6InV1aWQifQ==\n","protected":"eyJ0eXAiOiJFZERTQSJ9\n","signature":"xLCAqt+V1HkcFVHvckc3x2n/Anf2iSU2gfBNJO7XlvrTKVo5BMPWvytWxKbG\ngJwqYhjAuKZma/gfCeBZFss6Bw==\n"}',
       times: 1    # ===> Success
   end
 end
