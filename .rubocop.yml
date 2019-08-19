@@ -1,2 +1,8 @@
 inherit_from:
 - https://relaxed.ruby.style/rubocop.yml
+
+Metrics/BlockLength:
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'test/**/*.rb'

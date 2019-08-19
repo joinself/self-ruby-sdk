@@ -13,22 +13,19 @@ module Selfid
   #
   # @attr_reader [Types] self_url the self provider url.
   # @attr_reader [Types] app_id the identifier of the current app.
-  # @attr_reader [Types] api_key the api key for the current app.
-  # @attr_reader [Types] auth_token .... ???''
+  # @attr_reader [Types] app_key the api key for the current app.
   class App
-    attr_reader :self_url, :app_id, :api_key, :auth_token
+    attr_reader :self_url, :app_id, :app_key
 
     # Initializes a Selfid App
     #
     # @param app_id [string] the app id.
-    # @param api_key [string] the app api key provided by developer portal.
-    # @param auth_token [string] .... ?????
+    # @param app_key [string] the app api key provided by developer portal.
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :self_url The self provider url.
-    def initialize(app_id, api_key, auth_token, opts = {})
+    def initialize(app_id, app_key, opts = {})
       @app_id = app_id
-      @api_key = api_key
-      @auth_token = auth_token
+      @app_key = app_key
       @self_url = opts.fetch(:self_url, "https://api.selfid.net")
     end
 
@@ -41,20 +38,20 @@ module Selfid
     def authenticate(user_id, callback_url, opts = {})
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       payload = {
-        callback: callback_url,
-        url: @self_url,
-        self_id: @app_id,
-        user_id: user_id,
-        created: Time.now.utc,
-        expires: Time.now.utc + 3600,
-        UUID: uuid,
+        iss: callback_url,
+        aud: @self_url,
+        isi: @app_id,
+        sub: user_id,
+        # iat: Time.now.utc,
+        # exp: Time.now.utc + 3600,
+        jti: uuid,
       }.to_json
 
       signature = sign("#{encode(default_jws_header)}.#{encode(payload)}")
       jws = {
         payload: encode(payload),
         protected: encode(default_jws_header),
-        signature: encode(signature)
+        signature: signature
       }.to_json
 
       auth jws
@@ -69,7 +66,7 @@ module Selfid
     def auth(body)
       uri = URI(@self_url)
       http = Net::HTTP.new(uri.host, uri.port)
-      req = Net::HTTP::Post.new("/auth",
+      req = Net::HTTP::Post.new("/v1/auth",
                                 'Content-Type' => 'application/json',
                                 'Authorization' => "Bearer #{auth_token}")
       req.body = body
@@ -89,15 +86,24 @@ module Selfid
     #
     # @param input [string] the string to be encoded.
     def encode(input)
-      Base64.encode64(input)
+      Base64.strict_encode64(input).gsub("=", "")
     end
 
     # Signs the given input with the configured Ed25519 key.
     #
     # @param input [string] the string to be signed.
     def sign(input)
-      signing_key = Ed25519::SigningKey.new(@api_key)
-      signing_key.sign(input)
+      signing_key = Ed25519::SigningKey.new(Base64.decode64(@app_key))
+      encode(signing_key.sign(input))
+    end
+
+    # Generates the auth_token based on the app's private key.
+    def auth_token
+      @auth_token ||= begin
+        payload = encode({ "alg": "EdDSA", "typ": "JWT" }.to_json) + "." + encode({ iss: @app_id }.to_json)
+        signature = sign(payload)
+        "#{payload}.#{signature}"
+      end
     end
   end
 end
