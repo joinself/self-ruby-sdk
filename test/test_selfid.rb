@@ -7,50 +7,60 @@ require 'webmock/minitest'
 require 'timecop'
 
 class SelfidTest < Minitest::Test
-  def setup
-    t = Time.local(2019, 9, 1, 10, 5, 0).utc
-    Timecop.travel(t)
-  end
+  describe "selfid" do
+    let(:seed) { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
+    let(:app_id) { "o9mpng9m2jv" }
+    let(:atoken) { "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvOW1wbmc5bTJqdiJ9.jAZKnafk7HtxK3WfilkcTw6EwE1Ny3mHBbzf4eezG/Np9IB7I8GxJf921mCkcuAKBkSgIBMrUui+VYnaZSPYDQ" }
 
-  def teardown
-    Timecop.return
-  end
+    def setup
+      t = Time.local(2019, 9, 1, 10, 5, 0).utc
+      Timecop.travel(t)
+    end
 
-  def test_init_with_defaults
-    app = Selfid::App.new("my_app_id", "my_api_key", "my_auth_token")
-    assert_equal "https://api.selfid.net", app.self_url
-    assert_equal "my_app_id", app.app_id
-    assert_equal "my_api_key", app.api_key
-    assert_equal "my_auth_token", app.auth_token
-  end
+    def teardown
+      Timecop.return
+    end
 
-  def test_init_with_custom_parameters
-    app = Selfid::App.new("my_app_id", "my_api_key", "my_auth_token", self_url: "http://custom.self.net")
-    assert_equal "http://custom.self.net", app.self_url
-    assert_equal "my_app_id", app.app_id
-    assert_equal "my_api_key", app.api_key
-    assert_equal "my_auth_token", app.auth_token
-  end
+    describe "selfid::init" do
+      def test_init_with_defaults
+        app = Selfid::App.new(app_id, seed)
+        assert_equal "https://api.selfid.net", app.self_url
+        assert_equal app_id, app.app_id
+        assert_equal seed, app.app_key
+      end
 
-  def test_authenticate
-    stub_request(:post, "http://api.selfid.net:443/auth").
-      with(
-        body: "{\"payload\":\"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIs\\nInVybCI6Imh0dHBzOi8vYXBpLnNlbGZpZC5uZXQiLCJzZWxmX2lkIjoibXlf\\nYXBwX2lkIiwidXNlcl9pZCI6Inh4eHh4eHh4IiwiY3JlYXRlZCI6IjIwMTkt\\nMDktMDEgMTA6MDU6MDAgVVRDIiwiZXhwaXJlcyI6IjIwMTktMDktMDEgMTE6\\nMDU6MDAgVVRDIiwiVVVJRCI6InV1aWQifQ==\\n\",\"protected\":\"eyJ0eXAiOiJFZERTQSJ9\\n\",\"signature\":\"xLCAqt+V1HkcFVHvckc3x2n/Anf2iSU2gfBNJO7XlvrTKVo5BMPWvytWxKbG\\ngJwqYhjAuKZma/gfCeBZFss6Bw==\\n\"}",
-        headers: {
+      def test_init_with_custom_parameters
+        app = Selfid::App.new(app_id, seed, self_url: "http://custom.self.net")
+        assert_equal "http://custom.self.net", app.self_url
+        assert_equal app_id, app.app_id
+        assert_equal seed, app.app_key
+      end
+    end
+
+    describe "auth_token" do
+      def test_auth_token
+        app = Selfid::App.new(app_id, seed)
+        token = app.send(:auth_token)
+        assert_equal atoken, token
+      end
+    end
+
+    describe "authenticate" do
+      def test_authenticate
+        body = "{\"payload\":\"eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAvY2FsbGJhY2siLCJhdWQiOiJodHRwczovL2FwaS5zZWxmaWQubmV0IiwiaXNpIjoibzltcG5nOW0yanYiLCJzdWIiOiJ4eHh4eHh4eCIsImp0aSI6InV1aWQifQ\",\"protected\":\"eyJ0eXAiOiJFZERTQSJ9\",\"signature\":\"0YRtbyNLfRezyukX8VcnX1OTFNk5UURlKgcf1yOo/diqbkMVmC6lLhRdo8HZkrsUe2jPAaOGQLs1J13qOJmSAw\"}"
+        headers = {
           'Accept' => '*/*',
           'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-          'Authorization' => 'Bearer my_auth_token',
+          'Authorization' => "Bearer #{atoken}",
           'Content-Type' => 'application/json',
           'User-Agent' => 'Ruby'
         }
-      ).
-      to_return(status: 200, body: "", headers: {})
-    seed = "\x86x4\x8E\xA5'\x11\xE9\xEB\x04\xD1\x1C\xD0O\xFC\xBCox;(m\x89\xC1N;Yb5\xD5\x9B\x11\x9A"
-    app = Selfid::App.new("my_app_id", seed, "my_auth_token")
-    app.authenticate("xxxxxxxx", "http://localhost:3000/callback", uuid: "uuid")
-    assert_requested :post, "http://api.selfid.net:443/auth",
-                     headers: { 'Accept' => '*/*', 'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Authorization' => 'Bearer my_auth_token', 'Content-Type' => 'application/json', 'User-Agent' => 'Ruby' },
-                     body: '{"payload":"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIs\nInVybCI6Imh0dHBzOi8vYXBpLnNlbGZpZC5uZXQiLCJzZWxmX2lkIjoibXlf\nYXBwX2lkIiwidXNlcl9pZCI6Inh4eHh4eHh4IiwiY3JlYXRlZCI6IjIwMTkt\nMDktMDEgMTA6MDU6MDAgVVRDIiwiZXhwaXJlcyI6IjIwMTktMDktMDEgMTE6\nMDU6MDAgVVRDIiwiVVVJRCI6InV1aWQifQ==\n","protected":"eyJ0eXAiOiJFZERTQSJ9\n","signature":"xLCAqt+V1HkcFVHvckc3x2n/Anf2iSU2gfBNJO7XlvrTKVo5BMPWvytWxKbG\ngJwqYhjAuKZma/gfCeBZFss6Bw==\n"}',
-                     times: 1 # ===> Success
+        stub_request(:post, "http://api.selfid.net:443/v1/auth").
+          with(body: body, headers: headers).
+          to_return(status: 200, body: "", headers: {})
+        app = Selfid::App.new(app_id, seed)
+        app.authenticate("xxxxxxxx", "http://localhost:3000/callback", uuid: "uuid")
+      end
+    end
   end
 end
