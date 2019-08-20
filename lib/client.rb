@@ -19,6 +19,9 @@ module Selfid
       raise 'An error has occured' if res.code != 200
     end
 
+    # Get identity details
+    #
+    # @param id [string] identity id.
     def identity(id)
       res = get "/v1/identities/#{id}"
       raise 'An error has occured' if res.code != 200

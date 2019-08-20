@@ -59,22 +59,31 @@ module Selfid
       uuid
     end
 
+    # Checks if the given input is an accepted authentication request.
+    #
+    # @param response [string] the response to an authentication request from self-api.
+    # @return [Hash] Details response.
+    #   * :accepted [Boolean] a bool describing if authentication is accepted or not.
+    #   * :uuid [String] the request identifier.
     def authenticated?(response)
+      res = { accepted: false }
       jws = JSON.parse(response, symbolize_names: true)
       payload = JSON.parse(decode(jws[:payload]), symbolize_names: true)
+      res[:uuid] = payload[:jti]
 
       identity = identity(payload[:sub])
-      return false if identity.nil?
+      return res if identity.nil?
 
       identity[:public_keys].each do |key|
         verify_key = Ed25519::VerifyKey.new(decode(key[:key]))
         if verify_key.verify(decode(jws[:signature]), "#{jws[:payload]}.#{jws[:protected]}")
-          return (payload[:status] == "accepted")
+          res[:accepted] = (payload[:status] == "accepted")
+          return res
         end
       end
-      false
+      res
     rescue StandardError
-      false
+      res
     end
 
     def identity(id)
