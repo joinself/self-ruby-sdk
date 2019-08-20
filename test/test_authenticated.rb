@@ -23,11 +23,11 @@ class SelfidTest < Minitest::Test
 
     def test_failed_authenticated?
       # invalid input
-      assert_equal false, app.authenticated?("xxx")
+      assert_equal false, app.authenticated?("xxx")[:accepted]
       # valid json input
-      assert_equal false, app.authenticated?("{}")
+      assert_equal false, app.authenticated?("{}")[:accepted]
       # valid payload
-      assert_equal false, app.authenticated?('{"payload":"xxx","protected":"xxx","signature":"xxxx"}')
+      assert_equal false, app.authenticated?('{"payload":"xxx","protected":"xxx","signature":"xxxx"}')[:accepted]
     end
 
     def test_invalid_signature
@@ -42,7 +42,8 @@ class SelfidTest < Minitest::Test
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
 
-      assert_equal false, app.authenticated?(body)
+      authenticated = app.authenticated?(body)
+      assert_equal false, authenticated[:accepted]
     end
 
     def test_non_existing_identity
@@ -58,11 +59,13 @@ class SelfidTest < Minitest::Test
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
 
-      assert_equal false, app.authenticated?(body)
+      authenticated = app.authenticated?(body)
+      assert_equal false, authenticated[:accepted]
     end
 
     def test_happy_path
       @keypair = Ed25519.provider.create_keypair(Base64.decode64(seed))
+      uuid = "uuid"
       pk = Ed25519::VerifyKey.new(@keypair[32, 32])
       pk = app.send(:encode, pk)
       user_id = "user_id"
@@ -71,13 +74,15 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      payload = app.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
+      payload = app.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted","jti":"'+uuid+'"}')
 
       signature = app.send(:sign, "#{payload}.#{protected}")
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
 
-      assert_equal true, app.authenticated?(body)
+      authenticated = app.authenticated?(body)
+      assert_equal true, authenticated[:accepted]
+      assert_equal uuid, authenticated[:uuid]
     end
   end
 end
