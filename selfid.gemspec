@@ -11,12 +11,15 @@ Gem::Specification.new do |s|
   s.authors = ["Aldgate Ventures"]
   s.homepage = "https://www.selfid.net/"
   s.files = [
-    "lib/selfid.rb"
+    "lib/selfid.rb",
+    "lib/client.rb"
   ]
   s.require_paths = ["lib"]
+  s.add_dependency "ed25519"
+  s.add_dependency "httparty"
   s.add_development_dependency "bundler", "~> 1.12"
-  s.add_development_dependency "ed25519"
   s.add_development_dependency "minitest"
+  s.add_development_dependency "pry"
   s.add_development_dependency "rake", "~> 10.0"
   s.add_development_dependency "rubocop", "~> 0.49"
   s.add_development_dependency "timecop"
