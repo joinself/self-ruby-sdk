@@ -41,7 +41,7 @@ And check if the user has accepted the authentication request or not.
 
 ## Documentation
 
-You can find documentation for this gem on https://aldgate-ventures.github.io/self-gem/
+You can find documentation for this gem on https://aldgate-ventures.github.io/selfid-gem/
 
 ## Development
 
@@ -51,7 +51,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/aldgate-ventures/self-gem.
+Bug reports and pull requests are welcome on GitHub at https://github.com/aldgate-ventures/selfid-gem.
 
 
 ## License
