@@ -5,17 +5,17 @@ require "ed25519"
 require 'json'
 require 'base64'
 require 'net/http'
+require_relative 'client'
 
 # Namespace for classes and modules that handle Self interactions.
 module Selfid
   # Abstract base class for CLI utilities. Provides some helper methods for
   # the option parser
   #
-  # @attr_reader [Types] self_url the self provider url.
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
-    attr_reader :self_url, :app_id, :app_key
+    attr_reader :app_id, :app_key, :client
 
     # Initializes a Selfid App
     #
@@ -26,7 +26,8 @@ module Selfid
     def initialize(app_id, app_key, opts = {})
       @app_id = app_id
       @app_key = app_key
-      @self_url = opts.fetch(:self_url, "https://api.selfid.net")
+      url = opts.fetch(:self_url, "https://api.selfid.net")
+      @client = Selfid::RestClient.new(url, auth_token)
     end
 
     # Sends an authentication request to the specified user_id.
@@ -39,11 +40,11 @@ module Selfid
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       payload = {
         iss: callback_url,
-        aud: @self_url,
+        aud: @client.self_url,
         isi: @app_id,
         sub: user_id,
-        # iat: Time.now.utc,
-        # exp: Time.now.utc + 3600,
+        iat: Time.now.utc.strftime('%FT%TZ'),
+        exp: (Time.now.utc + 3600).strftime('%FT%TZ'),
         jti: uuid,
       }.to_json
 
@@ -54,28 +55,33 @@ module Selfid
         signature: signature
       }.to_json
 
-      auth jws
+      @client.auth jws
       uuid
     end
 
-    private
+    def authenticated?(response)
+      jws = JSON.parse(response, symbolize_names: true)
+      payload = JSON.parse(decode(jws[:payload]), symbolize_names: true)
 
-    # Sends an auth http request to self-api.
-    #
-    # @param body [string] the payload to be sent as body of request.
-    def auth(body)
-      uri = URI(@self_url)
-      http = Net::HTTP.new(uri.host, uri.port)
-      req = Net::HTTP::Post.new("/v1/auth",
-                                'Content-Type' => 'application/json',
-                                'Authorization' => "Bearer #{auth_token}")
-      req.body = body
-      res = http.request(req)
-      raise 'An error has occured' if res.code != "200"
-    rescue StandardError => e
-      puts "failed #{e}"
-      {}
+      identity = identity(payload[:sub])
+      return false if identity.nil?
+
+      identity[:public_keys].each do |key|
+        verify_key = Ed25519::VerifyKey.new(decode(key[:key]))
+        if verify_key.verify(decode(jws[:signature]), "#{jws[:payload]}.#{jws[:protected]}")
+          return (payload[:status] == "accepted")
+        end
+      end
+      false
+    rescue StandardError
+      false
     end
+
+    def identity(id)
+      @client.identity(id)
+    end
+
+    private
 
     # The default jws header
     def default_jws_header
@@ -89,11 +95,18 @@ module Selfid
       Base64.strict_encode64(input).gsub("=", "")
     end
 
+    # Base64 decodes the input string
+    #
+    # @param input [string] the string to be decoded.
+    def decode(input)
+      Base64.decode64(input)
+    end
+
     # Signs the given input with the configured Ed25519 key.
     #
     # @param input [string] the string to be signed.
     def sign(input)
-      signing_key = Ed25519::SigningKey.new(Base64.decode64(@app_key))
+      signing_key = Ed25519::SigningKey.new(decode(@app_key))
       encode(signing_key.sign(input))
     end
 
