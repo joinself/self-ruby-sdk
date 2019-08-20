@@ -25,17 +25,17 @@ In order to use this gem you'll need to get your `app_id` and `app_api_key` from
 ## Usage
 
 You can instantiate an app with the command above.
-```
+```ruby
 @app = Selfid::App.new("<my_app_id>", "<my_api_key>")
 ```
 
 At this point your app should be able to send a login request.
-```
+```ruby
 uuid = @app.authenticate("<user_id>", "<callback_url>")
 ```
 
 And check if the user has accepted the authentication request or not.
-```
+```ruby
 @app.authenticated?(response_body)
 ```
 
