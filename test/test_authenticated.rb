@@ -74,7 +74,7 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      payload = app.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted","jti":"'+uuid+'"}')
+      payload = app.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted","jti":"' + uuid + '"}')
 
       signature = app.send(:sign, "#{payload}.#{protected}")
 

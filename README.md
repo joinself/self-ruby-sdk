@@ -39,6 +39,10 @@ And check if the user has accepted the authentication request or not.
 @app.authenticated?(response_body)
 ```
 
+## Documentation
+
+You can find documentation for this gem on https://aldgate-ventures.github.io/self-gem/
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

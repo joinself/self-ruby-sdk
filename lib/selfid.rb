@@ -62,7 +62,7 @@ module Selfid
     # Checks if the given input is an accepted authentication request.
     #
     # @param response [string] the response to an authentication request from self-api.
-    # @return [Hash]
+    # @return [Hash] Details response.
     #   * :accepted [Boolean] a bool describing if authentication is accepted or not.
     #   * :uuid [String] the request identifier.
     def authenticated?(response)
@@ -81,9 +81,9 @@ module Selfid
           return res
         end
       end
-      return res
+      res
     rescue StandardError
-      return res
+      res
     end
 
     def identity(id)
