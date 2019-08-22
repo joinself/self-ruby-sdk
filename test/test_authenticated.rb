@@ -76,7 +76,7 @@ class SelfidTest < Minitest::Test
 
       payload = app.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted","jti":"' + uuid + '"}')
 
-      signature = app.send(:sign, "#{payload}.#{protected}")
+      signature = app.send(:sign, "#{protected}.#{payload}")
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
 

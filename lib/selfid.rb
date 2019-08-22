@@ -70,13 +70,12 @@ module Selfid
       jws = JSON.parse(response, symbolize_names: true)
       payload = JSON.parse(decode(jws[:payload]), symbolize_names: true)
       res[:uuid] = payload[:jti]
-
       identity = identity(payload[:sub])
       return res if identity.nil?
 
       identity[:public_keys].each do |key|
         verify_key = Ed25519::VerifyKey.new(decode(key[:key]))
-        if verify_key.verify(decode(jws[:signature]), "#{jws[:payload]}.#{jws[:protected]}")
+        if verify_key.verify(decode(jws[:signature]), "#{jws[:protected]}.#{jws[:payload]}")
           res[:accepted] = (payload[:status] == "accepted")
           return res
         end

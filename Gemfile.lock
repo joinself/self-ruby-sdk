@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfid (0.0.1)
+    selfid (0.0.3)
       ed25519
       httparty
 
