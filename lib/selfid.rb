@@ -70,7 +70,7 @@ module Selfid
       jws = JSON.parse(response, symbolize_names: true)
       payload = JSON.parse(decode(jws[:payload]), symbolize_names: true)
       res[:uuid] = payload[:jti]
-      res[:selfid] = payload[:aud]
+      res[:selfid] = payload[:sub]
       identity = identity(payload[:sub])
       return res if identity.nil?
 
