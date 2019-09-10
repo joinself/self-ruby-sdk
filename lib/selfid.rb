@@ -5,6 +5,7 @@ require "ed25519"
 require 'json'
 require 'base64'
 require 'net/http'
+require_relative 'log'
 require_relative 'client'
 
 # Namespace for classes and modules that handle Self interactions.
@@ -27,6 +28,7 @@ module Selfid
       @app_id = app_id
       @app_key = app_key
       url = opts.fetch(:self_url, "https://api.selfid.net")
+      Selfid.logger.info "client setup with #{url}"
       @client = Selfid::RestClient.new(url, auth_token)
     end
 
@@ -37,6 +39,7 @@ module Selfid
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :uuid The unique identifier of the authentication request.
     def authenticate(user_id, callback_url, opts = {})
+      Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       payload = {
         iss: callback_url,
@@ -56,6 +59,7 @@ module Selfid
       }.to_json
 
       @client.auth jws
+      Selfid.logger.info "authentication uuid #{uuid}"
       uuid
     end
 
@@ -71,6 +75,7 @@ module Selfid
       payload = JSON.parse(decode(jws[:payload]), symbolize_names: true)
       res[:uuid] = payload[:jti]
       res[:selfid] = payload[:sub]
+      Selfid.logger.info "checking authentication for #{res[:uuid]}"
       identity = identity(payload[:sub])
       return res if identity.nil?
 
@@ -82,7 +87,8 @@ module Selfid
         end
       end
       res
-    rescue StandardError
+    rescue StandardError => e
+      Selfid.logger.error "error checking authentication for #{res[:uuid]} : #{e.message}"
       res
     end
 

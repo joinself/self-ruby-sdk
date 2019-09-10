@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "lib/selfid"
+require_relative '../lib/selfid.rb'
 
-@app = Selfid::App.new("od4pepkd4jl", "uNX0avmVxLUD1BidV7tO4kyUc818WS65+pAcvGZb87o", self_url: "http://192.168.0.93:8080")
-identity = @app.identity("62787614127")
+@app = Selfid::App.new("2a9d2f7595b9c959ec212966dcb75efb", "4XraPyq9f38YT8lA+ZzspBXSgg6NtEwkiQD0qeLiOnE", self_url: "https://api.review.selfid.net")
+identity = @app.identity("72921676292")
 p identity

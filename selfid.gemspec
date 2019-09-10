@@ -12,11 +12,13 @@ Gem::Specification.new do |s|
   s.homepage = "https://www.selfid.net/"
   s.files = [
     "lib/selfid.rb",
-    "lib/client.rb"
+    "lib/client.rb",
+    "lib/log.rb"
   ]
   s.require_paths = ["lib"]
   s.add_dependency "ed25519"
   s.add_dependency "httparty"
+  s.add_dependency "logger"
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"
