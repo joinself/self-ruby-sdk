@@ -13,12 +13,19 @@ Gem::Specification.new do |s|
   s.files = [
     "lib/selfid.rb",
     "lib/client.rb",
-    "lib/log.rb"
+    "lib/messaging.rb",
+    "lib/log.rb",
+    "lib/jwt.rb",
+    "lib/proto/"
   ]
   s.require_paths = ["lib"]
   s.add_dependency "ed25519"
   s.add_dependency "httparty"
   s.add_dependency "logger"
+  s.add_dependency "faye-websocket"
+  s.add_dependency "eventmachine"
+  s.add_dependency "async"
+  s.add_dependency "google-protobuf"
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"

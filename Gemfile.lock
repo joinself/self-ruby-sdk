@@ -1,8 +1,12 @@
 PATH
   remote: .
   specs:
-    selfid (0.0.5)
+    selfid (0.0.6)
+      async
       ed25519
+      eventmachine
+      faye-websocket
+      google-protobuf
       httparty
       logger
 
@@ -12,10 +16,20 @@ GEM
     addressable (2.6.0)
       public_suffix (>= 2.0.2, < 4.0)
     ast (2.4.0)
+    async (1.21.0)
+      console (~> 1.0)
+      nio4r (~> 2.3)
+      timers (~> 4.1)
     coderay (1.1.2)
+    console (1.4.0)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
     ed25519 (1.2.4)
+    eventmachine (1.2.7)
+    faye-websocket (0.10.9)
+      eventmachine (>= 0.12.0)
+      websocket-driver (>= 0.5.1)
+    google-protobuf (3.9.1-universal-darwin)
     hashdiff (0.4.0)
     httparty (0.17.0)
       mime-types (~> 3.0)
@@ -28,6 +42,7 @@ GEM
     mime-types-data (3.2019.0904)
     minitest (5.11.3)
     multi_xml (0.6.0)
+    nio4r (2.5.1)
     parallel (1.17.0)
     parser (2.6.3.0)
       ast (~> 2.4.0)
@@ -47,11 +62,15 @@ GEM
     ruby-progressbar (1.10.1)
     safe_yaml (1.0.5)
     timecop (0.9.1)
+    timers (4.3.0)
     unicode-display_width (1.6.0)
     webmock (3.6.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
+    websocket-driver (0.7.1)
+      websocket-extensions (>= 0.1.0)
+    websocket-extensions (0.1.4)
 
 PLATFORMS
   ruby

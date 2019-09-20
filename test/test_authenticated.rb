@@ -13,7 +13,7 @@ class SelfidTest < Minitest::Test
     let(:app_id)    { "o9mpng9m2jv" }
     let(:atoken)    { "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvOW1wbmc5bTJqdiJ9.jAZKnafk7HtxK3WfilkcTw6EwE1Ny3mHBbzf4eezG/Np9IB7I8GxJf921mCkcuAKBkSgIBMrUui+VYnaZSPYDQ" }
     let(:app)       { Selfid::App.new(app_id, seed) }
-    let(:protected) { "eyJhbGciOiJFZERTQSJ9" }
+    let(:protected) { "eyJ0eXAiOiJFZERTQSJ9" }
     let(:headers) {
       {
         'Authorization' => "Bearer #{atoken}",
@@ -37,8 +37,8 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 404, body: '', headers: {})
 
-      payload = app.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
-      signature = app.send(:sign, "xoxo")
+      payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
+      signature = app.jwt.send(:sign, "xoxo")
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
 
@@ -53,9 +53,9 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 404, body: '', headers: {})
 
-      payload = app.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
+      payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
 
-      signature = app.send(:sign, "#{payload}.#{protected}")
+      signature = app.jwt.send(:sign, "#{payload}.#{protected}")
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
 
@@ -67,16 +67,15 @@ class SelfidTest < Minitest::Test
       @keypair = Ed25519.provider.create_keypair(Base64.decode64(seed))
       uuid = "uuid"
       pk = Ed25519::VerifyKey.new(@keypair[32, 32])
-      pk = app.send(:encode, pk)
+      pk = app.jwt.send(:encode, pk)
       user_id = "user_id"
 
       stub_request(:get, "https://api.selfid.net/v1/identities/#{user_id}").
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      payload = app.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted","jti":"' + uuid + '"}')
-
-      signature = app.send(:sign, "#{protected}.#{payload}")
+      payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted","jti":"' + uuid + '"}')
+      signature = app.jwt.send(:sign, "#{protected}.#{payload}")
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
 

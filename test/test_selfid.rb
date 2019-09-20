@@ -30,19 +30,19 @@ class SelfidTest < Minitest::Test
 
     def test_init_with_defaults
       assert_equal "https://api.selfid.net", app.client.self_url
-      assert_equal app_id, app.app_id
-      assert_equal seed, app.app_key
+      assert_equal app_id, app.jwt.id
+      assert_equal seed, app.jwt.key
     end
 
     def test_init_with_custom_parameters
       custom_app = Selfid::App.new(app_id, seed, self_url: "http://custom.self.net")
       assert_equal "http://custom.self.net", custom_app.client.self_url
-      assert_equal app_id, custom_app.app_id
-      assert_equal seed, custom_app.app_key
+      assert_equal app_id, custom_app.jwt.id
+      assert_equal seed, custom_app.jwt.key
     end
 
     def test_auth_token
-      token = app.send(:auth_token)
+      token = app.jwt.send(:auth_token)
       assert_equal atoken, token
     end
 
