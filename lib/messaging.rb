@@ -19,7 +19,7 @@ module Selfid
       @device_id = "1"
       @messages = {}
       @jwt = jwt
-      # start
+      start
 
     end
 
@@ -125,11 +125,12 @@ module Selfid
 
     def on_start
       Selfid.logger.info "websocket connection opened"
+      uuid = SecureRandom.uuid
 
       # Authenticate the current user
       msg = Msgproto::Auth.new(
         type: Msgproto::MsgType::AUTH,
-        id: @jwt.id,
+        id: uuid,
         token: @jwt.auth_token,
         device: @device_id,
       )

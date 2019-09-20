@@ -100,10 +100,9 @@ module Selfid
     end
 
     def request_information(id, fields)
-      sleep 100
+      sleep 2
       # TODO move this to the test
       Selfid.logger.info "Setting ACL"
-      require 'pry'; binding.pry
 
       @messaging.acl(@jwt.prepare({
         iss: @jwt.id,

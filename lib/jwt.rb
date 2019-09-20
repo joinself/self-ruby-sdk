@@ -11,7 +11,7 @@ module Selfid
     end
 
     def protected
-      encode({ typ: "EdDSA" }.to_json)
+      encode({ alg: "EdDSA", typ: "JWT" }.to_json)
     end
 
     def prepare(input)
@@ -31,7 +31,6 @@ module Selfid
     #
     # @param input [string] the string to be encoded.
     def encode(input)
-      #Base64.strict_encode64(input).gsub("=", "")
       Base64.urlsafe_encode64(input, padding: false)
     end
 
@@ -39,7 +38,6 @@ module Selfid
     #
     # @param input [string] the string to be decoded.
     def decode(input)
-      #Base64.decode64(input)
       Base64.urlsafe_decode64(input)
     end
 
@@ -61,7 +59,7 @@ module Selfid
     # Generates the auth_token based on the app's private key.
     def auth_token
       @auth_token ||= begin
-        payload = encode({ "alg": "EdDSA", "typ": "JWT" }.to_json) + "." + encode({ iss: @id }.to_json)
+        payload = protected + "." + encode({ iss: @id }.to_json)
         signature = sign(payload)
         "#{payload}.#{signature}"
       end
