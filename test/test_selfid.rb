@@ -10,8 +10,8 @@ class SelfidTest < Minitest::Test
   describe "selfid" do
     let(:seed)    { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:app_id)  { "o9mpng9m2jv" }
-    let(:atoken)  { "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvOW1wbmc5bTJqdiJ9.jAZKnafk7HtxK3WfilkcTw6EwE1Ny3mHBbzf4eezG/Np9IB7I8GxJf921mCkcuAKBkSgIBMrUui+VYnaZSPYDQ" }
     let(:app)     { Selfid::App.new(app_id, seed) }
+    let(:atoken)    { app.jwt.auth_token }
     let(:headers) {
       {
         'Authorization' => "Bearer #{atoken}",
@@ -47,7 +47,7 @@ class SelfidTest < Minitest::Test
     end
 
     def test_authenticate
-      body = "{\"payload\":\"eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAvY2FsbGJhY2siLCJhdWQiOiJodHRwczovL2FwaS5zZWxmaWQubmV0IiwiaXNpIjoibzltcG5nOW0yanYiLCJzdWIiOiJ4eHh4eHh4eCIsImlhdCI6IjIwMTktMDktMDFUMTA6MDU6MDBaIiwiZXhwIjoiMjAxOS0wOS0wMVQxMTowNTowMFoiLCJqdGkiOiJ1dWlkIn0\",\"protected\":\"eyJ0eXAiOiJFZERTQSJ9\",\"signature\":\"2wR8O1rqTWnN9abaWs7lrbwLRBXGhDXSrIf/koAPfDF6FYWmcF3qZ1EHSqa9GQ1vvGvasatkGnJp5ovDWYqFDw\"}"
+      body = "{\"payload\":\"eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAvY2FsbGJhY2siLCJhdWQiOiJodHRwczovL2FwaS5zZWxmaWQubmV0IiwiaXNpIjoibzltcG5nOW0yanYiLCJzdWIiOiJ4eHh4eHh4eCIsImlhdCI6IjIwMTktMDktMDFUMTA6MDU6MDBaIiwiZXhwIjoiMjAxOS0wOS0wMVQxMTowNTowMFoiLCJqdGkiOiJ1dWlkIn0\",\"protected\":\"eyJ0eXAiOiJFZERTQSJ9\",\"signature\":\"2wR8O1rqTWnN9abaWs7lrbwLRBXGhDXSrIf_koAPfDF6FYWmcF3qZ1EHSqa9GQ1vvGvasatkGnJp5ovDWYqFDw\"}"
       stub_request(:post, "https://api.selfid.net/v1/auth").
         with(body: body, headers: headers).
         to_return(status: 200, body: "", headers: {})

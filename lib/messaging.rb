@@ -12,15 +12,14 @@ require_relative 'proto/aclcommand_pb'
 module Selfid
   class MessagingClient
 
-    def initialize(url, app_id, auth_token)
+    def initialize(url, jwt)
       @mon = Monitor.new
       # general conventions is device id on apps is always 1
       @url = url
       @device_id = "1"
       @messages = {}
-      @app_id = app_id
-      @auth_token = auth_token
-      #start
+      @jwt = jwt
+      # start
 
     end
 
@@ -40,7 +39,7 @@ module Selfid
           arrived_cond: @mon.new_cond,
           arrived: true,
           body: {
-            isi: @app_id,
+            isi: @jwt.id,
             sub: recipient,
             iat: Time.now.utc.strftime('%FT%TZ'),
             exp: (Time.now.utc + 3600).strftime('%FT%TZ'),
@@ -48,7 +47,7 @@ module Selfid
             fields: facts,
           }
         }
-        body = Base64.urlsafe_encode64(@messages[uuid][:body].to_json, padding: false)
+        body = @jwt.decode(@messages[uuid][:body].to_json, padding: false)
         send(uuid, recipient, body)
 
         @mon.synchronize do
@@ -116,7 +115,7 @@ module Selfid
     end
 
     def process_message(input)
-      payload = JSON.parse(Base64.decode64(input[:payload]), symbolize_names: true)
+      payload = JSON.parse(@jwt.decode(input[:payload]), symbolize_names: true)
       require 'pry'; binding.pry
       return unless @messages.include? payload[:jti]
 
@@ -130,8 +129,8 @@ module Selfid
       # Authenticate the current user
       msg = Msgproto::Auth.new(
         type: Msgproto::MsgType::AUTH,
-        id: @app_id,
-        token: @auth_token,
+        id: @jwt.id,
+        token: @jwt.auth_token,
         device: @device_id,
       )
 
@@ -144,7 +143,7 @@ module Selfid
       msg = Msgproto::Message.new(
         type: Msgproto::MsgType::MSG,
         id: uuid,
-        sender: "#{@app_id}:#{@device_id}",
+        sender: "#{@jwt.id}:#{@device_id}",
         recipient: recipient,
         ciphertext: body,
       )

@@ -34,7 +34,7 @@ module Selfid
 
       #TODO (adriacidre) : change this url
       messaging_url = opts.fetch(:self_url, "ws://localhost:8086/v1/messaging")
-      @messaging = MessagingClient.new(messaging_url, @jwt.id, @jwt.auth_token)
+      @messaging = MessagingClient.new(messaging_url, @jwt)
     end
 
     # Sends an authentication request to the specified user_id.
@@ -100,7 +100,7 @@ module Selfid
     end
 
     def request_information(id, fields)
-      sleep 2
+      sleep 100
       # TODO move this to the test
       Selfid.logger.info "Setting ACL"
       require 'pry'; binding.pry

@@ -11,9 +11,9 @@ class SelfidTest < Minitest::Test
   describe "authenticated?" do
     let(:seed)      { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:app_id)    { "o9mpng9m2jv" }
-    let(:atoken)    { "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvOW1wbmc5bTJqdiJ9.jAZKnafk7HtxK3WfilkcTw6EwE1Ny3mHBbzf4eezG/Np9IB7I8GxJf921mCkcuAKBkSgIBMrUui+VYnaZSPYDQ" }
     let(:app)       { Selfid::App.new(app_id, seed) }
-    let(:protected) { "eyJ0eXAiOiJFZERTQSJ9" }
+    let(:atoken)    { app.jwt.auth_token }
+    let(:protected) { app.jwt.protected }
     let(:headers) {
       {
         'Authorization' => "Bearer #{atoken}",
@@ -64,20 +64,21 @@ class SelfidTest < Minitest::Test
     end
 
     def test_happy_path
-      @keypair = Ed25519.provider.create_keypair(Base64.decode64(seed))
+      @keypair = Ed25519.provider.create_keypair(app.jwt.decode(seed))
       uuid = "uuid"
       pk = Ed25519::VerifyKey.new(@keypair[32, 32])
-      pk = app.jwt.send(:encode, pk)
+      pk = app.jwt.encode(pk)
       user_id = "user_id"
 
       stub_request(:get, "https://api.selfid.net/v1/identities/#{user_id}").
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted","jti":"' + uuid + '"}')
-      signature = app.jwt.send(:sign, "#{protected}.#{payload}")
-
-      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
+      body = app.jwt.prepare({ sub: user_id,
+        isi: "self_id",
+        status: "accepted",
+        jti: uuid
+      })
 
       authenticated = app.authenticated?(body)
       assert_equal true, authenticated[:accepted]
