@@ -46,7 +46,8 @@ module Selfid
     # @param input [string] the string to be signed.
     def sign(input)
       signing_key = Ed25519::SigningKey.new(decode(@key))
-      encode(signing_key.sign(input))
+      signature = signing_key.sign(input)
+      encode(signature)
     end
 
     def verify(payload, key)

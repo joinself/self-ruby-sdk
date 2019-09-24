@@ -99,20 +99,28 @@ module Selfid
       @client.identity(id)
     end
 
-    def request_information(id, fields)
-      sleep 2
-      # TODO move this to the test
-      Selfid.logger.info "Setting ACL"
-
+    def connect(id)
+      Selfid.logger.info "Setting ACL for #{id}"
       @messaging.acl(@jwt.prepare({
         iss: @jwt.id,
-        acl_source: @jwt.id,
+        acl_source: id,
         acl_exp: (Time.now.utc + 360000).to_datetime.rfc3339
       }))
+    end
 
-      sleep 20000
+    def inbox
+      @messaging.inbox
+    end
+
+    def stop
+      @messaging.stop
+    end
+
+    def request_information(id, fields, type: :sync)
+      # TODO move this to the test
       Selfid.logger.info "Requesting information"
-      response = @messaging.request_information(id, fields)
+      response = @messaging.request_information(id, fields, type: type)
+      sleep 200000
       p "oooooooooo 2"
       payload = valid_payload(response)
       p "oooooooooo 3"

@@ -11,16 +11,18 @@ require_relative 'proto/aclcommand_pb'
 
 module Selfid
   class MessagingClient
+    attr_reader :inbox
 
     def initialize(url, jwt)
+      @inbox = []
       @mon = Monitor.new
       # general conventions is device id on apps is always 1
       @url = url
       @device_id = "1"
       @messages = {}
+      @acks = {}
       @jwt = jwt
       start
-
     end
 
     def start
@@ -28,138 +30,174 @@ module Selfid
     end
 
     def stop
-      @listener.stop
+      @listener.stop unles listener.nil?
     end
 
-    def request_information(recipient, facts)
+    def request_information(recipient, facts, type: :sync)
       uuid = SecureRandom.uuid
-      Selfid.logger.info "requesting information #{uuid}"
-      @mon.synchronize do
-        @messages[uuid] = {
-          arrived_cond: @mon.new_cond,
-          arrived: true,
-          body: {
+      msg = Msgproto::Message.new(
+        type: Msgproto::MsgType::MSG,
+        id: uuid,
+        sender: "#{@jwt.id}:#{@device_id}",
+        # TODO(adriacidre) remove hardcoded device id
+        recipient: "#{recipient}:1",
+        ciphertext: @jwt.encode({
             isi: @jwt.id,
             sub: recipient,
             iat: Time.now.utc.strftime('%FT%TZ'),
             exp: (Time.now.utc + 3600).strftime('%FT%TZ'),
             jti: uuid,
             fields: facts,
-          }
-        }
-        body = @jwt.decode(@messages[uuid][:body].to_json, padding: false)
-        send(uuid, recipient, body)
-
-        @mon.synchronize do
-          @messages[uuid][:arrived_cond].wait_while {@messages[uuid][:arrived]}
-        end
-      end
-
-      return @messages[uuid][:response]
-    ensure
-      @messages.delete(uuid)
+          }.to_json),
+      )
+      return send_and_wait_for_response(msg) if type == :sync
+      send msg
     end
 
     def acl(payload)
-      # Authenticate the current user
-      msg = Msgproto::AccessControlList.new(
+      send Msgproto::AccessControlList.new(
         type: Msgproto::MsgType::ACL,
         id: SecureRandom.uuid,
         command: Msgproto::ACLCommand::PERMIT,
         payload: payload,
       )
-
-      Selfid.logger.info msg.to_json
-      require 'pry'; binding.pry
-      @ws.send(msg.to_proto.bytes)
     end
 
     private
 
-    def loop
-      Thread.new do
-        EM.run {
-          Selfid.logger.info "starting listener"
-          @ws = Faye::WebSocket::Client.new(@url)
+      def loop
+        @mon.synchronize do
+          @acks["authentication"] = {
+            waiting_cond: @mon.new_cond,
+            waiting: true
+          }
+        end
 
-          @ws.on :open do |event|
-            on_start
-          end
+        Thread.new do
+          EM.run {
+            Selfid.logger.info "starting listener"
+            @ws = Faye::WebSocket::Client.new(@url)
 
-          @ws.on :message do |event|
-            on_message(event)
-          rescue TypeError => e
-            Selfid.logger.info "invalid array message"
-          end
+            @ws.on :open do |event|
+              Selfid.logger.info "websocket connection established"
+              authenticate
+            end
 
-          @ws.on :close do |event|
-            Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
-          end
-        }
+            @ws.on :message do |event|
+              on_message(event)
+            rescue TypeError => e
+              Selfid.logger.info "invalid array message"
+            end
+
+            @ws.on :close do |event|
+              Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
+            end
+          }
+        end
+
+        @mon.synchronize do
+          @acks["authentication"][:waiting_cond].wait_while {@acks["authentication"][:waiting]}
+        end
+      ensure
+        @acks.delete("authentication")
       end
-    end
 
-    def on_message(event)
-      Selfid.logger.info "processing input message"
-      input = Msgproto::Message.decode(event.data.pack('c*'))
-      case input.type
-      when :ERR
-        require 'pry'; binding.pry
-        Selfid.logger.info "error #{input.sender} on #{input.id}"
-        mark_as_arrived(input.id)
-      when :ACK
-        Selfid.logger.info "Acknowledged #{input.id}"
-      when :MSG
-        process_message input
+      def on_message(event)
+        input = Msgproto::Message.decode(event.data.pack('c*'))
+        Selfid.logger.info " - received #{input.id} (#{input.type})"
+        case input.type
+        when :ERR
+          Selfid.logger.info "error #{input.sender} on #{input.id}"
+          mark_as_arrived(input.id)
+        when :ACK
+          Selfid.logger.info "#{input.id} acknowledged"
+          mark_as_acknowledged input.id
+        when :MSG
+          Selfid.logger.info "Message #{input.id} received"
+          process_message input
+        end
       end
-    end
 
-    def process_message(input)
-      payload = JSON.parse(@jwt.decode(input[:payload]), symbolize_names: true)
-      require 'pry'; binding.pry
-      return unless @messages.include? payload[:jti]
-
-      @messages[input[:jti]][:response] = input
-      mark_as_arrived input[:jti]
-    end
-
-    def on_start
-      Selfid.logger.info "websocket connection opened"
-      uuid = SecureRandom.uuid
-
-      # Authenticate the current user
-      msg = Msgproto::Auth.new(
-        type: Msgproto::MsgType::AUTH,
-        id: uuid,
-        token: @jwt.auth_token,
-        device: @device_id,
-      )
-
-      Selfid.logger.info msg.to_json
-      @ws.send(msg.to_proto.bytes)
-    end
-
-    def send(uuid, recipient, body)
-      # Authenticate the current user
-      msg = Msgproto::Message.new(
-        type: Msgproto::MsgType::MSG,
-        id: uuid,
-        sender: "#{@jwt.id}:#{@device_id}",
-        recipient: recipient,
-        ciphertext: body,
-      )
-
-      Selfid.logger.info msg.to_json
-      sleep 2
-      @ws.send(msg.to_proto.bytes)
-    end
-
-    def mark_as_arrived(id)
-      @messages[id][:arrived] = false
-      @mon.synchronize do
-        @messages[id][:arrived_cond].broadcast
+      def process_message(input)
+        payload = JSON.parse(@jwt.decode(input[:payload]), symbolize_names: true)
+        if @messages.include? payload[:jti]
+          @messages[input[:jti]][:response] = input
+          mark_as_arrived input[:jti]
+        else
+          Selfid.logger.info "Received async message #{input.id}"
+          @inbox[input[:jti]] = input
+        end
       end
-    end
+
+      def authenticate
+        Selfid.logger.info "authenticating"
+        send_raw Msgproto::Auth.new(
+          type: Msgproto::MsgType::AUTH,
+          id: "authentication",
+          token: @jwt.auth_token,
+          device: @device_id,
+        )
+      end
+
+      def send_and_wait_for_response(msg)
+        uuid = msg.id
+
+        Selfid.logger.info "sending #{uuid}"
+        @mon.synchronize do
+          @messages[uuid] = {
+            waiting_cond: @mon.new_cond,
+            waiting: true,
+          }
+        end
+        send msg
+
+        Selfid.logger.info "waiting for client to respond #{uuid}"
+        @mon.synchronize do
+          @messages[uuid][:waiting_cond].wait_while {@messages[uuid][:waiting]}
+        end
+
+        Selfid.logger.info "response received for #{uuid}"
+        return @messages[uuid][:response]
+      ensure
+        @inbox.delete(uuid)
+        @messages.delete(uuid)
+      end
+
+      def send(msg)
+        uuid = msg.id
+        @mon.synchronize do
+          @acks[uuid] = {
+            waiting_cond: @mon.new_cond,
+            waiting: true
+          }
+        end
+        @ws.send(msg.to_proto.bytes)
+        Selfid.logger.info "waiting for acknowledgement #{uuid}"
+        @mon.synchronize do
+          @acks[uuid][:waiting_cond].wait_while {@acks[uuid][:waiting]}
+        end
+      ensure
+        @acks.delete(uuid)
+      end
+
+      def send_raw(msg)
+        @ws.send(msg.to_proto.bytes)
+      end
+
+      def mark_as_arrived(id)
+        return unless @messages.include? id
+        @mon.synchronize do
+          @messages[id][:waiting] = false
+          @messages[id][:waiting_cond].broadcast
+        end
+      end
+
+      def mark_as_acknowledged(id)
+        @mon.synchronize do
+          @acks[id][:waiting] = false if @acks.include? id
+          @acks[id][:waiting_cond].broadcast
+        end
+      end
 
   end
 end
