@@ -33,7 +33,7 @@ module Selfid
       @client = RestClient.new(url, @jwt.auth_token)
 
       #TODO (adriacidre) : change this url
-      messaging_url = opts.fetch(:self_url, "ws://localhost:8086/v1/messaging")
+      messaging_url = opts.fetch(:messaging_url, "ws://localhost:8086/v1/messaging")
       @messaging = MessagingClient.new(messaging_url, @jwt)
     end
 
@@ -118,9 +118,14 @@ module Selfid
 
     def request_information(id, fields, type: :sync)
       # TODO move this to the test
-      Selfid.logger.info "Requesting information"
-      response = @messaging.request_information(id, fields, type: type)
-      sleep 200000
+      devices = @client.devices(id)
+      device = devices.first[:id]
+
+      res = @messaging.request_information(id, device, fields, type: type)
+      return if type == :async
+
+      require 'pry'; binding.pry
+=begin
       p "oooooooooo 2"
       payload = valid_payload(response)
       p "oooooooooo 3"
@@ -134,6 +139,8 @@ module Selfid
       # TODO each field should be validated in here
 
       return payload[:fields]
+      # TODO(adriacidre) use proper error handling
+=end
     end
 
   end

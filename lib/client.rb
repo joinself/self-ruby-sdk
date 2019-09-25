@@ -36,6 +36,16 @@ module Selfid
       body
     end
 
+    def devices(id)
+      res = get "/v1/identities/#{id}/devices"
+      body = JSON.parse(res.body, symbolize_names: true)
+      if res.code != 200
+        Selfid.logger.error "identity response : #{body[:message]}"
+        raise "you need connection permissions"
+      end
+      body
+    end
+
     private
 
     def get(endpoint)
@@ -51,7 +61,7 @@ module Selfid
                       'Content-Type' => 'application/json',
                       'Authorization' => "Bearer #{@token}"
                     },
-                    body: body,)
+                    body: body)
     end
   end
 end

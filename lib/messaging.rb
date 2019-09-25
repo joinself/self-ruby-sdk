@@ -33,14 +33,14 @@ module Selfid
       @listener.stop unles listener.nil?
     end
 
-    def request_information(recipient, facts, type: :sync)
+    def request_information(recipient, recipient_device, facts, type: :sync)
+      Selfid.logger.info "Requesting information to #{recipient}:#{recipient_device}"
       uuid = SecureRandom.uuid
       msg = Msgproto::Message.new(
         type: Msgproto::MsgType::MSG,
         id: uuid,
         sender: "#{@jwt.id}:#{@device_id}",
-        # TODO(adriacidre) remove hardcoded device id
-        recipient: "#{recipient}:1",
+        recipient: "#{recipient}:#{recipient_device}",
         ciphertext: @jwt.encode({
             isi: @jwt.id,
             sub: recipient,
@@ -50,6 +50,7 @@ module Selfid
             fields: facts,
           }.to_json),
       )
+      p msg.to_json
       return send_and_wait_for_response(msg) if type == :sync
       send msg
     end
