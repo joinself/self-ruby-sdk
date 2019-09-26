@@ -13,49 +13,74 @@ module Selfid
   class MessagingClient
     attr_reader :inbox
 
-    def initialize(url, jwt)
-      @inbox = []
+    # RestClient initializer
+    #
+    # @param url [string] self-messaging url
+    # @param jwt [Object] Selfid::Jwt object
+    # @params client [Object] Selfid::Client object
+    def initialize(url, jwt, client)
+      @inbox = {}
       @mon = Monitor.new
-      # general conventions is device id on apps is always 1
       @url = url
       @device_id = "1"
       @messages = {}
       @acks = {}
       @jwt = jwt
+      @client = client
       start
-    end
-
-    def start
-      @listener = loop
     end
 
     def stop
       @listener.stop unles listener.nil?
     end
 
+    # Responds a request information request
+    #
+    # @param recipient [string] selfID to be requested
+    # @param recipient_device [string] device id for the selfID to be requested
+    # @param request [string] original message requesing information
+    def share_information(recipient, recipient_device, request)
+      send Msgproto::Message.new(
+        type: Msgproto::MsgType::MSG,
+        id: SecureRandom.uuid,
+        sender: "#{@jwt.id}:#{@device_id}",
+        recipient: "#{recipient}:#{recipient_device}",
+        ciphertext: @jwt.prepare_encoded(request),
+      )
+    end
+
+    # Requests information to an entity
+    #
+    # @param recipient [string] selfID to be requested
+    # @param recipient_device [string] device id for the selfID to be requested
+    # @param fields [array] list of fields to be requested
+    # @param type [symbol] you can define if you want to request this
+    # =>  information on a sync or an async way
     def request_information(recipient, recipient_device, facts, type: :sync)
-      Selfid.logger.info "Requesting information to #{recipient}:#{recipient_device}"
       uuid = SecureRandom.uuid
       msg = Msgproto::Message.new(
         type: Msgproto::MsgType::MSG,
         id: uuid,
         sender: "#{@jwt.id}:#{@device_id}",
         recipient: "#{recipient}:#{recipient_device}",
-        ciphertext: @jwt.encode({
+        ciphertext: @jwt.prepare_encoded({
             isi: @jwt.id,
             sub: recipient,
             iat: Time.now.utc.strftime('%FT%TZ'),
             exp: (Time.now.utc + 3600).strftime('%FT%TZ'),
             jti: uuid,
             fields: facts,
-          }.to_json),
+          }),
       )
-      p msg.to_json
       return send_and_wait_for_response(msg) if type == :sync
+      Selfid.logger.info "asynchronously requesting information to #{recipient}:#{recipient_device}"
       send msg
     end
 
-    def acl(payload)
+    # Allows authenticated user to receive incoming messages from the given id
+    #
+    # @params payload [string] base64 encoded payload to be sent
+    def connect(payload)
       send Msgproto::AccessControlList.new(
         type: Msgproto::MsgType::ACL,
         id: SecureRandom.uuid,
@@ -65,6 +90,10 @@ module Selfid
     end
 
     private
+
+      def start
+        @listener = loop
+      end
 
       def loop
         @mon.synchronize do
@@ -120,13 +149,22 @@ module Selfid
       end
 
       def process_message(input)
-        payload = JSON.parse(@jwt.decode(input[:payload]), symbolize_names: true)
+        jwt = JSON.parse(@jwt.decode(input.ciphertext), symbolize_names: true)
+        payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
+
+        sender_id = input.sender.split(":").first
+        k = @client.public_keys(sender_id).first[:key]
+        if !@jwt.verify(jwt, k)
+          Selfid.logger.info "skipping message [#{input.id}] due to invalid signature"
+          return
+        end
+
         if @messages.include? payload[:jti]
-          @messages[input[:jti]][:response] = input
-          mark_as_arrived input[:jti]
+          @messages[payload[:jti]][:response] = input
+          mark_as_arrived payload[:jti]
         else
           Selfid.logger.info "Received async message #{input.id}"
-          @inbox[input[:jti]] = input
+          @inbox[payload[:jti]] = payload
         end
       end
 

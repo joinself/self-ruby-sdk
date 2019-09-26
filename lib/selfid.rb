@@ -32,9 +32,8 @@ module Selfid
       Selfid.logger.info "client setup with #{url}"
       @client = RestClient.new(url, @jwt.auth_token)
 
-      #TODO (adriacidre) : change this url
-      messaging_url = opts.fetch(:messaging_url, "ws://localhost:8086/v1/messaging")
-      @messaging = MessagingClient.new(messaging_url, @jwt)
+      messaging_url = opts.fetch(:messaging_url, "wss://messaging.review.selfid.net/v1/messaging")
+      @messaging = MessagingClient.new(messaging_url, @jwt, @client)
     end
 
     # Sends an authentication request to the specified user_id.
@@ -76,72 +75,82 @@ module Selfid
         accepted: (payload[:status] == "accepted") }
     end
 
-    def valid_payload(response)
-      jws = @jwt.parse(response)
-      return nil unless jws.include? :payload
-      payload = JSON.parse(@jwt.decode(jws[:payload]), symbolize_names: true)
-
-      return nil if payload.nil?
-      identity = identity(payload[:sub])
-      return nil if identity.nil?
-      identity[:public_keys].each do |key|
-        return payload if @jwt.verify(jws, key[:key])
-      end
-      nil
-    rescue StandardError => e
-      uuid = ""
-      uuid = payload[:jti] unless payload.nil?
-      Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
-      nil
-    end
-
+    # Gets identity defails
     def identity(id)
       @client.identity(id)
     end
 
+    # Allows authenticated user to receive incoming messages from the given id
+    #
+    # @params id [string] SelfID to be allowed
     def connect(id)
       Selfid.logger.info "Setting ACL for #{id}"
-      @messaging.acl(@jwt.prepare({
+      @messaging.connect(@jwt.prepare({
         iss: @jwt.id,
         acl_source: id,
         acl_exp: (Time.now.utc + 360000).to_datetime.rfc3339
       }))
     end
 
+    # Gets a list of received messages
     def inbox
       @messaging.inbox
     end
 
+    # Will stop listening for messages
     def stop
       @messaging.stop
     end
 
+    # Requests information to an entity
+    #
+    # @param id [string] selfID to be requested
+    # @param fields [array] list of fields to be requested
+    # @param type [symbol] you can define if you want to request this
+    # =>  information on a sync or an async way
     def request_information(id, fields, type: :sync)
-      # TODO move this to the test
       devices = @client.devices(id)
       device = devices.first[:id]
 
       res = @messaging.request_information(id, device, fields, type: type)
       return if type == :async
-
-      require 'pry'; binding.pry
-=begin
-      p "oooooooooo 2"
-      payload = valid_payload(response)
-      p "oooooooooo 3"
-      # TODO better to raise an exception here?
-      raise StandardError.new "invalid response" if payload.nil?
-      p "oooooooooo 4"
-      return if payload.nil?
-      p "oooooooooo 5"
-
-      p payload[:fields]
-      # TODO each field should be validated in here
-
-      return payload[:fields]
-      # TODO(adriacidre) use proper error handling
-=end
     end
+
+    # Responds a request information request
+    #
+    # @param request [string] original message requesing information
+    # @param information [hash] list of facts for the requested fields
+    def share_information(request, information)
+      isi = request[:isi]
+      request[:isi] = request[:sub]
+      request[:sub] = isi
+      request[:fields] = information
+
+      devices = @client.devices(request[:sub])
+      @messaging.share_information(request[:sub], devices.first[:id], request)
+    end
+
+    private
+
+      def valid_payload(response)
+        jws = @jwt.parse(response)
+        return nil unless jws.include? :payload
+        payload = JSON.parse(@jwt.decode(jws[:payload]), symbolize_names: true)
+
+        return nil if payload.nil?
+        identity = identity(payload[:sub])
+        return nil if identity.nil?
+        identity[:public_keys].each do |key|
+          return payload if @jwt.verify(jws, key[:key])
+        end
+        nil
+      rescue StandardError => e
+        uuid = ""
+        uuid = payload[:jti] unless payload.nil?
+        Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
+        nil
+      end
+
 
   end
 end

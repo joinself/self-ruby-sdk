@@ -5,15 +5,25 @@ module Selfid
   class Jwt
     attr_reader :id, :key
 
-    def initialize(id, key)
-      @id = id
-      @key = key
+    # Jwt initializer
+    #
+    # @param app_id [string] the app id.
+    # @param app_key [string] the app api key provided by developer portal.
+    def initialize(app_id, app_key)
+      @id = app_id
+      @key = app_key
     end
 
-    def protected
-      encode({ alg: "EdDSA", typ: "JWT" }.to_json)
+    # Prepares and encodes a jwt object based on an input
+    #
+    # @param input [string] input to be prepared and encoded
+    def prepare_encoded(input)
+      encode(prepare(input))
     end
 
+    # Prepares a jwt object based on an input
+    #
+    # @param input [string] input to be prepared
     def prepare(input)
       payload = encode(input.to_json)
       {
@@ -68,6 +78,9 @@ module Selfid
 
     private
 
+      def protected
+        encode({ alg: "EdDSA", typ: "JWT" }.to_json)
+      end
 
   end
 end
