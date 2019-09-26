@@ -50,35 +50,6 @@ module Selfid
       )
     end
 
-    # Requests information to an entity
-    #
-    # @param recipient [string] selfID to be requested
-    # @param recipient_device [string] device id for the selfID to be requested
-    # @param fields [array] list of fields to be requested
-    # @param type [symbol] you can define if you want to request this
-    # =>  information on a sync or an async way
-    def request_information(recipient, recipient_device, facts, type: :sync)
-      uuid = SecureRandom.uuid
-      msg = Msgproto::Message.new(
-        type: Msgproto::MsgType::MSG,
-        id: uuid,
-        sender: "#{@jwt.id}:#{@device_id}",
-        recipient: "#{recipient}:#{recipient_device}",
-        ciphertext: @jwt.prepare_encoded({
-            typ: 'identity_info_req',
-            isi: @jwt.id,
-            sub: recipient,
-            iat: Time.now.utc.strftime('%FT%TZ'),
-            exp: (Time.now.utc + 3600).strftime('%FT%TZ'),
-            jti: uuid,
-            fields: facts,
-          }),
-      )
-      return send_and_wait_for_response(msg) if type == :sync
-      Selfid.logger.info "asynchronously requesting information to #{recipient}:#{recipient_device}"
-      send msg
-    end
-
     # Allows authenticated user to receive incoming messages from the given id
     #
     # @params payload [string] base64 encoded payload to be sent
@@ -91,6 +62,47 @@ module Selfid
       )
     end
 
+    def send_and_wait_for_response(msg)
+      uuid = msg.id
+
+      Selfid.logger.info "sending #{uuid}"
+      @mon.synchronize do
+        @messages[uuid] = {
+          waiting_cond: @mon.new_cond,
+          waiting: true,
+        }
+      end
+      send msg
+
+      Selfid.logger.info "waiting for client to respond #{uuid}"
+      @mon.synchronize do
+        @messages[uuid][:waiting_cond].wait_while {@messages[uuid][:waiting]}
+      end
+
+      Selfid.logger.info "response received for #{uuid}"
+      return @messages[uuid][:response]
+    ensure
+      @inbox.delete(uuid)
+      @messages.delete(uuid)
+    end
+
+    def send(msg)
+      uuid = msg.id
+      @mon.synchronize do
+        @acks[uuid] = {
+          waiting_cond: @mon.new_cond,
+          waiting: true
+        }
+      end
+      @ws.send(msg.to_proto.bytes)
+      Selfid.logger.info "waiting for acknowledgement #{uuid}"
+      @mon.synchronize do
+        @acks[uuid][:waiting_cond].wait_while {@acks[uuid][:waiting]}
+      end
+    ensure
+      @acks.delete(uuid)
+    end
+    
     private
 
       def start
@@ -173,47 +185,6 @@ module Selfid
           token: @jwt.auth_token,
           device: @device_id,
         )
-      end
-
-      def send_and_wait_for_response(msg)
-        uuid = msg.id
-
-        Selfid.logger.info "sending #{uuid}"
-        @mon.synchronize do
-          @messages[uuid] = {
-            waiting_cond: @mon.new_cond,
-            waiting: true,
-          }
-        end
-        send msg
-
-        Selfid.logger.info "waiting for client to respond #{uuid}"
-        @mon.synchronize do
-          @messages[uuid][:waiting_cond].wait_while {@messages[uuid][:waiting]}
-        end
-
-        Selfid.logger.info "response received for #{uuid}"
-        return @messages[uuid][:response]
-      ensure
-        @inbox.delete(uuid)
-        @messages.delete(uuid)
-      end
-
-      def send(msg)
-        uuid = msg.id
-        @mon.synchronize do
-          @acks[uuid] = {
-            waiting_cond: @mon.new_cond,
-            waiting: true
-          }
-        end
-        @ws.send(msg.to_proto.bytes)
-        Selfid.logger.info "waiting for acknowledgement #{uuid}"
-        @mon.synchronize do
-          @acks[uuid][:waiting_cond].wait_while {@acks[uuid][:waiting]}
-        end
-      ensure
-        @acks.delete(uuid)
       end
 
       def send_raw(msg)

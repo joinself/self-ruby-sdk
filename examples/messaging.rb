@@ -32,7 +32,7 @@ sleep 3
 @john.inbox.each do |k, m|
   p "processing #{k}"
   p m.to_json
-  require 'pry'; binding.pry
 end
+require 'pry'; binding.pry
 
 sleep 1000000

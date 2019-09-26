@@ -1,7 +1,7 @@
 module Selfid
   module Messages
     class Base
-      attr_accessor :from, :to, :to_device, :expires, :id, :fields, :typ, :payload
+      attr_accessor :from, :from_device, :to, :to_device, :expires, :id, :fields, :typ, :payload
 
       def initialize(client, jwt, messaging)
         @client = client
@@ -9,6 +9,21 @@ module Selfid
         @messaging = messaging
         @device_id = "1"
       end
+
+      def send
+        Selfid.logger.info "synchronously requesting information to #{@to}:#{@to_device}"
+        @messaging.send_and_wait_for_response(proto)
+      end
+
+      def send_async
+        Selfid.logger.info "asynchronously requesting information to #{@to}:#{@to_device}"
+        @messaging.send proto
+      end
+
+      protected
+        def proto
+          raise StandardError "must define this method"
+        end
 
       private
         def get_payload(input)
