@@ -15,24 +15,24 @@ adria_id = "37453024743"
 @john.connect(adria_id)
 
 p "john is requesting information"
-@john.request_information(adria_id, ["passport_first_name"], type: :async)
-require 'pry'; binding.pry
-sleep 200000
 # TODO Duplicate this call as there is a bug on self-messaging
-@john.request_information(sarah_id, ["first_name","last_name"], type: :async)
+@john.request_information(sarah_id, ["passport_last_name"], type: :async)
 
 sleep 1
 p "Sarah getting unread messages"
 @sarah.inbox.each do |k, m|
   p "Sarah sharing information with John"
-  dup = m.clone
-  @sarah.share_information(dup, {
-    "first_name": "Sarah",
-    "last_name": "Connor",
+  m.share_facts({
+    "passport_first_name": "Sarah",
+    "passport_last_name": "Connor",
   })
 end
-sleep 2
 
-p @john.inbox
+sleep 3
+@john.inbox.each do |k, m|
+  p "processing #{k}"
+  p m.to_json
+  require 'pry'; binding.pry
+end
 
 sleep 1000000

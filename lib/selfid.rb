@@ -116,20 +116,6 @@ module Selfid
       return if type == :async
     end
 
-    # Responds a request information request
-    #
-    # @param request [string] original message requesing information
-    # @param information [hash] list of facts for the requested fields
-    def share_information(request, information)
-      isi = request[:isi]
-      request[:isi] = request[:sub]
-      request[:sub] = isi
-      request[:fields] = information
-
-      devices = @client.devices(request[:sub])
-      @messaging.share_information(request[:sub], devices.first[:id], request)
-    end
-
     private
 
       def valid_payload(response)

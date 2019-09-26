@@ -3,6 +3,7 @@
 require 'json'
 require 'monitor'
 require 'faye/websocket'
+require_relative 'messages/message'
 require_relative 'proto/auth_pb'
 require_relative 'proto/message_pb'
 require_relative 'proto/msgtype_pb'
@@ -64,6 +65,7 @@ module Selfid
         sender: "#{@jwt.id}:#{@device_id}",
         recipient: "#{recipient}:#{recipient_device}",
         ciphertext: @jwt.prepare_encoded({
+            typ: 'identity_info_req',
             isi: @jwt.id,
             sub: recipient,
             iat: Time.now.utc.strftime('%FT%TZ'),
@@ -144,28 +146,23 @@ module Selfid
           mark_as_acknowledged input.id
         when :MSG
           Selfid.logger.info "Message #{input.id} received"
-          process_message input
+          process_incomming_message input
         end
       end
 
-      def process_message(input)
-        jwt = JSON.parse(@jwt.decode(input.ciphertext), symbolize_names: true)
-        payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
+      def process_incomming_message(input)
+        message = Selfid::Messages.parse(input, @client, @jwt, self)
 
-        sender_id = input.sender.split(":").first
-        k = @client.public_keys(sender_id).first[:key]
-        if !@jwt.verify(jwt, k)
-          Selfid.logger.info "skipping message [#{input.id}] due to invalid signature"
-          return
-        end
-
-        if @messages.include? payload[:jti]
-          @messages[payload[:jti]][:response] = input
-          mark_as_arrived payload[:jti]
+        if @messages.include? message.id
+          @messages[message.id][:response] = message
+          mark_as_arrived message.id
         else
           Selfid.logger.info "Received async message #{input.id}"
-          @inbox[payload[:jti]] = payload
+          @inbox[message.id] = message
         end
+      rescue StandardError => e
+        Selfid.logger.info e
+        return
       end
 
       def authenticate
