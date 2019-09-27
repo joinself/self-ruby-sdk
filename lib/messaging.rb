@@ -12,7 +12,7 @@ require_relative 'proto/aclcommand_pb'
 
 module Selfid
   class MessagingClient
-    attr_reader :inbox
+    attr_accessor :inbox, :client, :jwt, :device_id
 
     # RestClient initializer
     #
@@ -28,6 +28,7 @@ module Selfid
       @acks = {}
       @jwt = jwt
       @client = client
+      @device_id = "1"
       start
     end
 
@@ -102,7 +103,7 @@ module Selfid
     ensure
       @acks.delete(uuid)
     end
-    
+
     private
 
       def start
@@ -163,7 +164,7 @@ module Selfid
       end
 
       def process_incomming_message(input)
-        message = Selfid::Messages.parse(input, @client, @jwt, self)
+        message = Selfid::Messages.parse(input, self)
 
         if @messages.include? message.id
           @messages[message.id][:response] = message

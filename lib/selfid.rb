@@ -94,7 +94,7 @@ module Selfid
 
     # Gets a list of received messages
     def inbox
-      @messaging.inbox
+      @messaging.inbox.values
     end
 
     # Will stop listening for messages
@@ -112,13 +112,13 @@ module Selfid
       devices = @client.devices(id)
       device = devices.first[:id]
 
-      m = Selfid::Messages::IdentityInfoReq.new(@client, @jwt, @messaging)
+      m = Selfid::Messages::IdentityInfoReq.new(@messaging)
       m.id = SecureRandom.uuid
       m.from = @jwt.id
       m.to = id
       m.to_device = device
       m.fields = fields
-      
+
       return m.send if type == :sync
       Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
       m.send_async

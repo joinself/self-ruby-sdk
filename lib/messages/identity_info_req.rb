@@ -3,6 +3,8 @@ require_relative 'base'
 module Selfid
   module Messages
     class IdentityInfoReq < Base
+      MSG_TYPE = "identity_info_req"
+
       def parse(input)
         @payload = get_payload input
         @id = @payload[:jti]
@@ -13,12 +15,10 @@ module Selfid
       end
 
       def share_facts(facts)
-        # TODO (adriacidre) : properly get this stuff from the jwt
-        @from_device = "1"
-        m = Selfid::Messages::IdentityInfoResp.new(@client, @jwt, @messaging)
+        m = Selfid::Messages::IdentityInfoResp.new(@messaging)
         m.from = @to
         m.to = @from
-        m.to_device = @from_device
+        m.to_device = @messaging.device_id
         m.fields = @fields
         m.facts = facts
 
@@ -28,15 +28,13 @@ module Selfid
       protected
 
         def proto
-          # TODO (adriacidre) : get this stuff configured somwhow
-          @device_id = "1"
           Msgproto::Message.new(
             type: Msgproto::MsgType::MSG,
             id: @id,
-            sender: "#{@jwt.id}:#{@device_id}",
-            recipient: "#{to}:#{to_device}",
+            sender: "#{@jwt.id}:#{@messaging.device_id}",
+            recipient: "#{@to}:#{@to_device}",
             ciphertext: @jwt.prepare_encoded({
-                typ: 'identity_info_req',
+                typ: MSG_TYPE,
                 isi: @jwt.id,
                 sub: @to,
                 iat: Time.now.utc.strftime('%FT%TZ'),

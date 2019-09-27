@@ -3,7 +3,10 @@ require_relative 'base'
 module Selfid
   module Messages
     class IdentityInfoResp < Base
+      MSG_TYPE = "identity_info_resp"
+
       attr_accessor :facts
+
       def parse(input)
         @payload = get_payload input
         @id = payload[:jti]
@@ -16,14 +19,13 @@ module Selfid
       protected
 
         def proto
-          @device_id = "1"
           Msgproto::Message.new(
             type: Msgproto::MsgType::MSG,
             id: SecureRandom.uuid,
-            sender: "#{@from}:#{@device_id}",
+            sender: "#{@from}:#{@messaging.device_id}",
             recipient: "#{@to}:#{@to_device}",
             ciphertext: @jwt.prepare_encoded({
-                typ: 'identity_info_resp',
+                typ: MSG_TYPE,
                 isi: @from,
                 sub: @to,
                 iat: Time.now.utc.strftime('%FT%TZ'),

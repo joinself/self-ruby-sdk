@@ -3,9 +3,9 @@ module Selfid
     class Base
       attr_accessor :from, :from_device, :to, :to_device, :expires, :id, :fields, :typ, :payload
 
-      def initialize(client, jwt, messaging)
-        @client = client
-        @jwt = jwt
+      def initialize(messaging)
+        @client = messaging.client
+        @jwt = messaging.jwt
         @messaging = messaging
         @device_id = "1"
       end
