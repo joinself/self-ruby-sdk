@@ -9,7 +9,7 @@ module Selfid
       def parse(input)
         @payload = get_payload input
         @id = @payload[:jti]
-        @from = @payload[:isi]
+        @from = @payload[:iss]
         @to = @payload[:sub]
         @expires = @payload[:exp]
         @fields = @payload[:fields]
@@ -36,7 +36,7 @@ module Selfid
             recipient: "#{@to}:#{@to_device}",
             ciphertext: @jwt.prepare_encoded({
                 typ: MSG_TYPE,
-                isi: @jwt.id,
+                iss: @jwt.id,
                 sub: @to,
                 iat: Selfid::Time.now.strftime('%FT%TZ'),
                 exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),

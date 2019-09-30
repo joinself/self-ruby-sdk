@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency "eventmachine"
   s.add_dependency "async"
   s.add_dependency "google-protobuf"
+  s.add_dependency "net-ntp"
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"

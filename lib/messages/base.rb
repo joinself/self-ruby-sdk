@@ -29,7 +29,7 @@ module Selfid
         def get_payload(input)
           jwt = JSON.parse(@jwt.decode(input.ciphertext), symbolize_names: true)
           payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
-          @from = payload[:isi]
+          @from = payload[:iss]
           verify! jwt
           payload
         end

@@ -6,7 +6,7 @@ module Selfid
       def initialize(key, input, messaging)
         jwt = JSON.parse(messaging.jwt.decode(input), symbolize_names: true)
         payload = JSON.parse(messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
-        @origin = payload[:isi]
+        @origin = payload[:iss]
         @source = payload[:source]
         @name = key
         @value = payload[key.to_sym]
