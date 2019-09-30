@@ -1,4 +1,5 @@
 require_relative 'base'
+require_relative '../time'
 
 module Selfid
   module Messages
@@ -37,8 +38,8 @@ module Selfid
                 typ: MSG_TYPE,
                 isi: @jwt.id,
                 sub: @to,
-                iat: Time.now.utc.strftime('%FT%TZ'),
-                exp: (Time.now.utc + 3600).strftime('%FT%TZ'),
+                iat: Selfid::Time.now.strftime('%FT%TZ'),
+                exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
                 jti: @id,
                 fields: @fields,
               }),

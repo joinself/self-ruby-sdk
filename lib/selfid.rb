@@ -8,6 +8,7 @@ require_relative 'log'
 require_relative 'jwt'
 require_relative 'client'
 require_relative 'messaging'
+require_relative 'time'
 
 # Namespace for classes and modules that handle Self interactions.
 module Selfid
@@ -50,8 +51,8 @@ module Selfid
         aud: @client.self_url,
         isi: @jwt.id,
         sub: user_id,
-        iat: Time.now.utc.strftime('%FT%TZ'),
-        exp: (Time.now.utc + 3600).strftime('%FT%TZ'),
+        iat: @time.strftime('%FT%TZ'),
+        exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
         jti: uuid,
       }))
       Selfid.logger.info "authentication uuid #{uuid}"
@@ -88,7 +89,7 @@ module Selfid
       @messaging.connect(@jwt.prepare({
         iss: @jwt.id,
         acl_source: id,
-        acl_exp: (Time.now.utc + 360000).to_datetime.rfc3339
+        acl_exp: (Selfid::Time.now + 360000).to_datetime.rfc3339
       }))
     end
 
