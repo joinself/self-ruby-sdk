@@ -110,7 +110,7 @@ module Selfid
     # =>  information on a sync or an async way
     def request_information(id, fields, type: :sync)
       devices = @client.devices(id)
-      device = devices.first[:id]
+      device = devices.first
 
       m = Selfid::Messages::IdentityInfoReq.new(@messaging)
       m.id = SecureRandom.uuid

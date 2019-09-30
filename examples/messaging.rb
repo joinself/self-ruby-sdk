@@ -14,10 +14,10 @@ adria_id = "28770731872"
 @john.connect(sarah_id)
 @john.connect(adria_id)
 
-# =begin
+=begin
 @john.request_information(adria_id, ["passport_last_name"], type: :async)
 return
-# =end
+=end
 p "john is requesting information"
 # TODO Duplicate this call as there is a bug on self-messaging
 @john.request_information(sarah_id, ["passport_last_name"], type: :async)
@@ -27,13 +27,24 @@ p "Sarah getting unread messages"
 @sarah.inbox.each do |m|
   p "Sarah sharing information with John"
   m.share_facts({
-    "passport_first_name": "Sarah",
-    "passport_last_name": "Connor",
+    "passport_first_name": @john.jwt.prepare_encoded({
+        jti: "id",
+        isi: john_id,
+        sub: sarah_id,
+        iat: Time.now.utc.strftime('%FT%TZ'),
+        source: "user-specified",
+        passport_first_name: "Sarah"
+    }),
   })
 end
 
 sleep 3
 p "================"
 p "John received Sarah's fields"
-p @john.inbox.first.fields
+p @john.inbox.first.facts[:passport_first_name].value
+if @john.inbox.first.facts[:passport_first_name].verified
+  p "Verified"
+else
+  p "Not verified"
+end
 p "================"

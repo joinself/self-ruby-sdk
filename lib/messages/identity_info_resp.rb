@@ -1,4 +1,5 @@
 require_relative 'base'
+require_relative 'fact'
 
 module Selfid
   module Messages
@@ -14,6 +15,10 @@ module Selfid
         @to = payload[:sub]
         @expires = payload[:exp]
         @fields = payload[:fields]
+        @facts = {}
+        @fields.each do |k, v|
+          @facts[k] = Selfid::Messages::Fact.new(k, v, @messaging)
+        end
       end
 
       protected

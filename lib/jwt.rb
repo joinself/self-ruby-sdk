@@ -65,6 +65,8 @@ module Selfid
       if verify_key.verify(decode(payload[:signature]), "#{payload[:protected]}.#{payload[:payload]}")
         return true
       end
+    rescue
+      return false
     end
 
     # Generates the auth_token based on the app's private key.
