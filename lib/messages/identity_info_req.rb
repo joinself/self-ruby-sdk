@@ -17,13 +17,14 @@ module Selfid
 
       def share_facts(facts)
         m = Selfid::Messages::IdentityInfoResp.new(@messaging)
+        m.id = @id
         m.from = @to
         m.to = @from
         m.to_device = @messaging.device_id
         m.fields = @fields
         m.facts = facts
 
-        m.send_async
+        m.send
       end
 
       protected

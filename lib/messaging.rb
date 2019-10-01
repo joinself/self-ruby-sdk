@@ -42,6 +42,11 @@ module Selfid
     # @param recipient_device [string] device id for the selfID to be requested
     # @param request [string] original message requesing information
     def share_information(recipient, recipient_device, request)
+      p "++++++"
+      p "++++++"
+      p request.to_json
+      p "++++++"
+      p "++++++"
       send Msgproto::Message.new(
         type: Msgproto::MsgType::MSG,
         id: SecureRandom.uuid,

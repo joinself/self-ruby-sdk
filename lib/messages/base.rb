@@ -10,12 +10,12 @@ module Selfid
         @device_id = "1"
       end
 
-      def send
+      def request
         Selfid.logger.info "synchronously requesting information to #{@to}:#{@to_device}"
         @messaging.send_and_wait_for_response(proto)
       end
 
-      def send_async
+      def send
         Selfid.logger.info "asynchronously requesting information to #{@to}:#{@to_device}"
         @messaging.send proto
       end

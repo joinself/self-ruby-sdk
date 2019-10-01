@@ -18,7 +18,11 @@ module Selfid
         @fields = payload[:fields]
         @facts = {}
         payload[:facts].each do |k, v|
-          @facts[k] = Selfid::Messages::Fact.new(k, v, @messaging)
+          begin
+            @facts[k] = Selfid::Messages::Fact.new(k, v, from, @messaging)
+          rescue StandardError => e
+            Selfid.logger.info e.message
+          end
         end
       end
 

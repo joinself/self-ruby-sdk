@@ -98,6 +98,10 @@ module Selfid
       @messaging.inbox.values
     end
 
+    def clear_inbox
+      @messaging.inbox = {}
+    end
+
     # Will stop listening for messages
     def stop
       @messaging.stop
@@ -120,9 +124,9 @@ module Selfid
       m.to_device = device
       m.fields = fields
 
-      return m.send if type == :sync
+      return m.request if type == :sync
       Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
-      m.send_async
+      m.send
     end
 
     private
