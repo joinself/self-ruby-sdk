@@ -34,7 +34,7 @@ module Selfid
       @client = RestClient.new(url, @jwt.auth_token)
 
       messaging_url = opts.fetch(:messaging_url, "wss://messaging.review.selfid.net/v1/messaging")
-      @messaging = MessagingClient.new(messaging_url, @jwt, @client)
+      @messaging = MessagingClient.new(messaging_url, @jwt, @client) unless messaging_url.nil?
     end
 
     # Sends an authentication request to the specified user_id.
@@ -51,7 +51,7 @@ module Selfid
         aud: @client.self_url,
         isi: @jwt.id,
         sub: user_id,
-        iat: @time.strftime('%FT%TZ'),
+        iat: Selfid::Time.now.strftime('%FT%TZ'),
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
         jti: uuid,
       }))

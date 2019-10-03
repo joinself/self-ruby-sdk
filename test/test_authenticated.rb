@@ -11,9 +11,9 @@ class SelfidTest < Minitest::Test
   describe "authenticated?" do
     let(:seed)      { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:app_id)    { "o9mpng9m2jv" }
-    let(:app)       { Selfid::App.new(app_id, seed) }
+    let(:app)       { Selfid::App.new(app_id, seed, messaging_url: nil) }
     let(:atoken)    { app.jwt.auth_token }
-    let(:protected) { app.jwt.protected }
+    let(:protected) { app.jwt.send(:protected) }
     let(:headers) {
       {
         'Authorization' => "Bearer #{atoken}",
@@ -32,10 +32,9 @@ class SelfidTest < Minitest::Test
 
     def test_invalid_signature
       user_id = "user_id"
-
-      stub_request(:get, "https://api.selfid.net/v1/identities/#{user_id}").
+      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
-        to_return(status: 404, body: '', headers: {})
+        to_return(status: 404, body: '{"message":"errored from tests"}', headers: {})
 
       payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
       signature = app.jwt.send(:sign, "xoxo")
@@ -48,10 +47,9 @@ class SelfidTest < Minitest::Test
 
     def test_non_existing_identity
       user_id = "user_id"
-
-      stub_request(:get, "https://api.selfid.net/v1/identities/#{user_id}").
+      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
-        to_return(status: 404, body: '', headers: {})
+        to_return(status: 404, body: '{"message":"errored from tests"}', headers: {})
 
       payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
 
@@ -70,7 +68,7 @@ class SelfidTest < Minitest::Test
       pk = app.jwt.encode(pk)
       user_id = "user_id"
 
-      stub_request(:get, "https://api.selfid.net/v1/identities/#{user_id}").
+      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 

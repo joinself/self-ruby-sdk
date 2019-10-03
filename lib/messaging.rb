@@ -29,6 +29,7 @@ module Selfid
       @jwt = jwt
       @client = client
       @device_id = "1"
+      @timeout = 30
       start
     end
 
@@ -42,11 +43,6 @@ module Selfid
     # @param recipient_device [string] device id for the selfID to be requested
     # @param request [string] original message requesing information
     def share_information(recipient, recipient_device, request)
-      p "++++++"
-      p "++++++"
-      p request.to_json
-      p "++++++"
-      p "++++++"
       send Msgproto::Message.new(
         type: Msgproto::MsgType::MSG,
         id: SecureRandom.uuid,
@@ -76,13 +72,16 @@ module Selfid
         @messages[uuid] = {
           waiting_cond: @mon.new_cond,
           waiting: true,
+          timeout: Selfid::Time.now + @timeout,
         }
       end
       send msg
 
       Selfid.logger.info "waiting for client to respond #{uuid}"
       @mon.synchronize do
-        @messages[uuid][:waiting_cond].wait_while {@messages[uuid][:waiting]}
+        @messages[uuid][:waiting_cond].wait_while do
+          @messages[uuid][:waiting] && @messages[uuid][:timeout] < Selfid::Time.now
+        end
       end
 
       Selfid.logger.info "response received for #{uuid}"
@@ -97,7 +96,8 @@ module Selfid
       @mon.synchronize do
         @acks[uuid] = {
           waiting_cond: @mon.new_cond,
-          waiting: true
+          waiting: true,
+          timeout: Selfid::Time.now + @timeout,
         }
       end
       @ws.send(msg.to_proto.bytes)
@@ -119,7 +119,8 @@ module Selfid
         @mon.synchronize do
           @acks["authentication"] = {
             waiting_cond: @mon.new_cond,
-            waiting: true
+            waiting: true,
+            timeout: Selfid::Time.now + @timeout,
           }
         end
 
@@ -141,6 +142,9 @@ module Selfid
 
             @ws.on :close do |event|
               Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
+              sleep 2
+              Selfid.logger.info "reconnecting..."
+              start
             end
           }
         end

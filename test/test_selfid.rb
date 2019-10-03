@@ -10,7 +10,7 @@ class SelfidTest < Minitest::Test
   describe "selfid" do
     let(:seed)    { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:app_id)  { "o9mpng9m2jv" }
-    let(:app)     { Selfid::App.new(app_id, seed) }
+    let(:app)     { Selfid::App.new(app_id, seed, messaging_url: nil) }
     let(:atoken)    { app.jwt.auth_token }
     let(:headers) {
       {
@@ -20,6 +20,7 @@ class SelfidTest < Minitest::Test
     }
 
     def setup
+      ENV["RAKE_ENV"] = "test"
       t = Time.local(2019, 9, 1, 10, 5, 0).utc
       Timecop.travel(t)
     end
@@ -35,7 +36,7 @@ class SelfidTest < Minitest::Test
     end
 
     def test_init_with_custom_parameters
-      custom_app = Selfid::App.new(app_id, seed, self_url: "http://custom.self.net")
+      custom_app = Selfid::App.new(app_id, seed, self_url: "http://custom.self.net", messaging_url: nil)
       assert_equal "http://custom.self.net", custom_app.client.self_url
       assert_equal app_id, custom_app.jwt.id
       assert_equal seed, custom_app.jwt.key
@@ -47,7 +48,7 @@ class SelfidTest < Minitest::Test
     end
 
     def test_authenticate
-      body = "{\"payload\":\"eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAvY2FsbGJhY2siLCJhdWQiOiJodHRwczovL2FwaS5zZWxmaWQubmV0IiwiaXNpIjoibzltcG5nOW0yanYiLCJzdWIiOiJ4eHh4eHh4eCIsImlhdCI6IjIwMTktMDktMDFUMTA6MDU6MDBaIiwiZXhwIjoiMjAxOS0wOS0wMVQxMTowNTowMFoiLCJqdGkiOiJ1dWlkIn0\",\"protected\":\"eyJ0eXAiOiJFZERTQSJ9\",\"signature\":\"2wR8O1rqTWnN9abaWs7lrbwLRBXGhDXSrIf_koAPfDF6FYWmcF3qZ1EHSqa9GQ1vvGvasatkGnJp5ovDWYqFDw\"}"
+      body = "{\"payload\":\"eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAvY2FsbGJhY2siLCJhdWQiOiJodHRwczovL2FwaS5zZWxmaWQubmV0IiwiaXNpIjoibzltcG5nOW0yanYiLCJzdWIiOiJ4eHh4eHh4eCIsImlhdCI6IjIwMTktMDktMDFUMTA6MDU6MDBaIiwiZXhwIjoiMjAxOS0wOS0wMVQxMTowNTowMFoiLCJqdGkiOiJ1dWlkIn0\",\"protected\":\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9\",\"signature\":\"_6upYxUIxwin71DbMI-sS5KVWNSP5PZf0VYiH5e2ib9ZL8U67xSJW8Dr8sRsOk7IMQP4jCmwLSKEGIeneUTiCg\"}"
       stub_request(:post, "https://api.selfid.net/v1/auth").
         with(body: body, headers: headers).
         to_return(status: 200, body: "", headers: {})
@@ -58,7 +59,7 @@ class SelfidTest < Minitest::Test
       pk = "pk_111222333"
       id = "111222333"
 
-      stub_request(:get, "https://api.selfid.net/v1/identities/#{id}").
+      stub_request(:get, "https://api.selfid.net/v1/apps/#{id}").
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
