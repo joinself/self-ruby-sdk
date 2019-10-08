@@ -100,10 +100,10 @@ module Selfid
           timeout: Selfid::Time.now + @timeout,
         }
       end
-      @ws.send(msg.to_proto.bytes)
+      send_raw(msg)
       Selfid.logger.info "waiting for acknowledgement #{uuid}"
       @mon.synchronize do
-        @acks[uuid][:waiting_cond].wait_while {@acks[uuid][:waiting]}
+        @acks[uuid][:waiting_cond].wait_while { @acks[uuid][:waiting] }
       end
     ensure
       @acks.delete(uuid)
@@ -150,7 +150,7 @@ module Selfid
         end
 
         @mon.synchronize do
-          @acks["authentication"][:waiting_cond].wait_while {@acks["authentication"][:waiting]}
+          @acks["authentication"][:waiting_cond].wait_while { @acks["authentication"][:waiting] }
         end
       ensure
         @acks.delete("authentication")
