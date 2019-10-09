@@ -3,10 +3,12 @@
 require 'securerandom'
 require "ed25519"
 require 'json'
-require 'base64'
 require 'net/http'
 require_relative 'log'
+require_relative 'jwt'
 require_relative 'client'
+require_relative 'messaging'
+require_relative 'time'
 
 # Namespace for classes and modules that handle Self interactions.
 module Selfid
@@ -16,7 +18,7 @@ module Selfid
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
-    attr_reader :app_id, :app_key, :client
+    attr_reader :app_id, :app_key, :client, :jwt
 
     # Initializes a Selfid App
     #
@@ -25,11 +27,14 @@ module Selfid
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :self_url The self provider url.
     def initialize(app_id, app_key, opts = {})
-      @app_id = app_id
-      @app_key = app_key
+      @jwt = Selfid::Jwt.new(app_id, app_key)
+
       url = opts.fetch(:self_url, "https://api.selfid.net")
       Selfid.logger.info "client setup with #{url}"
-      @client = Selfid::RestClient.new(url, auth_token)
+      @client = RestClient.new(url, @jwt.auth_token)
+
+      messaging_url = opts.fetch(:messaging_url, "wss://messaging.review.selfid.net/v1/messaging")
+      @messaging = MessagingClient.new(messaging_url, @jwt, @client) unless messaging_url.nil?
     end
 
     # Sends an authentication request to the specified user_id.
@@ -41,24 +46,15 @@ module Selfid
     def authenticate(user_id, callback_url, opts = {})
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
-      payload = {
+      @client.auth(@jwt.prepare({
         iss: callback_url,
         aud: @client.self_url,
-        isi: @app_id,
+        isi: @jwt.id,
         sub: user_id,
-        iat: Time.now.utc.strftime('%FT%TZ'),
-        exp: (Time.now.utc + 3600).strftime('%FT%TZ'),
+        iat: Selfid::Time.now.strftime('%FT%TZ'),
+        exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
         jti: uuid,
-      }.to_json
-
-      signature = sign("#{encode(default_jws_header)}.#{encode(payload)}")
-      jws = {
-        payload: encode(payload),
-        protected: encode(default_jws_header),
-        signature: signature
-      }.to_json
-
-      @client.auth jws
+      }))
       Selfid.logger.info "authentication uuid #{uuid}"
       uuid
     end
@@ -71,67 +67,89 @@ module Selfid
     #   * :uuid [String] the request identifier.
     def authenticated?(response)
       res = { accepted: false }
-      jws = JSON.parse(response, symbolize_names: true)
-      payload = JSON.parse(decode(jws[:payload]), symbolize_names: true)
-      res[:uuid] = payload[:jti]
-      res[:selfid] = payload[:sub]
-      Selfid.logger.info "checking authentication for #{res[:uuid]}"
-      identity = identity(payload[:sub])
-      return res if identity.nil?
 
-      identity[:public_keys].each do |key|
-        verify_key = Ed25519::VerifyKey.new(decode(key[:key]))
-        if verify_key.verify(decode(jws[:signature]), "#{jws[:protected]}.#{jws[:payload]}")
-          res[:accepted] = (payload[:status] == "accepted")
-          return res
-        end
-      end
-      res
-    rescue StandardError => e
-      Selfid.logger.error "error checking authentication for #{res[:uuid]} : #{e.message}"
-      res
+      payload = valid_payload(response)
+      return res if payload.nil?
+
+      { uuid: payload[:jti],
+        selfid: payload[:sub],
+        accepted: (payload[:status] == "accepted") }
     end
 
+    # Gets identity defails
     def identity(id)
       @client.identity(id)
     end
 
+    # Allows authenticated user to receive incoming messages from the given id
+    #
+    # @params id [string] SelfID to be allowed
+    def connect(id)
+      Selfid.logger.info "Setting ACL for #{id}"
+      @messaging.connect(@jwt.prepare({
+        iss: @jwt.id,
+        acl_source: id,
+        acl_exp: (Selfid::Time.now + 360000).to_datetime.rfc3339
+      }))
+    end
+
+    # Gets a list of received messages
+    def inbox
+      @messaging.inbox.values
+    end
+
+    def clear_inbox
+      @messaging.inbox = {}
+    end
+
+    # Will stop listening for messages
+    def stop
+      @messaging.stop
+    end
+
+    # Requests information to an entity
+    #
+    # @param id [string] selfID to be requested
+    # @param fields [array] list of fields to be requested
+    # @param type [symbol] you can define if you want to request this
+    # =>  information on a sync or an async way
+    def request_information(id, fields, type: :sync)
+      devices = @client.devices(id)
+      device = devices.first
+
+      m = Selfid::Messages::IdentityInfoReq.new(@messaging)
+      m.id = SecureRandom.uuid
+      m.from = @jwt.id
+      m.to = id
+      m.to_device = device
+      m.fields = fields
+
+      return m.request if type == :sync
+      Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
+      m.send
+    end
+
     private
 
-    # The default jws header
-    def default_jws_header
-      { typ: "EdDSA" }.to_json
-    end
+      def valid_payload(response)
+        jws = @jwt.parse(response)
+        return nil unless jws.include? :payload
+        payload = JSON.parse(@jwt.decode(jws[:payload]), symbolize_names: true)
 
-    # Encodes the input with base64
-    #
-    # @param input [string] the string to be encoded.
-    def encode(input)
-      Base64.strict_encode64(input).gsub("=", "")
-    end
-
-    # Base64 decodes the input string
-    #
-    # @param input [string] the string to be decoded.
-    def decode(input)
-      Base64.decode64(input)
-    end
-
-    # Signs the given input with the configured Ed25519 key.
-    #
-    # @param input [string] the string to be signed.
-    def sign(input)
-      signing_key = Ed25519::SigningKey.new(decode(@app_key))
-      encode(signing_key.sign(input))
-    end
-
-    # Generates the auth_token based on the app's private key.
-    def auth_token
-      @auth_token ||= begin
-        payload = encode({ "alg": "EdDSA", "typ": "JWT" }.to_json) + "." + encode({ iss: @app_id }.to_json)
-        signature = sign(payload)
-        "#{payload}.#{signature}"
+        return nil if payload.nil?
+        identity = identity(payload[:sub])
+        return nil if identity.nil?
+        identity[:public_keys].each do |key|
+          return payload if @jwt.verify(jws, key[:key])
+        end
+        nil
+      rescue StandardError => e
+        uuid = ""
+        uuid = payload[:jti] unless payload.nil?
+        Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
+        nil
       end
-    end
+
+
   end
 end
