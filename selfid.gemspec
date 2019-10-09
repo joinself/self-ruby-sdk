@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
     "lib/messaging.rb",
     "lib/log.rb",
     "lib/jwt.rb",
-    "lib/time.rb",
+    "lib/ntptime.rb",
     "lib/proto/",
     "lib/proto/acl_pb.rb",
     "lib/proto/aclcommand_pb.rb",

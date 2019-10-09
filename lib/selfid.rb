@@ -8,7 +8,7 @@ require_relative 'log'
 require_relative 'jwt'
 require_relative 'client'
 require_relative 'messaging'
-require_relative 'time'
+require_relative 'ntptime'
 
 # Namespace for classes and modules that handle Self interactions.
 module Selfid

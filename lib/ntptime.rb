@@ -11,7 +11,7 @@ module Selfid
         @diff = (@last_check - ::Time.now.utc).abs
       end
       @now = (::Time.now + @diff).utc
-      if @last_check + 1.hour > @now
+      if @last_check + 3600 > @now
         Net::NTP.get("time.google.com")
         @last_check = ::Time.parse(Net::NTP.get.time.to_s).utc
         @diff = (@last_check - ::Time.now.utc).abs

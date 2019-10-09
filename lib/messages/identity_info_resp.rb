@@ -1,6 +1,6 @@
 require_relative 'base'
 require_relative 'fact'
-require_relative '../time'
+require_relative '../ntptime'
 
 module Selfid
   module Messages
