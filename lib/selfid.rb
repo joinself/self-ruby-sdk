@@ -33,6 +33,8 @@ module Selfid
       Selfid.logger.info "client setup with #{url}"
       @client = RestClient.new(url, @jwt.auth_token)
 
+      @public_url = opts.fetch(:public_url, url)
+
       messaging_url = opts.fetch(:messaging_url, "wss://messaging.review.selfid.net/v1/messaging")
       @messaging = MessagingClient.new(messaging_url, @jwt, @client) unless messaging_url.nil?
     end
@@ -48,7 +50,7 @@ module Selfid
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       @client.auth(@jwt.prepare({
         iss: callback_url,
-        aud: @client.self_url,
+        aud: @public_url,
         isi: @jwt.id,
         sub: user_id,
         iat: Selfid::Time.now.strftime('%FT%TZ'),
