@@ -29,7 +29,7 @@ module Selfid
       @jwt = jwt
       @client = client
       @device_id = "1"
-      @timeout = 30
+      @timeout = 60 # seconds
       start
     end
 
@@ -80,7 +80,7 @@ module Selfid
       Selfid.logger.info "waiting for client to respond #{uuid}"
       @mon.synchronize do
         @messages[uuid][:waiting_cond].wait_while do
-          @messages[uuid][:waiting] && @messages[uuid][:timeout] < Selfid::Time.now
+          @messages[uuid][:waiting] && @messages[uuid][:timeout] > Selfid::Time.now
         end
       end
 
@@ -103,7 +103,9 @@ module Selfid
       send_raw(msg)
       Selfid.logger.info "waiting for acknowledgement #{uuid}"
       @mon.synchronize do
-        @acks[uuid][:waiting_cond].wait_while { @acks[uuid][:waiting] }
+        @acks[uuid][:waiting_cond].wait_while do
+          @acks[uuid][:waiting] && @acks[uuid][:timeout] > Selfid::Time.now
+        end
       end
     ensure
       @acks.delete(uuid)
@@ -150,7 +152,9 @@ module Selfid
         end
 
         @mon.synchronize do
-          @acks["authentication"][:waiting_cond].wait_while { @acks["authentication"][:waiting] }
+          @acks["authentication"][:waiting_cond].wait_while do
+            @acks["authentication"][:waiting]  && @acks["authentication"][:timeout] > Selfid::Time.now
+          end
         end
       ensure
         @acks.delete("authentication")

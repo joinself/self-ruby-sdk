@@ -16,6 +16,7 @@ module Selfid
         @to = payload[:sub]
         @expires = payload[:exp]
         @fields = payload[:fields]
+        @status = payload[:status]
         @facts = {}
         payload[:facts].each do |k, v|
           begin
