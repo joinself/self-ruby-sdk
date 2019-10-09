@@ -16,9 +16,24 @@ Gem::Specification.new do |s|
     "lib/messaging.rb",
     "lib/log.rb",
     "lib/jwt.rb",
-    "lib/proto/"
+    "lib/time.rb",
+    "lib/proto/",
+    "lib/proto/acl_pb.rb",
+    "lib/proto/aclcommand_pb.rb",
+    "lib/proto/auth_pb.rb",
+    "lib/proto/header_pb.rb",
+    "lib/proto/message_pb.rb",
+    "lib/proto/msgtype_pb.rb",
+    "lib/proto/notification_pb.rb",
+    "lib/proto/ruby_pb.rb",
+    "lib/messages/",
+    "lib/messages/base.rb",
+    "lib/messages/fact.rb",
+    "lib/messages/identity_info_req.rb",
+    "lib/messages/identity_info_resp.rb",
+    "lib/messages/message.rb"
   ]
-  s.require_paths = ["lib"]
+  s.require_paths = ["lib", "lib/proto", "lib/messages"]
   s.add_dependency "ed25519"
   s.add_dependency "httparty"
   s.add_dependency "logger"
