@@ -114,50 +114,47 @@ module Selfid
     private
 
       def start
-        @listener = loop
-      end
-
-      def loop
+        Selfid.logger.info "starting"
         @mon.synchronize do
           @acks["authentication"] = {
-            waiting_cond: @mon.new_cond,
-            waiting: true,
-            timeout: Selfid::Time.now + @timeout,
+              waiting_cond: @mon.new_cond,
+              waiting: true,
+              timeout: Selfid::Time.now + @timeout,
           }
         end
 
         Thread.new do
-          EM.run {
-            Selfid.logger.info "starting listener"
-            @ws = Faye::WebSocket::Client.new(@url)
-
-            @ws.on :open do |event|
-              Selfid.logger.info "websocket connection established"
-              authenticate
-            end
-
-            @ws.on :message do |event|
-              on_message(event)
-            rescue TypeError => e
-              Selfid.logger.info "invalid array message"
-            end
-
-            @ws.on :close do |event|
-              Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
-              sleep 2
-              Selfid.logger.info "reconnecting..."
-              start
-            end
-          }
+          EM.run start_connection
         end
 
         @mon.synchronize do
           @acks["authentication"][:waiting_cond].wait_while do
             @acks["authentication"][:waiting]  && @acks["authentication"][:timeout] > Selfid::Time.now
           end
+          @acks.delete("authentication")
         end
-      ensure
-        @acks.delete("authentication")
+      end
+
+      def start_connection
+        Selfid.logger.info "starting listener"
+        @ws = Faye::WebSocket::Client.new(@url)
+        Selfid.logger.info "initialized"
+
+        @ws.on :open do |event|
+          Selfid.logger.info "websocket connection established"
+          authenticate
+        end
+
+        @ws.on :message do |event|
+          on_message(event)
+        end
+
+        @ws.on :close do |event|
+          Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
+          sleep 10
+          Selfid.logger.info "reconnecting..."
+          start_connection
+        end
       end
 
       def on_message(event)
@@ -174,6 +171,8 @@ module Selfid
           Selfid.logger.info "Message #{input.id} received"
           process_incomming_message input
         end
+      rescue TypeError => e
+        Selfid.logger.info "invalid array message"
       end
 
       def process_incomming_message(input)
@@ -214,8 +213,9 @@ module Selfid
       end
 
       def mark_as_acknowledged(id)
+        return unless @acks.include? id
         @mon.synchronize do
-          @acks[id][:waiting] = false if @acks.include? id
+          @acks[id][:waiting] = false
           @acks[id][:waiting_cond].broadcast
         end
       end
