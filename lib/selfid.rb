@@ -51,7 +51,7 @@ module Selfid
       @client.auth(@jwt.prepare({
         iss: callback_url,
         aud: @public_url,
-        isi: @jwt.id,
+        isi: SecureRandom.uuid,
         sub: user_id,
         iat: Selfid::Time.now.strftime('%FT%TZ'),
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
