@@ -144,7 +144,7 @@ module Selfid
 
       def clean_timeouts
         @messages.each do |uuid, msg|
-          if msg[:timeout] > Selfid::Time.now
+          if msg[:timeout] < Selfid::Time.now
             @mon.synchronize do
               Selfid.logger.info "message response timed out #{uuid}"
               @messages[uuid][:waiting] = false
@@ -154,7 +154,7 @@ module Selfid
         end
 
         @acks.each do |uuid, ack|
-          if msg[:timeout] > Selfid::Time.now
+          if msg[:timeout] < Selfid::Time.now
             @mon.synchronize do
               Selfid.logger.info "acks response timed out #{uuid}"
               @acks[uuid][:waiting] = false
