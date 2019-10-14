@@ -80,7 +80,7 @@ module Selfid
       Selfid.logger.info "waiting for client to respond #{uuid}"
       @mon.synchronize do
         @messages[uuid][:waiting_cond].wait_while do
-          @messages[uuid][:waiting] && @messages[uuid][:timeout] > Selfid::Time.now
+          @messages[uuid][:waiting]
         end
       end
 
@@ -104,7 +104,7 @@ module Selfid
       Selfid.logger.info "waiting for acknowledgement #{uuid}"
       @mon.synchronize do
         @acks[uuid][:waiting_cond].wait_while do
-          @acks[uuid][:waiting] && @acks[uuid][:timeout] > Selfid::Time.now
+          @acks[uuid][:waiting]
         end
       end
     ensure
@@ -127,11 +127,40 @@ module Selfid
           EM.run start_connection
         end
 
+        Thread.new do
+          loop do
+            sleep 10
+            clean_timeouts
+          end
+        end
+
         @mon.synchronize do
           @acks["authentication"][:waiting_cond].wait_while do
-            @acks["authentication"][:waiting]  && @acks["authentication"][:timeout] > Selfid::Time.now
+            @acks["authentication"][:waiting]
           end
           @acks.delete("authentication")
+        end
+      end
+
+      def clean_timeouts
+        @messages.each do |uuid, msg|
+          if msg[:timeout] > Selfid::Time.now
+            @mon.synchronize do
+              Selfid.logger.info "message response timed out #{uuid}"
+              @messages[uuid][:waiting] = false
+              @messages[uuid][:waiting_cond].broadcast
+            end
+          end
+        end
+
+        @acks.each do |uuid, ack|
+          if msg[:timeout] > Selfid::Time.now
+            @mon.synchronize do
+              Selfid.logger.info "acks response timed out #{uuid}"
+              @acks[uuid][:waiting] = false
+              @acks[uuid][:waiting_cond].broadcast
+            end
+          end
         end
       end
 
