@@ -48,7 +48,7 @@ class SelfidTest < Minitest::Test
     end
 
     def test_authenticate
-      body = "{\"payload\":\"eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAvY2FsbGJhY2siLCJhdWQiOiJodHRwczovL2FwaS5zZWxmaWQubmV0IiwiaXNpIjoibzltcG5nOW0yanYiLCJzdWIiOiJ4eHh4eHh4eCIsImlhdCI6IjIwMTktMDktMDFUMTA6MDU6MDBaIiwiZXhwIjoiMjAxOS0wOS0wMVQxMTowNTowMFoiLCJqdGkiOiJ1dWlkIn0\",\"protected\":\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9\",\"signature\":\"_6upYxUIxwin71DbMI-sS5KVWNSP5PZf0VYiH5e2ib9ZL8U67xSJW8Dr8sRsOk7IMQP4jCmwLSKEGIeneUTiCg\"}"
+      body = "{\"payload\":\"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIsImF1ZCI6Imh0dHBzOi8vYXBpLnNlbGZpZC5uZXQiLCJpc3MiOiJvOW1wbmc5bTJqdiIsInN1YiI6Inh4eHh4eHh4IiwiaWF0IjoiMjAxOS0wOS0wMVQxMDowNTowMFoiLCJleHAiOiIyMDE5LTA5LTAxVDExOjA1OjAwWiIsImp0aSI6InV1aWQifQ\",\"protected\":\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9\",\"signature\":\"yiHPk5A4qmydQCuyQsUVWawKAGW5E1Vg1pXyY_SkCF1EQTLTkUR9KcQ1Ux59iW9aLpyx8q0OPUrZ5gYTZgybCg\"}"
       stub_request(:post, "https://api.selfid.net/v1/auth").
         with(body: body, headers: headers).
         to_return(status: 200, body: "", headers: {})

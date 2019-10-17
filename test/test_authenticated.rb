@@ -36,7 +36,7 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 404, body: '{"message":"errored from tests"}', headers: {})
 
-      payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
+      payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","iss":"self_id","status":"accepted"}')
       signature = app.jwt.send(:sign, "xoxo")
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
@@ -51,7 +51,7 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 404, body: '{"message":"errored from tests"}', headers: {})
 
-      payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","isi":"self_id","status":"accepted"}')
+      payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","iss":"self_id","status":"accepted"}')
 
       signature = app.jwt.send(:sign, "#{payload}.#{protected}")
 
@@ -73,7 +73,7 @@ class SelfidTest < Minitest::Test
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
       body = app.jwt.prepare({ sub: user_id,
-        isi: "self_id",
+        iss: "self_id",
         status: "accepted",
         jti: uuid
       })

@@ -49,9 +49,9 @@ module Selfid
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       @client.auth(@jwt.prepare({
-        iss: callback_url,
+        callback: callback_url,
         aud: @public_url,
-        isi: @jwt.id,
+        iss: @jwt.id,
         sub: user_id,
         iat: Selfid::Time.now.strftime('%FT%TZ'),
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
@@ -97,7 +97,7 @@ module Selfid
 
     # Gets a list of received messages
     def inbox
-      @messaging.inbox.values
+      @messaging.inbox
     end
 
     def clear_inbox
@@ -115,7 +115,7 @@ module Selfid
     # @param fields [array] list of fields to be requested
     # @param type [symbol] you can define if you want to request this
     # =>  information on a sync or an async way
-    def request_information(id, fields, type: :sync)
+    def request_information(id, fields, opts = {})
       devices = @client.devices(id)
       device = devices.first
 
@@ -125,8 +125,9 @@ module Selfid
       m.to = id
       m.to_device = device
       m.fields = fields
+      m.jti = opts[:jti] if opts.include?(:jti)
 
-      return m.request if type == :sync
+      return m.request if (opts.include?(:type) and opts[:type] == :sync)
       Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
       m.send
     end
