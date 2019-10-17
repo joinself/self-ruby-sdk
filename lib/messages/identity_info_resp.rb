@@ -10,7 +10,6 @@ module Selfid
       attr_accessor :facts
 
       def parse(input)
-        @input = input
         @payload = get_payload input
         @id = payload[:jti]
         @from = payload[:iss]
@@ -18,7 +17,6 @@ module Selfid
         @expires = payload[:exp]
         @fields = payload[:fields]
         @status = payload[:status]
-        @type = MSG_TYPE
         @facts = {}
         payload[:facts].each do |k, v|
           begin
