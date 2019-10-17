@@ -49,9 +49,9 @@ module Selfid
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       @client.auth(@jwt.prepare({
-        iss: callback_url,
+        callback: callback_url,
         aud: @public_url,
-        isi: @jwt.id,
+        iss: @jwt.id,
         sub: user_id,
         iat: Selfid::Time.now.strftime('%FT%TZ'),
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
