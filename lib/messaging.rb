@@ -154,7 +154,7 @@ module Selfid
         end
 
         @acks.each do |uuid, ack|
-          if msg[:timeout] < Selfid::Time.now
+          if ack[:timeout] < Selfid::Time.now
             @mon.synchronize do
               Selfid.logger.info "acks response timed out #{uuid}"
               @acks[uuid][:waiting] = false
