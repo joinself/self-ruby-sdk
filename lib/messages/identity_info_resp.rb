@@ -10,6 +10,7 @@ module Selfid
       attr_accessor :facts
 
       def parse(input)
+        @input = input
         @payload = get_payload input
         @id = payload[:jti]
         @from = payload[:iss]

@@ -7,6 +7,7 @@ module Selfid
       MSG_TYPE = "identity_info_req"
 
       def parse(input)
+        @input = input
         @payload = get_payload input
         @id = @payload[:jti]
         @from = @payload[:iss]

@@ -1,7 +1,7 @@
 module Selfid
   module Messages
     class Base
-      attr_accessor :from, :from_device, :to, :to_device, :expires, :id, :fields, :typ, :payload, :status
+      attr_accessor :from, :from_device, :to, :to_device, :expires, :id, :fields, :typ, :payload, :status, :input
 
       def initialize(messaging)
         @client = messaging.client
