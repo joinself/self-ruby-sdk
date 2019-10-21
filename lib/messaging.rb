@@ -19,7 +19,7 @@ module Selfid
     # @param url [string] self-messaging url
     # @param jwt [Object] Selfid::Jwt object
     # @params client [Object] Selfid::Client object
-    def initialize(url, jwt, client)
+    def initialize(url, jwt, client, options = {})
       @inbox = {}
       @mon = Monitor.new
       @url = url
@@ -30,11 +30,21 @@ module Selfid
       @client = client
       @device_id = "1"
       @timeout = 60 # seconds
-      start
+      if options.include? :ws
+        @ws = options[:ws]
+      else
+        start
+      end
     end
 
     def stop
-      @listener.stop unles listener.nil?
+      @acks.each do |k, v|
+        mark_as_acknowledged(k)
+      end
+      @messages.each do |k, v|
+        mark_as_acknowledged(k)
+        mark_as_arrived(k)
+      end
     end
 
     # Responds a request information request
@@ -107,6 +117,7 @@ module Selfid
           @acks[uuid][:waiting]
         end
       end
+      Selfid.logger.info "acknowledged #{uuid}"
     ensure
       @acks.delete(uuid)
     end
