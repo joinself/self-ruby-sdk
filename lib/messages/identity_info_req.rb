@@ -36,7 +36,7 @@ module Selfid
             id: @id,
             sender: "#{@jwt.id}:#{@messaging.device_id}",
             recipient: "#{@to}:#{@to_device}",
-            ciphertext: @jwt.prepare_encoded({
+            ciphertext: @jwt.prepare({
                 typ: MSG_TYPE,
                 iss: @jwt.id,
                 sub: @to,

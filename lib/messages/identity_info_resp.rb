@@ -37,7 +37,7 @@ module Selfid
             id: SecureRandom.uuid,
             sender: "#{@from}:#{@messaging.device_id}",
             recipient: "#{@to}:#{@to_device}",
-            ciphertext: @jwt.prepare_encoded({
+            ciphertext: @jwt.prepare({
                 typ: MSG_TYPE,
                 iss: @from,
                 sub: @to,

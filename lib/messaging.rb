@@ -59,7 +59,7 @@ module Selfid
         id: SecureRandom.uuid,
         sender: "#{@jwt.id}:#{@device_id}",
         recipient: "#{recipient}:#{recipient_device}",
-        ciphertext: @jwt.prepare_encoded(request),
+        ciphertext: @jwt.prepare(request),
       )
     end
 

@@ -14,13 +14,6 @@ module Selfid
       @key = app_key
     end
 
-    # Prepares and encodes a jwt object based on an input
-    #
-    # @param input [string] input to be prepared and encoded
-    def prepare_encoded(input)
-      encode(prepare(input))
-    end
-
     # Prepares a jwt object based on an input
     #
     # @param input [string] input to be prepared
