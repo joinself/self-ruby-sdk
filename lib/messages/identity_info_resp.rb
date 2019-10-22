@@ -10,6 +10,7 @@ module Selfid
       attr_accessor :facts
 
       def parse(input)
+        @input = input
         @payload = get_payload input
         @id = payload[:jti]
         @from = payload[:iss]
@@ -20,7 +21,8 @@ module Selfid
         @facts = {}
         payload[:facts].each do |k, v|
           begin
-            @facts[k] = Selfid::Messages::Fact.new(k, v, from, @messaging)
+            @facts[k] = Selfid::Messages.Fact.new(@messaging)
+            @facts[k].parse(k, v, from)
           rescue StandardError => e
             Selfid.logger.info e.message
           end
@@ -35,7 +37,7 @@ module Selfid
             id: SecureRandom.uuid,
             sender: "#{@from}:#{@messaging.device_id}",
             recipient: "#{@to}:#{@to_device}",
-            ciphertext: @jwt.prepare_encoded({
+            ciphertext: @jwt.prepare({
                 typ: MSG_TYPE,
                 iss: @from,
                 sub: @to,

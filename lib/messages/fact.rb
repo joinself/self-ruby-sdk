@@ -1,19 +1,26 @@
 module Selfid
   module Messages
     class Fact
-      attr_accessor :name, :value, :verified, :origin, :source
+      attr_accessor :name, :value, :verified, :origin, :source, :operator, :result
 
-      def initialize(key, input, from, messaging)
-        jwt = JSON.parse(messaging.jwt.decode(input), symbolize_names: true)
-        payload = JSON.parse(messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
+      def initialize(messaging)
+        @messaging = messaging
+      end
+
+      def parse(key, input, from)
+        jwt = JSON.parse(@messaging.jwt.decode(input), symbolize_names: true)
+        payload = JSON.parse(@messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
         @origin = payload[:iss]
         @source = payload[:source]
         @name = key
         @value = payload[key.to_sym]
+        @verified = valid_signature?(from)
+      end
 
-        k = messaging.client.public_keys(@origin).first[:key]
+      def valid_signature?(from)
+        k = @messaging.client.public_keys(@origin).first[:key]
         raise StandardError("invalid signature") unless messaging.jwt.verify(jwt, k)
-        @verified = (@origin != from)
+        return @origin != from
       end
     end
   end

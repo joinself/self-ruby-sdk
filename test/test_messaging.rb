@@ -23,7 +23,7 @@ class SelfidTest < Minitest::Test
 
       ws.expect :send, "{}" do |msg|
         input = Msgproto::Message.decode(msg.pack('c*'))
-        jwt = JSON.parse(client.jwt.decode(input.ciphertext), symbolize_names: true)
+        jwt = JSON.parse(input.ciphertext, symbolize_names: true)
         payload = JSON.parse(client.jwt.decode(jwt[:payload]), symbolize_names: true)
         assert_equal body, payload
         client.stop

@@ -29,7 +29,8 @@ module Selfid
       @jwt = jwt
       @client = client
       @device_id = "1"
-      @timeout = 60 # seconds
+      @ack_timeout = 60 # seconds
+      @timeout = 120 # seconds
       if options.include? :ws
         @ws = options[:ws]
       else
@@ -58,7 +59,7 @@ module Selfid
         id: SecureRandom.uuid,
         sender: "#{@jwt.id}:#{@device_id}",
         recipient: "#{recipient}:#{recipient_device}",
-        ciphertext: @jwt.prepare_encoded(request),
+        ciphertext: @jwt.prepare(request),
       )
     end
 
@@ -107,7 +108,7 @@ module Selfid
         @acks[uuid] = {
           waiting_cond: @mon.new_cond,
           waiting: true,
-          timeout: Selfid::Time.now + @timeout,
+          timeout: Selfid::Time.now + @ack_timeout,
         }
       end
       send_raw(msg)
@@ -130,7 +131,7 @@ module Selfid
           @acks["authentication"] = {
               waiting_cond: @mon.new_cond,
               waiting: true,
-              timeout: Selfid::Time.now + @timeout,
+              timeout: Selfid::Time.now + @ack_timeout,
           }
         end
 

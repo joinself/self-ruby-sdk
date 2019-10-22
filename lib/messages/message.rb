@@ -4,7 +4,7 @@ require_relative "identity_info_resp"
 module Selfid
   module Messages
     def self.parse(input, messaging)
-      jwt = JSON.parse(messaging.jwt.decode(input.ciphertext), symbolize_names: true)
+      jwt = JSON.parse(input.ciphertext, symbolize_names: true)
       payload = JSON.parse(messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
 
       case payload[:typ]
