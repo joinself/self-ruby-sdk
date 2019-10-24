@@ -12,7 +12,7 @@ require_relative 'proto/aclcommand_pb'
 
 module Selfid
   class MessagingClient
-    attr_accessor :inbox, :client, :jwt, :app_id, :device_id
+    attr_accessor :inbox, :client, :jwt, :device_id
 
     # RestClient initializer
     #
