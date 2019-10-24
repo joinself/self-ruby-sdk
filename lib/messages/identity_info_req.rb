@@ -8,6 +8,7 @@ module Selfid
 
       def parse(input)
         @input = input
+        @typ = MSG_TYPE
         @payload = get_payload input
         @id = @payload[:jti]
         @from = @payload[:iss]
@@ -31,11 +32,16 @@ module Selfid
       protected
 
         def proto
+          if @proxy.nil?
+            recipient = "#{@to}:#{@to_device}"
+          else
+            recipient = "#{@proxy}:#{@to_device}"
+          end
           Msgproto::Message.new(
             type: Msgproto::MsgType::MSG,
             id: @id,
             sender: "#{@jwt.id}:#{@messaging.device_id}",
-            recipient: "#{@to}:#{@to_device}",
+            recipient: recipient,
             ciphertext: @jwt.prepare({
                 typ: MSG_TYPE,
                 iss: @jwt.id,

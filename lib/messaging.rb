@@ -23,7 +23,6 @@ module Selfid
       @inbox = {}
       @mon = Monitor.new
       @url = url
-      @device_id = "1"
       @messages = {}
       @acks = {}
       @jwt = jwt
@@ -191,9 +190,12 @@ module Selfid
         end
 
         @ws.on :close do |event|
-          Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
-          sleep 10
-          Selfid.logger.info "reconnecting..."
+          if not @reconnection_delay.nil?
+            Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
+            sleep @reconnection_delay
+            Selfid.logger.info "reconnecting..."
+          end
+          @reconnection_delay = 3
           start_connection
         end
       end

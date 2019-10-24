@@ -1,7 +1,7 @@
 module Selfid
   module Messages
     class Base
-      attr_accessor :from, :from_device, :to, :to_device, :expires, :id, :fields, :typ, :payload, :status, :input
+      attr_accessor :from, :from_device, :to, :to_device, :expires, :id, :fields, :typ, :payload, :status, :input, :proxy
 
       def initialize(messaging)
         @client = messaging.client
@@ -27,7 +27,13 @@ module Selfid
 
       private
         def get_payload(input)
-          jwt = JSON.parse(input.ciphertext, symbolize_names: true)
+          if input.is_a? String
+            body = input
+          else
+            body = input.ciphertext
+          end
+
+          jwt = JSON.parse(body, symbolize_names: true)
           payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
           @from = payload[:iss]
           verify! jwt

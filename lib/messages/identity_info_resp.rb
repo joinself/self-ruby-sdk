@@ -11,6 +11,7 @@ module Selfid
 
       def parse(input)
         @input = input
+        @typ = MSG_TYPE
         @payload = get_payload input
         @id = payload[:jti]
         @from = payload[:iss]
@@ -35,11 +36,11 @@ module Selfid
           Msgproto::Message.new(
             type: Msgproto::MsgType::MSG,
             id: SecureRandom.uuid,
-            sender: "#{@from}:#{@messaging.device_id}",
+            sender: "#{@jwt.id}:#{@messaging.device_id}",
             recipient: "#{@to}:#{@to_device}",
             ciphertext: @jwt.prepare({
                 typ: MSG_TYPE,
-                iss: @from,
+                iss: @jwt.id,
                 sub: @to,
                 iat: Selfid::Time.now.strftime('%FT%TZ'),
                 exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),

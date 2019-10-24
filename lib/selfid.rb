@@ -18,7 +18,7 @@ module Selfid
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
-    attr_reader :app_id, :app_key, :client, :jwt
+    attr_reader :app_id, :app_key, :client, :jwt, :messaging
 
     # Initializes a Selfid App
     #
@@ -109,6 +109,10 @@ module Selfid
       @messaging.stop
     end
 
+    def parse(input)
+      Selfid::Messages.parse(input, @messaging)
+    end
+
     # Requests information to an entity
     #
     # @param id [string] selfID to be requested
@@ -116,7 +120,11 @@ module Selfid
     # @param type [symbol] you can define if you want to request this
     # =>  information on a sync or an async way
     def request_information(id, fields, opts = {})
-      devices = @client.devices(id)
+      if opts.include?(:proxy)
+        devices = @client.devices(opts[:proxy])
+      else
+        devices = @client.devices(id)
+      end
       device = devices.first
 
       m = Selfid::Messages::IdentityInfoReq.new(@messaging)
@@ -125,7 +133,8 @@ module Selfid
       m.to = id
       m.to_device = device
       m.fields = fields
-      m.jti = opts[:jti] if opts.include?(:jti)
+      m.id = opts[:jti] if opts.include?(:jti)
+      m.proxy = opts[:proxy] if opts.include?(:proxy)
 
       return m.request if (opts.include?(:type) and opts[:type] == :sync)
       Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
