@@ -135,6 +135,7 @@ module Selfid
       m.fields = fields
       m.id = opts[:jti] if opts.include?(:jti)
       m.proxy = opts[:proxy] if opts.include?(:proxy)
+      m.description = opts[:description] if opts.include?(:description)
 
       return m.request if (opts.include?(:type) and opts[:type] == :sync)
       Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
