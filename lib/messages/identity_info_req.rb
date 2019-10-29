@@ -37,20 +37,23 @@ module Selfid
           else
             recipient = "#{@proxy}:#{@to_device}"
           end
+          body = {
+            typ: MSG_TYPE,
+            iss: @jwt.id,
+            sub: @to,
+            iat: Selfid::Time.now.strftime('%FT%TZ'),
+            exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+            jti: @id,
+            fields: @fields,
+          }
+          body[:description] = @description unless @description.nil?
+
           Msgproto::Message.new(
             type: Msgproto::MsgType::MSG,
             id: @id,
             sender: "#{@jwt.id}:#{@messaging.device_id}",
             recipient: recipient,
-            ciphertext: @jwt.prepare({
-                typ: MSG_TYPE,
-                iss: @jwt.id,
-                sub: @to,
-                iat: Selfid::Time.now.strftime('%FT%TZ'),
-                exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
-                jti: @id,
-                fields: @fields,
-              }),
+            ciphertext: @jwt.prepare(body),
           )
         end
     end
