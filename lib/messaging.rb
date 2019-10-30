@@ -146,8 +146,10 @@ module Selfid
         end
 
         Thread.new do
-          sleep 30
-          ping
+          loop do
+            sleep 30
+            ping
+          end
         end
 
 
