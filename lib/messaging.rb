@@ -145,6 +145,12 @@ module Selfid
           end
         end
 
+        Thread.new do
+          sleep 30
+          ping
+        end
+
+
         @mon.synchronize do
           @acks["authentication"][:waiting_cond].wait_while do
             @acks["authentication"][:waiting]
@@ -198,6 +204,11 @@ module Selfid
           @reconnection_delay = 3
           start_connection
         end
+      end
+
+      def ping
+        Selfid.logger.info "ping"
+        @ws.ping unless @ws.nil?
       end
 
       def on_message(event)
