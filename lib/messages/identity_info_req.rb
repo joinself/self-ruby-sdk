@@ -17,15 +17,19 @@ module Selfid
         @fields = @payload[:fields]
       end
 
-      def share_facts(facts)
+      def build_response
         m = Selfid::Messages::IdentityInfoResp.new(@messaging)
         m.id = @id
         m.from = @to
         m.to = @from
         m.to_device = @messaging.device_id
         m.fields = @fields
-        m.facts = facts
+        m
+      end
 
+      def share_facts(facts)
+        build_response
+        m.facts = facts
         m.send
       end
 
