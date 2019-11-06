@@ -20,6 +20,18 @@ module Selfid
         @messaging.send proto
       end
 
+      def unauthorized?
+        return status == "unauthorized"
+      end
+
+      def rejected?
+        return status == "rejected"
+      end
+
+      def accepted?
+        return status == "accepted"
+      end
+
       protected
         def proto
           raise StandardError "must define this method"
