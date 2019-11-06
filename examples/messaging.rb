@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../lib/selfid.rb'
 
 # invalid input
@@ -14,35 +16,33 @@ adria_id = "32287532230"
 @john.connect(sarah_id)
 @john.connect(adria_id)
 
-=begin
-@john.request_information(adria_id, ["passport_last_name"], type: :async)
-return
-=end
+# @john.request_information(adria_id, ["passport_last_name"], type: :async)
+# return
 p "john is requesting information"
 
 sleep 1
 p "Sarah getting unread messages"
 Thread.new do
-  while true do
+  loop do
     @sarah.inbox.each do |m|
       p "Sarah sharing information with John"
-      m.share_facts({
-        "passport_first_name": @john.jwt.prepare_encoded({
-            jti: "id",
-            iss: john_id,
-            sub: sarah_id,
-            iat: Time.now.utc.strftime('%FT%TZ'),
-            source: "user-specified",
-            passport_first_name: "Sarah"
-        }),
-      })
+      m.share_facts(
+        "passport_first_name": @john.jwt.prepare_encoded(
+          jti: "id",
+          iss: john_id,
+          sub: sarah_id,
+          iat: Time.now.utc.strftime('%FT%TZ'),
+          source: "user-specified",
+          passport_first_name: "Sarah"
+        ),
+      )
     end
     @sarah.clear_inbox
   end
 end
 
 sleep 3
-res = @john.request_information(sarah_id, ["passport_last_name"])
+@john.request_information(sarah_id, ["passport_last_name"])
 
 p "================"
 p "John received Sarah's fields"

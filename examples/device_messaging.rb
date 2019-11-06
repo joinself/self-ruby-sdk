@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../lib/selfid.rb'
 
 john_id = "a307a26bf6866c0a644bcb29cae3ef0d"

@@ -31,11 +31,11 @@ module Selfid
     #
     # @param id [string] identity id.
     def identity(id)
-      if id.length == 11
-        res = get "/v1/identities/#{id}"
-      else
-        res = get "/v1/apps/#{id}"
-      end
+      res = if id.length == 11
+              get "/v1/identities/#{id}"
+            else
+              get "/v1/apps/#{id}"
+            end
       body = JSON.parse(res.body, symbolize_names: true)
       if res.code != 200
         Selfid.logger.error "identity response : #{body[:message]}"
@@ -67,20 +67,20 @@ module Selfid
 
     private
 
-      def get(endpoint)
-        HTTParty.get("#{@self_url}#{endpoint}", headers: {
-                       'Content-Type' => 'application/json',
-                       'Authorization' => "Bearer #{@token}"
-                     })
-      end
+    def get(endpoint)
+      HTTParty.get("#{@self_url}#{endpoint}", headers: {
+                     'Content-Type' => 'application/json',
+                     'Authorization' => "Bearer #{@token}"
+                   })
+    end
 
-      def post(endpoint, body)
-        HTTParty.post("#{@self_url}#{endpoint}",
-                      headers: {
-                        'Content-Type' => 'application/json',
-                        'Authorization' => "Bearer #{@token}"
-                      },
-                      body: body)
-      end
+    def post(endpoint, body)
+      HTTParty.post("#{@self_url}#{endpoint}",
+                    headers: {
+                      'Content-Type' => 'application/json',
+                      'Authorization' => "Bearer #{@token}"
+                    },
+                    body: body)
+    end
   end
 end

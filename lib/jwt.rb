@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'base64'
 require 'json'
 
@@ -21,8 +23,11 @@ module Selfid
       payload = encode(input.to_json)
       {
         payload: payload,
+
         protected: protected,
+
         signature: sign("#{protected}.#{payload}")
+
       }.to_json
     end
 
@@ -58,14 +63,15 @@ module Selfid
       if verify_key.verify(decode(payload[:signature]), "#{payload[:protected]}.#{payload[:payload]}")
         return true
       end
-    rescue
-      return false
+    rescue StandardError
+      false
     end
 
     # Generates the auth_token based on the app's private key.
     def auth_token
       @auth_token ||= begin
         payload = protected + "." + encode({ iss: @id }.to_json)
+
         signature = sign(payload)
         "#{payload}.#{signature}"
       end
@@ -73,9 +79,8 @@ module Selfid
 
     private
 
-      def protected
-        encode({ alg: "EdDSA", typ: "JWT" }.to_json)
-      end
-
+    def protected
+      encode({ alg: "EdDSA", typ: "JWT" }.to_json)
+    end
   end
 end
