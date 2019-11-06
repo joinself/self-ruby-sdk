@@ -1,7 +1,11 @@
+# frozen_string_literal: true.
+
 module Selfid
   module Messages
     class Base
-      attr_accessor :from, :from_device, :to, :to_device, :expires, :id, :fields, :typ, :payload, :status, :input, :proxy, :description
+      attr_accessor :from, :from_device, :to, :to_device, :expires, :id,
+                    :fields, :typ, :payload, :status, :input, :proxy,
+                    :description
 
       def initialize(messaging)
         @client = messaging.client

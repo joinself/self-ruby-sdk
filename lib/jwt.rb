@@ -23,11 +23,8 @@ module Selfid
       payload = encode(input.to_json)
       {
         payload: payload,
-
-        protected: protected,
-
-        signature: sign("#{protected}.#{payload}")
-
+        protected: header,
+        signature: sign("#{header}.#{payload}")
       }.to_json
     end
 
@@ -70,7 +67,7 @@ module Selfid
     # Generates the auth_token based on the app's private key.
     def auth_token
       @auth_token ||= begin
-        payload = protected + "." + encode({ iss: @id }.to_json)
+        payload = header + "." + encode({ iss: @id }.to_json)
 
         signature = sign(payload)
         "#{payload}.#{signature}"
@@ -79,7 +76,7 @@ module Selfid
 
     private
 
-    def protected
+    def header
       encode({ alg: "EdDSA", typ: "JWT" }.to_json)
     end
   end

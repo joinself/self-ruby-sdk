@@ -20,6 +20,7 @@ module Selfid
         @fields = payload[:fields]
         @status = payload[:status]
         @facts = {}
+        payload[:facts] = {} if payload[:facts].nil?
         payload[:facts].each do |k, v|
           begin
             @facts[k] = Selfid::Messages::Fact.new(@messaging)
@@ -45,6 +46,7 @@ module Selfid
                 iat: Selfid::Time.now.strftime('%FT%TZ'),
                 exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
                 jti: @id,
+                status: @status,
                 fields: @fields,
                 facts: @facts,
               }),
