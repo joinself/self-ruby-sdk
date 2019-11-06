@@ -28,7 +28,7 @@ module Selfid
       end
 
       def share_facts(facts)
-        build_response
+        m = build_response
         m.facts = facts
         m.send
       end
