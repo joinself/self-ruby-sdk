@@ -36,6 +36,10 @@ module Selfid
         return status == "accepted"
       end
 
+      def errored?
+        return status == "errored"
+      end
+
       protected
         def proto
           raise StandardError "must define this method"
