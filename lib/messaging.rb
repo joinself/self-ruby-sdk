@@ -242,6 +242,7 @@ module Selfid
           @inbox[message.id] = message
         end
       rescue StandardError => e
+        p input.to_json
         Selfid.logger.info e
         return
       end
