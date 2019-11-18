@@ -97,7 +97,7 @@ module Selfid
 
     # Gets a list of received messages
     def inbox
-      @messaging.inbox.clone
+      @messaging.inbox
     end
 
     def clear_inbox
