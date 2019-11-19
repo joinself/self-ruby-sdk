@@ -13,7 +13,7 @@ class SelfidTest < Minitest::Test
     let(:app_id)    { "o9mpng9m2jv" }
     let(:app)       { Selfid::App.new(app_id, seed, messaging_url: nil) }
     let(:atoken)    { app.jwt.auth_token }
-    let(:protected) { app.jwt.send(:protected) }
+    let(:protected_field) { app.jwt.send(:header) }
     let(:headers) {
       {
         'Authorization' => "Bearer #{atoken}",
@@ -39,7 +39,7 @@ class SelfidTest < Minitest::Test
       payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","iss":"self_id","status":"accepted"}')
       signature = app.jwt.send(:sign, "xoxo")
 
-      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
+      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected_field}\",\"signature\":\"#{signature}\"}"
 
       authenticated = app.authenticated?(body)
       assert_equal false, authenticated[:accepted]
@@ -53,9 +53,9 @@ class SelfidTest < Minitest::Test
 
       payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","iss":"self_id","status":"accepted"}')
 
-      signature = app.jwt.send(:sign, "#{payload}.#{protected}")
+      signature = app.jwt.send(:sign, "#{payload}.#{protected_field}")
 
-      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
+      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected_field}\",\"signature\":\"#{signature}\"}"
 
       authenticated = app.authenticated?(body)
       assert_equal false, authenticated[:accepted]
