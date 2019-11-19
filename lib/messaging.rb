@@ -118,8 +118,10 @@ module Selfid
         end
       end
       Selfid.logger.info "acknowledged #{uuid}"
+      true
     ensure
       @acks.delete(uuid)
+      false
     end
 
     private
