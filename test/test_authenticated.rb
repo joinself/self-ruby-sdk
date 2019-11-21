@@ -32,7 +32,7 @@ class SelfidTest < Minitest::Test
 
     def test_invalid_signature
       user_id = "user_id"
-      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
+      stub_request(:get, "https://api.review.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
         to_return(status: 404, body: '{"message":"errored from tests"}', headers: {})
 
@@ -47,7 +47,7 @@ class SelfidTest < Minitest::Test
 
     def test_non_existing_identity
       user_id = "user_id"
-      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
+      stub_request(:get, "https://api.review.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
         to_return(status: 404, body: '{"message":"errored from tests"}', headers: {})
 
@@ -68,7 +68,7 @@ class SelfidTest < Minitest::Test
       pk = app.jwt.encode(pk)
       user_id = "user_id"
 
-      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
+      stub_request(:get, "https://api.review.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 

@@ -48,7 +48,6 @@ module Selfid
     def authenticate(user_id, callback_url, opts = {})
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
-      req = opts.fetch(:request, true)
       body = @jwt.prepare({
         callback: callback_url,
         aud: @public_url,
@@ -58,7 +57,7 @@ module Selfid
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
         jti: uuid,
       })
-      return body if not req
+      return body if not opts.fetch(:request, true)
 
       @client.auth(body)
       Selfid.logger.info "authentication uuid #{uuid}"
