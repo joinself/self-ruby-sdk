@@ -13,7 +13,7 @@ class SelfidTest < Minitest::Test
     let(:app_id)    { "o9mpng9m2jv" }
     let(:app)       { Selfid::App.new(app_id, seed, messaging_url: nil) }
     let(:atoken)    { app.jwt.auth_token }
-    let(:protected) { app.jwt.send(:protected) }
+    let(:protected_field) { app.jwt.send(:header) }
     let(:headers) {
       {
         'Authorization' => "Bearer #{atoken}",
@@ -32,14 +32,14 @@ class SelfidTest < Minitest::Test
 
     def test_invalid_signature
       user_id = "user_id"
-      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
+      stub_request(:get, "https://api.review.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
         to_return(status: 404, body: '{"message":"errored from tests"}', headers: {})
 
       payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","iss":"self_id","status":"accepted"}')
       signature = app.jwt.send(:sign, "xoxo")
 
-      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
+      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected_field}\",\"signature\":\"#{signature}\"}"
 
       authenticated = app.authenticated?(body)
       assert_equal false, authenticated[:accepted]
@@ -47,15 +47,15 @@ class SelfidTest < Minitest::Test
 
     def test_non_existing_identity
       user_id = "user_id"
-      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
+      stub_request(:get, "https://api.review.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
         to_return(status: 404, body: '{"message":"errored from tests"}', headers: {})
 
       payload = app.jwt.send(:encode, '{"sub":"' + user_id + '","iss":"self_id","status":"accepted"}')
 
-      signature = app.jwt.send(:sign, "#{payload}.#{protected}")
+      signature = app.jwt.send(:sign, "#{payload}.#{protected_field}")
 
-      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected}\",\"signature\":\"#{signature}\"}"
+      body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected_field}\",\"signature\":\"#{signature}\"}"
 
       authenticated = app.authenticated?(body)
       assert_equal false, authenticated[:accepted]
@@ -68,7 +68,7 @@ class SelfidTest < Minitest::Test
       pk = app.jwt.encode(pk)
       user_id = "user_id"
 
-      stub_request(:get, "https://api.selfid.net/v1/apps/#{user_id}").
+      stub_request(:get, "https://api.review.selfid.net/v1/apps/#{user_id}").
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
