@@ -29,7 +29,7 @@ module Selfid
     def initialize(app_id, app_key, opts = {})
       @jwt = Selfid::Jwt.new(app_id, app_key)
 
-      url = opts.fetch(:self_url, "https://api.selfid.net")
+      url = opts.fetch(:self_url, "https://api.review.selfid.net")
       Selfid.logger.info "client setup with #{url}"
       @client = RestClient.new(url, @jwt.auth_token)
 
@@ -48,7 +48,8 @@ module Selfid
     def authenticate(user_id, callback_url, opts = {})
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
-      @client.auth(@jwt.prepare({
+      req = opts.fetch(:request, true)
+      body = @jwt.prepare({
         callback: callback_url,
         aud: @public_url,
         iss: @jwt.id,
@@ -56,7 +57,10 @@ module Selfid
         iat: Selfid::Time.now.strftime('%FT%TZ'),
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
         jti: uuid,
-      }))
+      })
+      return body if not req
+
+      @client.auth(body)
       Selfid.logger.info "authentication uuid #{uuid}"
       uuid
     end
