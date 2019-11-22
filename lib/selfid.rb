@@ -50,6 +50,8 @@ module Selfid
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       body = @jwt.prepare({
         callback: callback_url,
+        device_id: @messaging.device_id,
+        typ: 'authentication_req',
         aud: @public_url,
         iss: @jwt.id,
         sub: user_id,
