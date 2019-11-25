@@ -28,7 +28,8 @@ Thread.new do
       p "Sarah sharing information with John"
       m.share_facts(
         "passport_first_name": @john.jwt.prepare_encoded(
-          jti: "id",
+          cid: SecureRandom.uuid,
+          jti: SecureRandom.uuid,
           iss: john_id,
           sub: sarah_id,
           iat: Time.now.utc.strftime('%FT%TZ'),

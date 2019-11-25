@@ -13,7 +13,7 @@ module Selfid
         @input = input
         @typ = MSG_TYPE
         @payload = get_payload input
-        @id = payload[:jti]
+        @id = payload[:cid]
         @from = payload[:iss]
         @to = payload[:sub]
         @expires = payload[:exp]
