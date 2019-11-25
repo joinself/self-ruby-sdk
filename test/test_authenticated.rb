@@ -75,7 +75,7 @@ class SelfidTest < Minitest::Test
       body = app.jwt.prepare({ sub: user_id,
         iss: "self_id",
         status: "accepted",
-        jti: uuid
+        cid: uuid
       })
 
       authenticated = app.authenticated?(body)

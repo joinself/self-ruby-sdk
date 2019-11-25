@@ -57,7 +57,8 @@ module Selfid
         sub: user_id,
         iat: Selfid::Time.now.strftime('%FT%TZ'),
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
-        jti: uuid,
+        cid: uuid,
+        jti: SecureRandom.uuid,
       })
       return body if not opts.fetch(:request, true)
 
@@ -78,7 +79,7 @@ module Selfid
       payload = valid_payload(response)
       return res if payload.nil?
 
-      { uuid: payload[:jti],
+      { uuid: payload[:cid],
         selfid: payload[:sub],
         accepted: (payload[:status] == "accepted") }
     end
@@ -138,7 +139,7 @@ module Selfid
       m.to = id
       m.to_device = device
       m.fields = fields
-      m.id = opts[:jti] if opts.include?(:jti)
+      m.id = opts[:cid] if opts.include?(:cid)
       m.proxy = opts[:proxy] if opts.include?(:proxy)
       m.description = opts[:description] if opts.include?(:description)
 

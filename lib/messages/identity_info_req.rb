@@ -10,7 +10,7 @@ module Selfid
         @input = input
         @typ = MSG_TYPE
         @payload = get_payload input
-        @id = @payload[:jti]
+        @id = @payload[:cid]
         @from = @payload[:iss]
         @to = @payload[:sub]
         @expires = @payload[:exp]
@@ -47,7 +47,8 @@ module Selfid
             sub: @to,
             iat: Selfid::Time.now.strftime('%FT%TZ'),
             exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
-            jti: @id,
+            cid: @id,
+            jti: SecureRandom.uuid,
             fields: @fields,
           }
           body[:description] = @description unless @description.nil?
