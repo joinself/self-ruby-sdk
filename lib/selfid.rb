@@ -164,7 +164,7 @@ module Selfid
         nil
       rescue StandardError => e
         uuid = ""
-        uuid = payload[:jti] unless payload.nil?
+        uuid = payload[:cid] unless payload.nil?
         Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
         nil
       end
