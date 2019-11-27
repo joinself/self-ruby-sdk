@@ -143,6 +143,7 @@ module Selfid
       m.proxy = opts[:proxy] if opts.include?(:proxy)
       m.description = opts[:description] if opts.include?(:description)
 
+      return @jwt.prepare(m.body) if not opts.fetch(:request, true)
       return m.request if (opts.include?(:type) and opts[:type] == :sync)
       Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
       m.send

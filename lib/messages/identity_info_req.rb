@@ -33,6 +33,21 @@ module Selfid
         m.send
       end
 
+      def body
+        b = {
+          typ: MSG_TYPE,
+          iss: @jwt.id,
+          sub: @to,
+          iat: Selfid::Time.now.strftime('%FT%TZ'),
+          exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+          cid: @id,
+          jti: SecureRandom.uuid,
+          fields: @fields,
+        }
+        b[:description] = @description unless @description.nil?
+        b
+      end
+
       protected
 
         def proto
@@ -41,17 +56,6 @@ module Selfid
           else
             recipient = "#{@proxy}:#{@to_device}"
           end
-          body = {
-            typ: MSG_TYPE,
-            iss: @jwt.id,
-            sub: @to,
-            iat: Selfid::Time.now.strftime('%FT%TZ'),
-            exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
-            cid: @id,
-            jti: SecureRandom.uuid,
-            fields: @fields,
-          }
-          body[:description] = @description unless @description.nil?
 
           Msgproto::Message.new(
             type: Msgproto::MsgType::MSG,
