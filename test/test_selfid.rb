@@ -20,8 +20,12 @@ class SelfidTest < Minitest::Test
     }
 
     def setup
+      messaging_mock = Minitest::Mock.new
+      def messaging_mock.device_id; "1"; end
+      app.messaging = messaging_mock
+
       ENV["RAKE_ENV"] = "test"
-      t = Time.local(2019, 9, 1, 10, 5, 0).utc
+      t = ::Time.local(2019, 9, 1, 10, 5, 0).utc
       Timecop.travel(t)
     end
 
@@ -48,11 +52,12 @@ class SelfidTest < Minitest::Test
     end
 
     def test_authenticate
-      body = "{\"payload\":\"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIsImF1ZCI6Imh0dHBzOi8vYXBpLnJldmlldy5zZWxmaWQubmV0IiwiaXNzIjoibzltcG5nOW0yanYiLCJzdWIiOiJ4eHh4eHh4eCIsImlhdCI6IjIwMTktMDktMDFUMTA6MDU6MDBaIiwiZXhwIjoiMjAxOS0wOS0wMVQxMTowNTowMFoiLCJqdGkiOiJ1dWlkIn0\",\"protected\":\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9\",\"signature\":\"i76xCum8Xfgr67cB8f2FrGSFMSiKQLOp_4QyyBxzUkdlLsjTe2mxlQA_NT9DZ8tcwyBerlI03BWZZEHmAFQOAQ\"}"
+      body = "{\"payload\":\"eyJjYWxsYmFjayI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYWxsYmFjayIsImRldmljZV9pZCI6IjEiLCJ0eXAiOiJhdXRoZW50aWNhdGlvbl9yZXEiLCJhdWQiOiJodHRwczovL2FwaS5yZXZpZXcuc2VsZmlkLm5ldCIsImlzcyI6Im85bXBuZzltMmp2Iiwic3ViIjoieHh4eHh4eHgiLCJpYXQiOiIyMDE5LTA5LTAxVDEwOjA1OjAwWiIsImV4cCI6IjIwMTktMDktMDFUMTE6MDU6MDBaIiwiY2lkIjoidXVpZCIsImp0aSI6InV1aWQifQ\",\"protected\":\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9\",\"signature\":\"lvdxGY6ffNuxk6ccaiO3r2eftDsfg0MvVwbGGDPBrNGKZsfaRExJXp8f6kX0as601p-Oioj0BYenFx4YTozcBQ\"}"
       stub_request(:post, "https://api.review.selfid.net/v1/auth").
         with(body: body, headers: headers).
         to_return(status: 200, body: "", headers: {})
-      app.authenticate("xxxxxxxx", "http://localhost:3000/callback", uuid: "uuid")
+
+      app.authenticate("xxxxxxxx", "http://localhost:3000/callback", uuid: "uuid", jti: "uuid")
     end
 
     def test_identity

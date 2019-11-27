@@ -18,7 +18,8 @@ module Selfid
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
-    attr_reader :app_id, :app_key, :client, :jwt, :messaging
+    attr_reader :app_id, :app_key, :client, :jwt
+    attr_accessor :messaging
 
     # Initializes a Selfid App
     #
@@ -48,6 +49,7 @@ module Selfid
     def authenticate(user_id, callback_url, opts = {})
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
+      jti = opts.fetch(:jti, SecureRandom.uuid)
       body = @jwt.prepare({
         callback: callback_url,
         device_id: @messaging.device_id,
@@ -58,7 +60,7 @@ module Selfid
         iat: Selfid::Time.now.strftime('%FT%TZ'),
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
         cid: uuid,
-        jti: SecureRandom.uuid,
+        jti: jti,
       })
       return body if not opts.fetch(:request, true)
 
