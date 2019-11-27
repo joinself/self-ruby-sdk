@@ -126,24 +126,23 @@ module Selfid
     # @param type [symbol] you can define if you want to request this
     # =>  information on a sync or an async way
     def request_information(id, fields, opts = {})
+      m = Selfid::Messages::IdentityInfoReq.new(@messaging)
+      m.id = SecureRandom.uuid
+      m.from = @jwt.id
+      m.to = id
+      m.fields = fields
+      m.id = opts[:cid] if opts.include?(:cid)
+      m.proxy = opts[:proxy] if opts.include?(:proxy)
+      m.description = opts[:description] if opts.include?(:description)
+      return @jwt.prepare(m.body) if not opts.fetch(:request, true)
+
       if opts.include?(:proxy)
         devices = @client.devices(opts[:proxy])
       else
         devices = @client.devices(id)
       end
       device = devices.first
-
-      m = Selfid::Messages::IdentityInfoReq.new(@messaging)
-      m.id = SecureRandom.uuid
-      m.from = @jwt.id
-      m.to = id
       m.to_device = device
-      m.fields = fields
-      m.id = opts[:cid] if opts.include?(:cid)
-      m.proxy = opts[:proxy] if opts.include?(:proxy)
-      m.description = opts[:description] if opts.include?(:description)
-
-      return @jwt.prepare(m.body) if not opts.fetch(:request, true)
       return m.request if (opts.include?(:type) and opts[:type] == :sync)
       Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
       m.send
