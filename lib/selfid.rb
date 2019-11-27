@@ -50,7 +50,7 @@ module Selfid
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       jti = opts.fetch(:jti, SecureRandom.uuid)
-      body = @jwt.prepare({
+      body = @jwt.prepare(
         callback: callback_url,
         device_id: @messaging.device_id,
         typ: 'authentication_req',
@@ -61,8 +61,8 @@ module Selfid
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
         cid: uuid,
         jti: jti,
-      })
-      return body if not opts.fetch(:request, true)
+      )
+      return body if !opts.fetch(:request, true)
 
       @client.auth(body)
       Selfid.logger.info "authentication uuid #{uuid}"
@@ -96,11 +96,11 @@ module Selfid
     # @params id [string] SelfID to be allowed
     def connect(id)
       Selfid.logger.info "Setting ACL for #{id}"
-      @messaging.connect(@jwt.prepare({
-        iss: @jwt.id,
-        acl_source: id,
-        acl_exp: (Selfid::Time.now + 360000).to_datetime.rfc3339
-      }))
+      @messaging.connect(@jwt.prepare(
+                           iss: @jwt.id,
+                           acl_source: id,
+                           acl_exp: (Selfid::Time.now + 360_000).to_datetime.rfc3339
+                         ))
     end
 
     # Gets a list of received messages
@@ -136,41 +136,43 @@ module Selfid
       m.id = opts[:cid] if opts.include?(:cid)
       m.proxy = opts[:proxy] if opts.include?(:proxy)
       m.description = opts[:description] if opts.include?(:description)
-      return @jwt.prepare(m.body) if not opts.fetch(:request, true)
+      return @jwt.prepare(m.body) if !opts.fetch(:request, true)
 
-      if opts.include?(:proxy)
-        devices = @client.devices(opts[:proxy])
-      else
-        devices = @client.devices(id)
-      end
+      devices = if opts.include?(:proxy)
+                  @client.devices(opts[:proxy])
+                else
+                  @client.devices(id)
+                end
       device = devices.first
       m.to_device = device
-      return m.request if (opts.include?(:type) and opts[:type] == :sync)
+      return m.request if opts.include?(:type) && (opts[:type] == :sync)
+
       Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
       m.send
     end
 
     private
 
-      def valid_payload(response)
-        jws = @jwt.parse(response)
-        return nil unless jws.include? :payload
-        payload = JSON.parse(@jwt.decode(jws[:payload]), symbolize_names: true)
+    def valid_payload(response)
+      jws = @jwt.parse(response)
+      return nil unless jws.include? :payload
 
-        return nil if payload.nil?
-        identity = identity(payload[:sub])
-        return nil if identity.nil?
-        identity[:public_keys].each do |key|
-          return payload if @jwt.verify(jws, key[:key])
-        end
-        nil
-      rescue StandardError => e
-        uuid = ""
-        uuid = payload[:cid] unless payload.nil?
-        Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
-        nil
+      payload = JSON.parse(@jwt.decode(jws[:payload]), symbolize_names: true)
+
+      return nil if payload.nil?
+
+      identity = identity(payload[:sub])
+      return nil if identity.nil?
+
+      identity[:public_keys].each do |key|
+        return payload if @jwt.verify(jws, key[:key])
       end
-
-
+      nil
+    rescue StandardError => e
+      uuid = ""
+      uuid = payload[:cid] unless payload.nil?
+      Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
+      nil
+    end
   end
 end

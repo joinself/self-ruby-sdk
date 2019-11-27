@@ -6,3 +6,14 @@ Metrics/BlockLength:
     - 'Rakefile'
     - '**/*.rake'
     - 'test/**/*.rb'
+
+AllCops:
+  Exclude:
+    - 'selfid.gemspec'
+
+AllCops:
+  Include:
+    - rubocop-rspec
+
+Style/ClassVars:
+  Enabled: false

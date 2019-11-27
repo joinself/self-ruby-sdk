@@ -38,10 +38,10 @@ module Selfid
     end
 
     def stop
-      @acks.each do |k, v|
+      @acks.each do |k, _v|
         mark_as_acknowledged(k)
       end
-      @messages.each do |k, v|
+      @messages.each do |k, _v|
         mark_as_acknowledged(k)
         mark_as_arrived(k)
       end
@@ -95,7 +95,7 @@ module Selfid
       end
 
       Selfid.logger.info "response received for #{uuid}"
-      return @messages[uuid][:response]
+      @messages[uuid][:response]
     ensure
       @inbox.delete(uuid)
       @messages.delete(uuid)
@@ -126,158 +126,158 @@ module Selfid
 
     private
 
-      def start
-        Selfid.logger.info "starting"
+    def start
+      Selfid.logger.info "starting"
+      @mon.synchronize do
+        @acks["authentication"] = {
+          waiting_cond: @mon.new_cond,
+          waiting: true,
+          timeout: Selfid::Time.now + @ack_timeout,
+        }
+      end
+
+      Thread.new do
+        EM.run start_connection
+      end
+
+      Thread.new do
+        loop do
+          sleep 10
+          clean_timeouts
+        end
+      end
+
+      Thread.new do
+        loop do
+          sleep 30
+          ping
+        end
+      end
+
+      @mon.synchronize do
+        @acks["authentication"][:waiting_cond].wait_while do
+          @acks["authentication"][:waiting]
+        end
+        @acks.delete("authentication")
+      end
+    end
+
+    def clean_timeouts
+      @messages.each do |uuid, msg|
+        next unless msg[:timeout] < Selfid::Time.now
+
         @mon.synchronize do
-          @acks["authentication"] = {
-              waiting_cond: @mon.new_cond,
-              waiting: true,
-              timeout: Selfid::Time.now + @ack_timeout,
-          }
+          Selfid.logger.info "message response timed out #{uuid}"
+          @messages[uuid][:waiting] = false
+          @messages[uuid][:waiting_cond].broadcast
         end
+      end
 
-        Thread.new do
-          EM.run start_connection
-        end
-
-        Thread.new do
-          loop do
-            sleep 10
-            clean_timeouts
-          end
-        end
-
-        Thread.new do
-          loop do
-            sleep 30
-            ping
-          end
-        end
-
+      @acks.each do |uuid, ack|
+        next unless ack[:timeout] < Selfid::Time.now
 
         @mon.synchronize do
-          @acks["authentication"][:waiting_cond].wait_while do
-            @acks["authentication"][:waiting]
-          end
-          @acks.delete("authentication")
+          Selfid.logger.info "acks response timed out #{uuid}"
+          @acks[uuid][:waiting] = false
+          @acks[uuid][:waiting_cond].broadcast
         end
       end
+    end
 
-      def clean_timeouts
-        @messages.each do |uuid, msg|
-          if msg[:timeout] < Selfid::Time.now
-            @mon.synchronize do
-              Selfid.logger.info "message response timed out #{uuid}"
-              @messages[uuid][:waiting] = false
-              @messages[uuid][:waiting_cond].broadcast
-            end
-          end
-        end
+    def start_connection
+      Selfid.logger.info "starting listener"
+      @ws = Faye::WebSocket::Client.new(@url)
+      Selfid.logger.info "initialized"
 
-        @acks.each do |uuid, ack|
-          if ack[:timeout] < Selfid::Time.now
-            @mon.synchronize do
-              Selfid.logger.info "acks response timed out #{uuid}"
-              @acks[uuid][:waiting] = false
-              @acks[uuid][:waiting_cond].broadcast
-            end
-          end
-        end
+      @ws.on :open do |_event|
+        Selfid.logger.info "websocket connection established"
+        authenticate
       end
 
-      def start_connection
-        Selfid.logger.info "starting listener"
-        @ws = Faye::WebSocket::Client.new(@url)
-        Selfid.logger.info "initialized"
+      @ws.on :message do |event|
+        on_message(event)
+      end
 
-        @ws.on :open do |event|
-          Selfid.logger.info "websocket connection established"
-          authenticate
+      @ws.on :close do |event|
+        if !@reconnection_delay.nil?
+          Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
+          sleep @reconnection_delay
+          Selfid.logger.info "reconnecting..."
         end
-
-        @ws.on :message do |event|
-          on_message(event)
-        end
-
-        @ws.on :close do |event|
-          if not @reconnection_delay.nil?
-            Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
-            sleep @reconnection_delay
-            Selfid.logger.info "reconnecting..."
-          end
-          @reconnection_delay = 3
-          start_connection
-        end
+        @reconnection_delay = 3
+        start_connection
       end
+    end
 
-      def ping
-        Selfid.logger.info "ping"
-        @ws.ping unless @ws.nil?
+    def ping
+      Selfid.logger.info "ping"
+      @ws&.ping
+    end
+
+    def on_message(event)
+      input = Msgproto::Message.decode(event.data.pack('c*'))
+      Selfid.logger.info " - received #{input.id} (#{input.type})"
+      case input.type
+      when :ERR
+        Selfid.logger.info "error #{input.sender} on #{input.id}"
+        mark_as_arrived(input.id)
+      when :ACK
+        Selfid.logger.info "#{input.id} acknowledged"
+        mark_as_acknowledged input.id
+      when :MSG
+        Selfid.logger.info "Message #{input.id} received"
+        process_incomming_message input
       end
+    rescue TypeError
+      Selfid.logger.info "invalid array message"
+    end
 
-      def on_message(event)
-        input = Msgproto::Message.decode(event.data.pack('c*'))
-        Selfid.logger.info " - received #{input.id} (#{input.type})"
-        case input.type
-        when :ERR
-          Selfid.logger.info "error #{input.sender} on #{input.id}"
-          mark_as_arrived(input.id)
-        when :ACK
-          Selfid.logger.info "#{input.id} acknowledged"
-          mark_as_acknowledged input.id
-        when :MSG
-          Selfid.logger.info "Message #{input.id} received"
-          process_incomming_message input
-        end
-      rescue TypeError => e
-        Selfid.logger.info "invalid array message"
+    def process_incomming_message(input)
+      message = Selfid::Messages.parse(input, self)
+
+      if @messages.include? message.id
+        @messages[message.id][:response] = message
+        mark_as_arrived message.id
+      else
+        Selfid.logger.info "Received async message #{input.id}"
+        @inbox[message.id] = message
       end
+    rescue StandardError => e
+      p input.to_json
+      Selfid.logger.info e
+      nil
+    end
 
-      def process_incomming_message(input)
-        message = Selfid::Messages.parse(input, self)
+    def authenticate
+      Selfid.logger.info "authenticating"
+      send_raw Msgproto::Auth.new(
+        type: Msgproto::MsgType::AUTH,
+        id: "authentication",
+        token: @jwt.auth_token,
+        device: @device_id,
+      )
+    end
 
-        if @messages.include? message.id
-          @messages[message.id][:response] = message
-          mark_as_arrived message.id
-        else
-          Selfid.logger.info "Received async message #{input.id}"
-          @inbox[message.id] = message
-        end
-      rescue StandardError => e
-        p input.to_json
-        Selfid.logger.info e
-        return
+    def send_raw(msg)
+      @ws.send(msg.to_proto.bytes)
+    end
+
+    def mark_as_arrived(id)
+      return unless @messages.include? id
+
+      @mon.synchronize do
+        @messages[id][:waiting] = false
+        @messages[id][:waiting_cond].broadcast
       end
+    end
 
-      def authenticate
-        Selfid.logger.info "authenticating"
-        send_raw Msgproto::Auth.new(
-          type: Msgproto::MsgType::AUTH,
-          id: "authentication",
-          token: @jwt.auth_token,
-          device: @device_id,
-        )
+    def mark_as_acknowledged(id)
+      return unless @acks.include? id
+
+      @mon.synchronize do
+        @acks[id][:waiting] = false
+        @acks[id][:waiting_cond].broadcast
       end
-
-      def send_raw(msg)
-        @ws.send(msg.to_proto.bytes)
-      end
-
-      def mark_as_arrived(id)
-        return unless @messages.include? id
-        @mon.synchronize do
-          @messages[id][:waiting] = false
-          @messages[id][:waiting_cond].broadcast
-        end
-      end
-
-      def mark_as_acknowledged(id)
-        return unless @acks.include? id
-        @mon.synchronize do
-          @acks[id][:waiting] = false
-          @acks[id][:waiting_cond].broadcast
-        end
-      end
-
+    end
   end
 end

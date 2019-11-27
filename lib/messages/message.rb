@@ -1,14 +1,16 @@
+# frozen_string_literal: true
+
 require_relative "identity_info_req"
 require_relative "identity_info_resp"
 
 module Selfid
   module Messages
     def self.parse(input, messaging)
-      if input.is_a? String
-        body = input
-      else
-        body = input.ciphertext
-      end
+      body = if input.is_a? String
+               input
+             else
+               input.ciphertext
+             end
       jwt = JSON.parse(body, symbolize_names: true)
       payload = JSON.parse(messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
 

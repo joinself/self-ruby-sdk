@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 require_relative 'fact'
 require_relative '../ntptime'
@@ -33,26 +35,26 @@ module Selfid
 
       protected
 
-        def proto
-          Msgproto::Message.new(
-            type: Msgproto::MsgType::MSG,
-            id: SecureRandom.uuid,
-            sender: "#{@jwt.id}:#{@messaging.device_id}",
-            recipient: "#{@to}:#{@to_device}",
-            ciphertext: @jwt.prepare({
-                typ: MSG_TYPE,
-                iss: @jwt.id,
-                sub: @to,
-                iat: Selfid::Time.now.strftime('%FT%TZ'),
-                exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
-                cid: @id,
-                jti: SecureRandom.uuid,
-                status: @status,
-                fields: @fields,
-                facts: @facts,
-              }),
-          )
-        end
+      def proto
+        Msgproto::Message.new(
+          type: Msgproto::MsgType::MSG,
+          id: SecureRandom.uuid,
+          sender: "#{@jwt.id}:#{@messaging.device_id}",
+          recipient: "#{@to}:#{@to_device}",
+          ciphertext: @jwt.prepare(
+            typ: MSG_TYPE,
+            iss: @jwt.id,
+            sub: @to,
+            iat: Selfid::Time.now.strftime('%FT%TZ'),
+            exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+            cid: @id,
+            jti: SecureRandom.uuid,
+            status: @status,
+            fields: @fields,
+            facts: @facts,
+          ),
+        )
+      end
     end
   end
 end

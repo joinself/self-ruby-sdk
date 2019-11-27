@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Selfid
   module Messages
     class Fact
@@ -18,21 +20,22 @@ module Selfid
         @verified = valid_signature?(jwt, from)
       end
 
-      def valid_signature?(jwt, from)
+      def valid_signature?(jwt, _from)
         k = @messaging.client.public_keys(@origin).first[:key]
         raise StandardError("invalid signature") unless @messaging.jwt.verify(jwt, k)
+
         true
         # return @origin != from
       end
 
       def signed
-        @messaging.jwt.encode(@messaging.jwt.prepare({
-          iss: @origin,
-          source: @source,
-          field: @name,
-          value: @value,
-          result: @result,
-        }))
+        @messaging.jwt.encode(@messaging.jwt.prepare(
+                                iss: @origin,
+                                source: @source,
+                                field: @name,
+                                value: @value,
+                                result: @result,
+                              ))
       end
     end
   end

@@ -34,13 +34,13 @@ Gem::Specification.new do |s|
     "lib/messages/message.rb"
   ]
   s.require_paths = ["lib", "lib/proto", "lib/messages"]
+  s.add_dependency "async"
   s.add_dependency "ed25519"
+  s.add_dependency "eventmachine"
+  s.add_dependency "faye-websocket"
+  s.add_dependency "google-protobuf"
   s.add_dependency "httparty"
   s.add_dependency "logger"
-  s.add_dependency "faye-websocket"
-  s.add_dependency "eventmachine"
-  s.add_dependency "async"
-  s.add_dependency "google-protobuf"
   s.add_dependency "net-ntp"
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "minitest"

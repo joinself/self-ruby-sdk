@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 require_relative '../ntptime'
 
@@ -50,21 +52,21 @@ module Selfid
 
       protected
 
-        def proto
-          if @proxy.nil?
-            recipient = "#{@to}:#{@to_device}"
-          else
-            recipient = "#{@proxy}:#{@to_device}"
-          end
+      def proto
+        recipient = if @proxy.nil?
+                      "#{@to}:#{@to_device}"
+                    else
+                      "#{@proxy}:#{@to_device}"
+                    end
 
-          Msgproto::Message.new(
-            type: Msgproto::MsgType::MSG,
-            id: @id,
-            sender: "#{@jwt.id}:#{@messaging.device_id}",
-            recipient: recipient,
-            ciphertext: @jwt.prepare(body),
-          )
-        end
+        Msgproto::Message.new(
+          type: Msgproto::MsgType::MSG,
+          id: @id,
+          sender: "#{@jwt.id}:#{@messaging.device_id}",
+          recipient: recipient,
+          ciphertext: @jwt.prepare(body),
+        )
+      end
     end
   end
 end

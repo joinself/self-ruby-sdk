@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # frozen_string_literal: true.
 
 module Selfid
@@ -25,48 +27,50 @@ module Selfid
       end
 
       def unauthorized?
-        return status == "unauthorized"
+        status == "unauthorized"
       end
 
       def rejected?
-        return status == "rejected"
+        status == "rejected"
       end
 
       def accepted?
-        return status == "accepted"
+        status == "accepted"
       end
 
       def errored?
-        return status == "errored"
+        status == "errored"
       end
 
       protected
-        def proto
-          raise StandardError "must define this method"
-        end
+
+      def proto
+        raise StandardError "must define this method"
+      end
 
       private
-        def get_payload(input)
-          if input.is_a? String
-            body = input
-          else
-            body = input.ciphertext
-          end
 
-          jwt = JSON.parse(body, symbolize_names: true)
-          payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
-          @from = payload[:iss]
-          verify! jwt
-          payload
-        end
+      def get_payload(input)
+        body = if input.is_a? String
+                 input
+               else
+                 input.ciphertext
+               end
 
-        def verify!(jwt)
-          k = @client.public_keys(@from).first[:key]
-          if !@jwt.verify(jwt, k)
-            Selfid.logger.info "skipping message, invalid signature"
-            raise StandardError "invalid signature on incoming message"
-          end
-        end
+        jwt = JSON.parse(body, symbolize_names: true)
+        payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
+        @from = payload[:iss]
+        verify! jwt
+        payload
+      end
+
+      def verify!(jwt)
+        k = @client.public_keys(@from).first[:key]
+        return if @jwt.verify(jwt, k)
+
+        Selfid.logger.info "skipping message, invalid signature"
+        raise StandardError "invalid signature on incoming message"
+      end
     end
   end
 end

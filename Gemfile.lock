@@ -30,7 +30,7 @@ GEM
     faye-websocket (0.10.9)
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
-    google-protobuf (3.11.0-universal-darwin)
+    google-protobuf (3.11.0)
     hashdiff (1.0.0)
     httparty (0.17.1)
       mime-types (~> 3.0)

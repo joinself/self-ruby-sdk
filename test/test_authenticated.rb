@@ -72,11 +72,10 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      body = app.jwt.prepare({ sub: user_id,
-        iss: "self_id",
-        status: "accepted",
-        cid: uuid
-      })
+      body = app.jwt.prepare( sub: user_id,
+                              iss: "self_id",
+                              status: "accepted",
+                              cid: uuid )
 
       authenticated = app.authenticated?(body)
       assert_equal true, authenticated[:accepted]

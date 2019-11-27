@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Selfid
   CLAIM_KEY_EMAIL = "email"
   CLAIM_KEY_PHONE = "phone"
