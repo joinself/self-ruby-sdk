@@ -75,8 +75,12 @@ module Selfid
     end
 
     def send_and_wait_for_response(msg)
-      uuid = msg.id
+      wait_for msg.id do
+        send msg
+      end
+    end
 
+    def wait_for(uuid)
       Selfid.logger.info "sending #{uuid}"
       @mon.synchronize do
         @messages[uuid] = {
@@ -85,7 +89,8 @@ module Selfid
           timeout: Selfid::Time.now + @timeout,
         }
       end
-      send msg
+
+      yield
 
       Selfid.logger.info "waiting for client to respond #{uuid}"
       @mon.synchronize do

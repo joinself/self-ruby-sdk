@@ -43,15 +43,15 @@ module Selfid
     # Sends an authentication request to the specified user_id.
     #
     # @param user_id [string] the receiver of the authentication request.
-    # @param callback_url [string] the callback url where self will send authentication response.
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :uuid The unique identifier of the authentication request.
-    def authenticate(user_id, callback_url, opts = {})
+    # @option opts [String] :callback the callback url where self will send authentication response.
+    def authenticate(user_id, opts = {})
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       jti = opts.fetch(:jti, SecureRandom.uuid)
-      body = @jwt.prepare(
-        callback: callback_url,
+      callback = opts.fetch(:callback, "")
+      body = {
         device_id: @messaging.device_id,
         typ: 'authentication_req',
         aud: @public_url,
@@ -61,12 +61,20 @@ module Selfid
         exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
         cid: uuid,
         jti: jti,
-      )
+      }
+      body[:callback] = callback if !callback.empty?
+      body = @jwt.prepare(body)
       return body if !opts.fetch(:request, true)
 
-      @client.auth(body)
-      Selfid.logger.info "authentication uuid #{uuid}"
-      uuid
+      Selfid.logger.info "authenticating uuid #{uuid}"
+      if !callback.empty?
+        @client.auth(body)
+        return uuid
+      end
+      resp = @messaging.wait_for uuid do
+        @client.auth(body)
+      end
+      return authenticated?(resp.input)
     end
 
     # Checks if the given input is an accepted authentication request.

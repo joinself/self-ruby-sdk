@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
     "lib/messages/fact.rb",
     "lib/messages/identity_info_req.rb",
     "lib/messages/identity_info_resp.rb",
+    "lib/messages/authentication_resp.rb",
     "lib/messages/message.rb"
   ]
   s.require_paths = ["lib", "lib/proto", "lib/messages"]
