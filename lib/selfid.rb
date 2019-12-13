@@ -35,6 +35,8 @@ module Selfid
       @client = RestClient.new(url, @jwt.auth_token)
 
       @public_url = opts.fetch(:public_url, url)
+      @public_url = url if @public_url.nil?
+      @public_url = url if @public_url.empty?
 
       messaging_url = opts.fetch(:messaging_url, "wss://messaging.review.selfid.net/v1/messaging")
       @messaging = MessagingClient.new(messaging_url, @jwt, @client) unless messaging_url.nil?
