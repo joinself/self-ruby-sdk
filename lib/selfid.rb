@@ -142,7 +142,7 @@ module Selfid
       m.id = SecureRandom.uuid
       m.from = @jwt.id
       m.to = id
-      m.fields = fields
+      m.fields = prepare_facts(fields)
       m.id = opts[:cid] if opts.include?(:cid)
       m.proxy = opts[:proxy] if opts.include?(:proxy)
       m.description = opts[:description] if opts.include?(:description)
@@ -155,13 +155,28 @@ module Selfid
                 end
       device = devices.first
       m.to_device = device
-      return m.request if opts.include?(:type) && (opts[:type] == :sync)
+      return m.send if opts.include?(:type) && (opts[:type] == :async)
 
-      Selfid.logger.info "asynchronously requesting information to #{id}:#{device}"
-      m.send
+      Selfid.logger.info "synchronously requesting information to #{id}:#{device}"
+      m.request
     end
 
     private
+
+    def prepare_facts(fields)
+      fs = []
+      fields.each do |f|
+        if f.is_a?(Hash)
+          fs << f
+        else
+          fs << {
+            source: "user-defined",
+            field: f,
+          }
+        end
+      end
+      fs
+    end
 
     def valid_payload(response)
       jws = @jwt.parse(response)
