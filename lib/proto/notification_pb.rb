@@ -6,12 +6,14 @@
 require 'google/protobuf'
 
 require_relative 'msgtype_pb'
+require_relative 'errtype_pb'
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_file("notification.proto", syntax: :proto3) do
     add_message "msgproto.Notification" do
       optional :type, :enum, 1, "msgproto.MsgType"
       optional :id, :string, 2
       optional :error, :string, 3
+      optional :errtype, :enum, 4, "msgproto.ErrType"
     end
   end
 end

@@ -13,6 +13,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :id, :string, 2
       optional :token, :string, 3
       optional :device, :string, 4
+      optional :offset, :uint64, 5
     end
   end
 end
