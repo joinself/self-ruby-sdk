@@ -23,11 +23,11 @@ class SelfidTest < Minitest::Test
 
     def test_failed_authenticated?
       # invalid input
-      assert_equal false, app.authenticated?("xxx")[:accepted]
+      assert_equal false, app.authenticated?("xxx").accepted?
       # valid json input
-      assert_equal false, app.authenticated?("{}")[:accepted]
+      assert_equal false, app.authenticated?("{}").accepted?
       # valid payload
-      assert_equal false, app.authenticated?('{"payload":"xxx","protected":"xxx","signature":"xxxx"}')[:accepted]
+      assert_equal false, app.authenticated?('{"payload":"xxx","protected":"xxx","signature":"xxxx"}').accepted?
     end
 
     def test_invalid_signature
@@ -41,8 +41,8 @@ class SelfidTest < Minitest::Test
 
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected_field}\",\"signature\":\"#{signature}\"}"
 
-      authenticated = app.authenticated?(body)
-      assert_equal false, authenticated[:accepted]
+      auth = app.authenticated?(body)
+      assert_equal false, auth.accepted?
     end
 
     def test_non_existing_identity
@@ -58,7 +58,7 @@ class SelfidTest < Minitest::Test
       body = "{\"payload\":\"#{payload}\",\"protected\":\"#{protected_field}\",\"signature\":\"#{signature}\"}"
 
       authenticated = app.authenticated?(body)
-      assert_equal false, authenticated[:accepted]
+      assert_equal false, authenticated.accepted?
     end
 
     def test_happy_path
@@ -77,9 +77,9 @@ class SelfidTest < Minitest::Test
                               status: "accepted",
                               cid: uuid )
 
-      authenticated = app.authenticated?(body)
-      assert_equal true, authenticated[:accepted]
-      assert_equal uuid, authenticated[:uuid]
+      auth = app.authenticated?(body)
+      assert_equal true, auth.accepted?
+      assert_equal uuid, auth.uuid
     end
   end
 end

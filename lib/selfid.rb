@@ -9,6 +9,7 @@ require_relative 'jwt'
 require_relative 'client'
 require_relative 'messaging'
 require_relative 'ntptime'
+require_relative 'authenticated'
 
 # Namespace for classes and modules that handle Self interactions.
 module Selfid
@@ -76,7 +77,7 @@ module Selfid
       resp = @messaging.wait_for uuid do
         @client.auth(body)
       end
-      return authenticated?(resp.input)
+      authenticated?(resp.input)
     end
 
     # Checks if the given input is an accepted authentication request.
@@ -86,14 +87,7 @@ module Selfid
     #   * :accepted [Boolean] a bool describing if authentication is accepted or not.
     #   * :uuid [String] the request identifier.
     def authenticated?(response)
-      res = { accepted: false }
-
-      payload = valid_payload(response)
-      return res if payload.nil?
-
-      { uuid: payload[:cid],
-        selfid: payload[:sub],
-        accepted: (payload[:status] == "accepted") }
+      Authenticated.new(valid_payload(response))
     end
 
     # Gets identity defails
