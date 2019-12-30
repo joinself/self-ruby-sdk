@@ -164,7 +164,7 @@ module Selfid
           fs << f
         else
           fs << {
-            source: "user-defined",
+            source: "user-specified",
             field: f,
           }
         end
