@@ -70,7 +70,7 @@ module Selfid
         payload = header + "." + encode({
           jti: SecureRandom.uuid,
           iat: Selfid::Time.now.to_i,
-          exp: (Selfid::Time.now + 60).to_i,
+          exp: (Selfid::Time.now + 3600).to_i,
           iss: @id}.to_json)
         signature = sign(payload)
         "#{payload}.#{signature}"
