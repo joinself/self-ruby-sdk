@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfid (0.0.49)
+    selfid (0.0.50)
       async
       ed25519
       eventmachine
