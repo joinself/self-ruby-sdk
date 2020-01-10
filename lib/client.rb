@@ -10,9 +10,9 @@ module Selfid
     #
     # @param url [string] self-messaging url
     # @param token [string] jwt token identifying the authenticated user
-    def initialize(url, token)
+    def initialize(url, jwt)
       @self_url = url
-      @token = token
+      @jwt = jwt
     end
 
     # Sends an auth http request to self-api.
@@ -70,7 +70,7 @@ module Selfid
     def get(endpoint)
       HTTParty.get("#{@self_url}#{endpoint}", headers: {
                      'Content-Type' => 'application/json',
-                     'Authorization' => "Bearer #{@token}"
+                     'Authorization' => "Bearer #{@jwt.auth_token}"
                    })
     end
 
@@ -78,7 +78,7 @@ module Selfid
       HTTParty.post("#{@self_url}#{endpoint}",
                     headers: {
                       'Content-Type' => 'application/json',
-                      'Authorization' => "Bearer #{@token}"
+                      'Authorization' => "Bearer #{@jwt.auth_token}"
                     },
                     body: body)
     end

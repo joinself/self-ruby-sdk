@@ -33,7 +33,7 @@ module Selfid
 
       url = opts.fetch(:self_url, "https://api.review.selfid.net")
       Selfid.logger.info "client setup with #{url}"
-      @client = RestClient.new(url, @jwt.auth_token)
+      @client = RestClient.new(url, @jwt)
 
       @public_url = opts.fetch(:public_url, url)
       @public_url = url if @public_url.nil?
