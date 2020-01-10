@@ -16,7 +16,6 @@ class SelfidTest < Minitest::Test
     let(:protected_field) { app.jwt.send(:header) }
     let(:headers) {
       {
-        'Authorization' => "Bearer #{atoken}",
         'Content-Type' => 'application/json',
       }
     }

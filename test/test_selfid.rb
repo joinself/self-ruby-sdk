@@ -14,7 +14,6 @@ class SelfidTest < Minitest::Test
     let(:atoken)    { app.jwt.auth_token }
     let(:headers) {
       {
-        'Authorization' => "Bearer #{atoken}",
         'Content-Type' => 'application/json',
       }
     }
@@ -44,11 +43,6 @@ class SelfidTest < Minitest::Test
       assert_equal "http://custom.self.net", custom_app.client.self_url
       assert_equal app_id, custom_app.jwt.id
       assert_equal seed, custom_app.jwt.key
-    end
-
-    def test_auth_token
-      token = app.jwt.send(:auth_token)
-      assert_equal atoken, token
     end
 
     def test_authenticate
