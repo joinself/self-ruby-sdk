@@ -66,15 +66,13 @@ module Selfid
 
     # Generates the auth_token based on the app's private key.
     def auth_token
-      @auth_token ||= begin
-        payload = header + "." + encode({
-          jti: SecureRandom.uuid,
-          iat: Selfid::Time.now.to_i,
-          exp: (Selfid::Time.now + 60).to_i,
-          iss: @id}.to_json)
-        signature = sign(payload)
-        "#{payload}.#{signature}"
-      end
+      payload = header + "." + encode({
+        jti: SecureRandom.uuid,
+        iat: Selfid::Time.now.to_i,
+        exp: (Selfid::Time.now + 60).to_i,
+        iss: @id}.to_json)
+      signature = sign(payload)
+      "#{payload}.#{signature}"
     end
 
     private
