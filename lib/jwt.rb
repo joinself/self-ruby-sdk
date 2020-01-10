@@ -68,7 +68,7 @@ module Selfid
     def auth_token
       payload = header + "." + encode({
         jti: SecureRandom.uuid,
-        iat: Selfid::Time.now.to_i,
+        iat: (Selfid::Time.now - 5).to_i,
         exp: (Selfid::Time.now + 60).to_i,
         iss: @id}.to_json)
       signature = sign(payload)
