@@ -32,7 +32,7 @@ module Selfid
       def share_facts(facts)
         m = build_response
         m.facts = facts
-        m.send
+        m.send_message
       end
 
       def body

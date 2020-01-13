@@ -12,7 +12,7 @@ require_relative 'proto/aclcommand_pb'
 
 module Selfid
   class MessagingClient
-    attr_accessor :inbox, :client, :jwt, :device_id, :ack_timeout, :timeout
+    attr_accessor :inbox, :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer
 
     # RestClient initializer
     #
@@ -25,6 +25,7 @@ module Selfid
       @url = url
       @messages = {}
       @acks = {}
+      @type_observer = {}
       @jwt = jwt
       @client = client
       @device_id = "1"
@@ -53,7 +54,7 @@ module Selfid
     # @param recipient_device [string] device id for the selfID to be requested
     # @param request [string] original message requesing information
     def share_information(recipient, recipient_device, request)
-      send Msgproto::Message.new(
+      send_message Msgproto::Message.new(
         type: Msgproto::MsgType::MSG,
         id: SecureRandom.uuid,
         sender: "#{@jwt.id}:#{@device_id}",
@@ -66,7 +67,7 @@ module Selfid
     #
     # @params payload [string] base64 encoded payload to be sent
     def connect(payload)
-      send Msgproto::AccessControlList.new(
+      send_message Msgproto::AccessControlList.new(
         type: Msgproto::MsgType::ACL,
         id: SecureRandom.uuid,
         command: Msgproto::ACLCommand::PERMIT,
@@ -74,12 +75,19 @@ module Selfid
       )
     end
 
+    # Sends a message and waits for the response
+    #
+    # @params msg [Msgproto::Message] message object to be sent
     def send_and_wait_for_response(msg)
       wait_for msg.id do
-        send msg
+        send_message msg
       end
     end
 
+    # Executes the given block and waits for the message id specified on
+    # the uuid.
+    #
+    # @params uuid [string] unique identifier for a conversation
     def wait_for(uuid)
       Selfid.logger.info "sending #{uuid}"
       @mon.synchronize do
@@ -106,7 +114,10 @@ module Selfid
       @messages.delete(uuid)
     end
 
-    def send(msg)
+    # Send a message through self network
+    #
+    # @params msg [Msgproto::Message] message object to be sent
+    def send_message(msg)
       uuid = msg.id
       @mon.synchronize do
         @acks[uuid] = {
@@ -129,8 +140,19 @@ module Selfid
       false
     end
 
+    # Notify the type observer for the given message
+    def notify_observer(message)
+      # Return if there is no observer setup for this kind of message
+      return unless @type_observer.include? message.typ
+
+      Thread.new do
+        @type_observer[message.typ].call(message)
+      end
+    end
+
     private
 
+    # Start sthe websocket listener
     def start
       Selfid.logger.info "starting"
       @mon.synchronize do
@@ -167,6 +189,7 @@ module Selfid
       end
     end
 
+    # Cleans expired messages
     def clean_timeouts
       @messages.each do |uuid, msg|
         next unless msg[:timeout] < Selfid::Time.now
@@ -189,6 +212,7 @@ module Selfid
       end
     end
 
+    # Creates a websocket connection and sets up its callbacks.
     def start_connection
       Selfid.logger.info "starting listener"
       @ws = Faye::WebSocket::Client.new(@url)
@@ -214,11 +238,13 @@ module Selfid
       end
     end
 
+    # Pings the websocket server to keep the connection alive.
     def ping
       Selfid.logger.info "ping"
       @ws&.ping
     end
 
+    # Process an event when it arrives through the websocket connection.
     def on_message(event)
       input = Msgproto::Message.decode(event.data.pack('c*'))
       Selfid.logger.info " - received #{input.id} (#{input.type})"
@@ -245,6 +271,7 @@ module Selfid
         mark_as_arrived message.id
       else
         Selfid.logger.info "Received async message #{input.id}"
+        notify_observer(message)
         @inbox[message.id] = message
       end
     rescue StandardError => e
@@ -253,6 +280,7 @@ module Selfid
       nil
     end
 
+    # Authenticates current client on the websocket server.
     def authenticate
       Selfid.logger.info "authenticating"
       send_raw Msgproto::Auth.new(
@@ -267,7 +295,9 @@ module Selfid
       @ws.send(msg.to_proto.bytes)
     end
 
+    # Marks a message as arrived.
     def mark_as_arrived(id)
+      # Return if no one is waiting for this message
       return unless @messages.include? id
 
       @mon.synchronize do
@@ -276,6 +306,7 @@ module Selfid
       end
     end
 
+    # Marks a message as acknowledged by the server.
     def mark_as_acknowledged(id)
       return unless @acks.include? id
 

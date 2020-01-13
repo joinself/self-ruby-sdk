@@ -21,9 +21,9 @@ module Selfid
         @messaging.send_and_wait_for_response(proto)
       end
 
-      def send
+      def send_message
         Selfid.logger.info "asynchronously requesting information to #{@to}:#{@to_device}"
-        @messaging.send proto
+        @messaging.send_message proto
       end
 
       def unauthorized?

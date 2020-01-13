@@ -48,12 +48,12 @@ module Selfid
     # @param user_id [string] the receiver of the authentication request.
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :uuid The unique identifier of the authentication request.
-    # @option opts [String] :callback the callback url where self will send authentication response.
+    # @option opts [String] :async don't wait for the client to respond
     def authenticate(user_id, opts = {})
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       jti = opts.fetch(:jti, SecureRandom.uuid)
-      callback = opts.fetch(:callback, "")
+      async = opts.fetch(:async, false)
       body = {
         device_id: @messaging.device_id,
         typ: 'authentication_req',
@@ -65,12 +65,11 @@ module Selfid
         cid: uuid,
         jti: jti,
       }
-      body[:callback] = callback if !callback.empty?
       body = @jwt.prepare(body)
       return body if !opts.fetch(:request, true)
 
       Selfid.logger.info "authenticating uuid #{uuid}"
-      if !callback.empty?
+      if async
         @client.auth(body)
         return uuid
       end
@@ -149,10 +148,17 @@ module Selfid
                 end
       device = devices.first
       m.to_device = device
-      return m.send if opts.include?(:type) && (opts[:type] == :async)
+      return m.send_message if opts.include?(:type) && (opts[:type] == :async)
 
-      Selfid.logger.info "synchronously requesting information to #{id}:#{device}"
       m.request
+    end
+
+    # Adds an observer for a message type
+    #
+    # @param type [string] message type (ex: Selfid::Messages::AuthenticationResp.MSG_TYPE
+    # @param block [block] observer to be executed.
+    def on_message(type, &block)
+      @messaging.type_observer[type] = block
     end
 
     private

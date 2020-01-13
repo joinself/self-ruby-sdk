@@ -46,12 +46,12 @@ class SelfidTest < Minitest::Test
     end
 
     def test_authenticate
-      body = "{\"payload\":\"eyJkZXZpY2VfaWQiOiIxIiwidHlwIjoiYXV0aGVudGljYXRpb25fcmVxIiwiYXVkIjoiaHR0cHM6Ly9hcGkucmV2aWV3LnNlbGZpZC5uZXQiLCJpc3MiOiJvOW1wbmc5bTJqdiIsInN1YiI6Inh4eHh4eHh4IiwiaWF0IjoiMjAxOS0wOS0wMVQxMDowNTowMFoiLCJleHAiOiIyMDE5LTA5LTAxVDExOjA1OjAwWiIsImNpZCI6InV1aWQiLCJqdGkiOiJ1dWlkIiwiY2FsbGJhY2siOiJodHRwOi8vbG9jYWxob3N0OjMwMDAvY2FsbGJhY2sifQ\",\"protected\":\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9\",\"signature\":\"C6qYtU_c417CII_j1bMe6INdzr5HXux-JIOMyYFWLeWUdy7HwogNGe5C-6ClsMEBLwVJMLSlo2wc7FdDa8ipBA\"}"
+      body = "{\"payload\":\"eyJkZXZpY2VfaWQiOiIxIiwidHlwIjoiYXV0aGVudGljYXRpb25fcmVxIiwiYXVkIjoiaHR0cHM6Ly9hcGkucmV2aWV3LnNlbGZpZC5uZXQiLCJpc3MiOiJvOW1wbmc5bTJqdiIsInN1YiI6Inh4eHh4eHh4IiwiaWF0IjoiMjAxOS0wOS0wMVQxMDowNTowMFoiLCJleHAiOiIyMDE5LTA5LTAxVDExOjA1OjAwWiIsImNpZCI6InV1aWQiLCJqdGkiOiJ1dWlkIn0\",\"protected\":\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9\",\"signature\":\"OeFdBn6pp2ncr2bmbH-d6doBWh8EsaRYzWU8h611lJWhoxZ6lnxgxzVEqkK9WVcqzyVpVTSO-0y0gaPWu8pbDw\"}"
       stub_request(:post, "https://api.review.selfid.net/v1/auth").
         with(body: body, headers: headers).
         to_return(status: 200, body: "", headers: {})
 
-      app.authenticate("xxxxxxxx", uuid: "uuid", jti: "uuid", callback: "http://localhost:3000/callback")
+      app.authenticate("xxxxxxxx", uuid: "uuid", jti: "uuid", async: true)
     end
 
     def test_identity

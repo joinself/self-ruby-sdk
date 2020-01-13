@@ -8,6 +8,11 @@ module Selfid
     class AuthenticationResp < Base
       MSG_TYPE = "authentication_resp"
 
+      def initialize(messaging)
+        @typ = MSG_TYPE
+        super
+      end
+
       def parse(input)
         @input = input
         @typ = MSG_TYPE
