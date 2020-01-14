@@ -88,16 +88,6 @@ module Selfid
       authenticated?(resp.input)
     end
 
-    # Checks if the given input is an accepted authentication request.
-    #
-    # @param response [string] the response to an authentication request from self-api.
-    # @return [Hash] Details response.
-    #   * :accepted [Boolean] a bool describing if authentication is accepted or not.
-    #   * :uuid [String] the request identifier.
-    def authenticated?(response)
-      Authenticated.new(valid_payload(response))
-    end
-
     # Gets identity defails
     def identity(id)
       @client.identity(id)
@@ -175,10 +165,29 @@ module Selfid
     # @param type [string] message type (ex: Selfid::Messages::AuthenticationResp.MSG_TYPE
     # @param block [block] observer to be executed.
     def on_message(type, &block)
-      @messaging.type_observer[type] = block
+      if type == Selfid::Messages::AuthenticationResp::MSG_TYPE
+        @messaging.type_observer[type] = Proc.new do |res|
+          auth = authenticated?(res.input)
+          block.call(auth)
+        end
+
+      else
+        @messaging.type_observer[type] = block
+      end
     end
 
     private
+
+    # Checks if the given input is an accepted authentication request.
+    #
+    # @param response [string] the response to an authentication request from self-api.
+    # @return [Hash] Details response.
+    #   * :accepted [Boolean] a bool describing if authentication is accepted or not.
+    #   * :uuid [String] the request identifier.
+    def authenticated?(response)
+      Authenticated.new(valid_payload(response))
+    end
+
 
     def prepare_facts(fields)
       fs = []
