@@ -49,7 +49,7 @@ module Selfid
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :uuid The unique identifier of the authentication request.
     # @option opts [String] :async don't wait for the client to respond
-    def authenticate(user_id, opts = {})
+    def authenticate(user_id, opts = {}, &block)
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
       jti = opts.fetch(:jti, SecureRandom.uuid)
@@ -67,6 +67,15 @@ module Selfid
       }
       body = @jwt.prepare(body)
       return body if !opts.fetch(:request, true)
+
+      if block_given?
+        @messaging.uuid_observer[uuid] = Proc.new do |res|
+          auth = authenticated?(res.input)
+          block.call(auth)
+        end
+        # when a block is given the request will always be asynchronous.
+        async = true
+      end
 
       Selfid.logger.info "authenticating uuid #{uuid}"
       if async

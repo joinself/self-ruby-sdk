@@ -12,7 +12,7 @@ require_relative 'proto/aclcommand_pb'
 
 module Selfid
   class MessagingClient
-    attr_accessor :inbox, :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer
+    attr_accessor :inbox, :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer
 
     # RestClient initializer
     #
@@ -26,6 +26,7 @@ module Selfid
       @messages = {}
       @acks = {}
       @type_observer = {}
+      @uuid_observer = {}
       @jwt = jwt
       @client = client
       @device_id = "1"
@@ -142,6 +143,14 @@ module Selfid
 
     # Notify the type observer for the given message
     def notify_observer(message)
+      if @uuid_observer.include? message.id
+        Thread.new do
+          @uuid_observer[message.id].call(message)
+          @uuid_observer.delete(message.id)
+        end
+        return
+      end
+
       # Return if there is no observer setup for this kind of message
       return unless @type_observer.include? message.typ
 

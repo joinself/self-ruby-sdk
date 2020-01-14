@@ -35,11 +35,21 @@ class SelfidTest < Minitest::Test
     end
 
 
-    def test_notify_observer
+    def test_notify_observer_type
       client.type_observer[Selfid::Messages::AuthenticationResp::MSG_TYPE] = Proc.new do |input|
         assert_equal input.typ, Selfid::Messages::AuthenticationResp::MSG_TYPE
       end
       message = Selfid::Messages::AuthenticationResp.new(client)
+      client.send(:notify_observer, message)
+    end
+
+    def test_notify_observer_uuid
+      client.uuid_observer["lol"] = Proc.new do |input|
+        assert_equal input.typ, Selfid::Messages::AuthenticationResp::MSG_TYPE
+        assert_equal input.id, "lol"
+      end
+      message = Selfid::Messages::AuthenticationResp.new(client)
+      message.id = "lol"
       client.send(:notify_observer, message)
     end
 
