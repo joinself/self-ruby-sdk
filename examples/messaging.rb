@@ -12,9 +12,9 @@ adria_id = "32287532230"
 @sarah = Selfid::App.new(sarah_id, sarah_seed, self_url: "http://localhost:8080", messaging_url: "ws://localhost:8086/v1/messaging")
 @john = Selfid::App.new(john_id, john_seed, self_url: "http://localhost:8080", messaging_url: "ws://localhost:8086/v1/messaging")
 
-@sarah.connect(john_id)
-@john.connect(sarah_id)
-@john.connect(adria_id)
+@sarah.acl.allow(john_id)
+@john.acl.allow(sarah_id)
+@john.acl.allow(adria_id)
 
 # @john.request_information(adria_id, ["passport_last_name"], type: :async)
 # return
