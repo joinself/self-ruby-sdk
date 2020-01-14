@@ -23,7 +23,21 @@ puts "Sending an authentication request to your device..."
 
   puts "You are now authenticated 🤘"
   puts ""
-  exit!
+  puts "Requesting basic information"
+
+  res = @app.request_information(user, ['name','email']) do |res|
+    if res.nil?
+      puts 'An undetermined problem happened with your request, try again in a few minutes'
+      return
+    end
+    if res.status == "rejected"
+      puts 'Information request rejected'
+      return
+    end
+
+    puts "Hello #{res.facts[:name].value}"
+    exit!
+  end
 end
 
-sleep 10
+sleep 100

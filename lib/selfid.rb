@@ -139,7 +139,8 @@ module Selfid
     # @param fields [array] list of fields to be requested
     # @param type [symbol] you can define if you want to request this
     # =>  information on a sync or an async way
-    def request_information(id, fields, opts = {})
+    def request_information(id, fields, opts = {}, &block)
+      async = opts.include?(:type) && (opts[:type] == :async)
       m = Selfid::Messages::IdentityInfoReq.new(@messaging)
       m.id = SecureRandom.uuid
       m.from = @jwt.id
@@ -157,7 +158,14 @@ module Selfid
                 end
       device = devices.first
       m.to_device = device
-      return m.send_message if opts.include?(:type) && (opts[:type] == :async)
+
+      if block_given?
+        @messaging.uuid_observer[m.id] = block
+        # when a block is given the request will always be asynchronous.
+        async = true
+      end
+
+      return m.send_message if async
 
       m.request
     end
