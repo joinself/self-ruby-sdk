@@ -1,4 +1,4 @@
-![SelfID logo](https://docs.selfid.net/images/logo.png)
+![SelfID logo](https://docs.selfid.net/images/logo-dark.png)
 
 By [Self ID](https://www.selfid.net/).
 
