@@ -29,6 +29,7 @@ module Selfid
     # @param app_key [string] the app api key provided by developer portal.
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :self_url The self provider url.
+    # @option opts [String] :messaging_url The messaging self provider url.
     def initialize(app_id, app_key, opts = {})
       @jwt = Selfid::Jwt.new(app_id, app_key)
 
@@ -53,6 +54,7 @@ module Selfid
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :uuid The unique identifier of the authentication request.
     # @option opts [String] :async don't wait for the client to respond
+    # @option opts [String] :jti specify the jti to be used.
     def authenticate(user_id, opts = {}, &block)
       Selfid.logger.info "authenticating #{user_id}"
       uuid = opts.fetch(:uuid, SecureRandom.uuid)
@@ -93,26 +95,10 @@ module Selfid
     end
 
     # Gets identity defails
+    #
+    # @param id [string] identity SelfID
     def identity(id)
       @client.identity(id)
-    end
-
-    # Gets a list of received messages
-    def inbox
-      @messaging.inbox
-    end
-
-    def clear_inbox
-      @messaging.inbox = {}
-    end
-
-    # Will stop listening for messages
-    def stop
-      @messaging.stop
-    end
-
-    def parse(input)
-      Selfid::Messages.parse(input, @messaging)
     end
 
     # Requests information to an entity
