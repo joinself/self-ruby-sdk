@@ -13,7 +13,7 @@ connections = @app.acl.list
 p connections
 
 # Block connections from "57340034173"
-@app.acl.block("57340034173")
+@app.acl.deny("57340034173")
 connections = @app.acl.list
 p connections
 

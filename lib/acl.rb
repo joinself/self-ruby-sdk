@@ -31,8 +31,8 @@ module Selfid
                          ))
     end
 
-    # Blocks incomming messages from the given identity
-    def block(id)
+    # Deny incomming messages from the given identity
+    def deny(id)
       Selfid.logger.info "Allowing connections from #{id}"
       @messaging.remove_acl_rule(@jwt.prepare(
                            iss: @jwt.id,

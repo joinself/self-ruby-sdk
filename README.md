@@ -102,9 +102,9 @@ Even when your app is created you set its default permissions so `Everyone` or `
 ```ruby
 @app.acl.allow "1112223334"
 ```
-#### Block connections
+#### Block incoming connections from the specified identity
 ```ruby
-@app.acl.block "1112223334"
+@app.acl.deny "1112223334"
 ```
 
 ### Identity
