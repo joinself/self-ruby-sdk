@@ -8,16 +8,16 @@ user = "57340034173"
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"])
 
 # Allow connections from "57340034173"
-@app.acl.allow("57340034173")
-connections = @app.acl.list
+@app.acl_allow("57340034173")
+connections = @app.acl_list
 p connections
 
 # Block connections from "57340034173"
-@app.acl.deny("57340034173")
-connections = @app.acl.list
+@app.acl_deny("57340034173")
+connections = @app.acl_list
 p connections
 
 # Allow connections from "57340034173"
-@app.acl.allow("57340034173")
-connections = @app.acl.list
+@app.acl_allow("57340034173")
+connections = @app.acl_list
 p connections

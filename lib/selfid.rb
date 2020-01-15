@@ -20,7 +20,7 @@ module Selfid
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
-    attr_reader :app_id, :app_key, :client, :jwt, :acl
+    attr_reader :app_id, :app_key, :client, :jwt
     attr_accessor :messaging
 
     # Initializes a Selfid App
@@ -152,6 +152,25 @@ module Selfid
       else
         @messaging.type_observer[type] = block
       end
+    end
+
+    # Allows incomming messages from the given identity.
+    #
+    # @param type [id] identity to be allowed
+    def acl_allow(id)
+      @acl.allow id
+    end
+
+    # Lists allowed connections.
+    def acl_list
+      @acl.list
+    end
+
+    # Deny incomming messages from the given identity.
+    #
+    # @param type [id] identity to be denied
+    def acl_deny(id)
+      @acl.deny id
     end
 
     private
