@@ -1,4 +1,4 @@
-![SelfID logo](https://docs.selfid.net/images/logo-dark.png)
+![SelfID logo](https://media-exp1.licdn.com/dms/image/C4E0BAQHiKfIfzq6P0w/company-logo_200_200/0?e=2159024400&v=beta&t=JDd8UXJlMG7AKpLNAP5nDYd75gQZT8E8s98xSc0jRO0)
 
 By [Self ID](https://www.selfid.net/).
 
