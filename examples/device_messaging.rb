@@ -8,7 +8,7 @@ adria_id = "61940310173"
 
 @john = Selfid::App.new(john_id, john_seed, self_url: "http://localhost:8080", messaging_url: "ws://localhost:8086/v1/messaging")
 
-@john.connect(adria_id)
+@john.acl.allow(adria_id)
 
 res = @john.request_information(adria_id, ["email", "passport_first_name", "passport_last_name"])
 

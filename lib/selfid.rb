@@ -10,6 +10,7 @@ require_relative 'client'
 require_relative 'messaging'
 require_relative 'ntptime'
 require_relative 'authenticated'
+require_relative 'acl'
 
 # Namespace for classes and modules that handle Self interactions.
 module Selfid
@@ -19,7 +20,7 @@ module Selfid
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
-    attr_reader :app_id, :app_key, :client, :jwt
+    attr_reader :app_id, :app_key, :client, :jwt, :acl
     attr_accessor :messaging
 
     # Initializes a Selfid App
@@ -40,7 +41,10 @@ module Selfid
       @public_url = url if @public_url.empty?
 
       messaging_url = opts.fetch(:messaging_url, "wss://messaging.review.selfid.net/v1/messaging")
-      @messaging = MessagingClient.new(messaging_url, @jwt, @client) unless messaging_url.nil?
+      if not messaging_url.nil?
+        @messaging = MessagingClient.new(messaging_url, @jwt, @client)
+        @acl = ACL.new(@messaging)
+      end
     end
 
     # Sends an authentication request to the specified user_id.
@@ -91,18 +95,6 @@ module Selfid
     # Gets identity defails
     def identity(id)
       @client.identity(id)
-    end
-
-    # Allows authenticated user to receive incoming messages from the given id
-    #
-    # @params id [string] SelfID to be allowed
-    def connect(id)
-      Selfid.logger.info "Setting ACL for #{id}"
-      @messaging.connect(@jwt.prepare(
-                           iss: @jwt.id,
-                           acl_source: id,
-                           acl_exp: (Selfid::Time.now + 360_000).to_datetime.rfc3339
-                         ))
     end
 
     # Gets a list of received messages
@@ -187,7 +179,6 @@ module Selfid
     def authenticated?(response)
       Authenticated.new(valid_payload(response))
     end
-
 
     def prepare_facts(fields)
       fs = []

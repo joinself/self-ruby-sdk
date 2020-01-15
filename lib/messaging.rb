@@ -64,16 +64,39 @@ module Selfid
       )
     end
 
-    # Allows authenticated user to receive incoming messages from the given id
+    # Allows incomming messages from the given identity
     #
     # @params payload [string] base64 encoded payload to be sent
-    def connect(payload)
+    def add_acl_rule(payload)
       send_message Msgproto::AccessControlList.new(
         type: Msgproto::MsgType::ACL,
         id: SecureRandom.uuid,
         command: Msgproto::ACLCommand::PERMIT,
         payload: payload,
       )
+    end
+
+    # Blocks incoming messages from specified identities
+    #
+    # @params payload [string] base64 encoded payload to be sent
+    def remove_acl_rule(payload)
+      send_message Msgproto::AccessControlList.new(
+        type: Msgproto::MsgType::ACL,
+        id: SecureRandom.uuid,
+        command: Msgproto::ACLCommand::REVOKE,
+        payload: payload,
+      )
+    end
+
+    # Lists acl rules
+    def list_acl_rules
+      wait_for 'acl_list' do
+        send_raw Msgproto::AccessControlList.new(
+          type: Msgproto::MsgType::ACL,
+          id: SecureRandom.uuid,
+          command: Msgproto::ACLCommand::LIST,
+        )
+      end
     end
 
     # Sends a message and waits for the response
@@ -264,12 +287,26 @@ module Selfid
       when :ACK
         Selfid.logger.info "#{input.id} acknowledged"
         mark_as_acknowledged input.id
+      when :ACL
+        Selfid.logger.info "ACL received"
+        process_incomming_acl input
       when :MSG
         Selfid.logger.info "Message #{input.id} received"
         process_incomming_message input
       end
     rescue TypeError
       Selfid.logger.info "invalid array message"
+    end
+
+    def process_incomming_acl(input)
+      list = JSON.parse(input.recipient)
+
+      @messages['acl_list'][:response] = list
+      mark_as_arrived 'acl_list'
+    rescue StandardError => e
+      p input.to_json
+      Selfid.logger.info e
+      nil
     end
 
     def process_incomming_message(input)

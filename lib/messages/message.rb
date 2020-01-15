@@ -12,6 +12,7 @@ module Selfid
              else
                input.ciphertext
              end
+
       jwt = JSON.parse(body, symbolize_names: true)
       payload = JSON.parse(messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
 

@@ -11,7 +11,7 @@ Selfid.logger = Logger.new('/dev/null')
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"])
 
 # Allows connections from everyone on self network to your app.
-@app.connect("*")
+@app.acl.allow("*")
 
 # Authenticate a user to our app.
 puts "Sending an authentication request to your device..."
