@@ -15,11 +15,11 @@ Selfid.logger = Logger.new('/dev/null')
 
 # Authenticate a user to our app.
 puts "Sending an authentication request to your device..."
-res = @app.authenticate(user)
+auth = @app.authenticate(user)
 
-if !res[:accepted]
+if not auth.accepted?
   puts "Authentication request has been rejected"
-  return
+  exit!
 end
 
 puts "You are now authenticated 🤘"

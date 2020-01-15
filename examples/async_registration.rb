@@ -16,7 +16,7 @@ Selfid.logger = Logger.new('/dev/null')
 # Authenticate a user to our app.
 puts "Sending an authentication request to your device..."
 @app.authenticate user do |auth|
-  if !auth.accepted?
+  if not auth.accepted?
     puts "Authentication request has been rejected"
     exit!
   end
@@ -28,11 +28,11 @@ puts "Sending an authentication request to your device..."
   res = @app.request_information(user, ['name','email']) do |res|
     if res.nil?
       puts 'An undetermined problem happened with your request, try again in a few minutes'
-      return
+      exit!
     end
     if res.status == "rejected"
       puts 'Information request rejected'
-      return
+      exit!
     end
 
     puts "Hello #{res.facts[:name].value}"
