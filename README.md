@@ -3,7 +3,7 @@
 By [Self ID](https://www.selfid.net/).
 
 [![Build Status](https://api.travis-ci.org/selfid-net/selfid-gem.svg?branch=master)](http://travis-ci.org/selfid-net/selfid-gem)
-
+[![Gem Version](https://badge.fury.io/rb/selfid.svg)](https://badge.fury.io/rb/selfid)
 
 This gem provides a toolset to interact with self network from your ruby code.
 
@@ -121,7 +121,7 @@ You can access some network details of a specific app only if that app gave you 
 
 ## Documentation
 
-You can find documentation for this gem on https://docs.selfid.net/
+You can find general documentation for Self on [self docs site](https://docs.selfid.net/) and specifically for this library on [rubydoc](https://www.rubydoc.info/gems/selfid/).
 
 ## Examples
 
