@@ -100,11 +100,11 @@ Even when your app is created you set its default permissions so `Everyone` or `
 ```
 #### Allow new connections
 ```ruby
-@app.acl_allow "1112223334"
+@app.acl_permit "1112223334"
 ```
 #### Block incoming connections from the specified identity
 ```ruby
-@app.acl_deny "1112223334"
+@app.acl_revoke "1112223334"
 ```
 
 ### Identity

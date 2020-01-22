@@ -154,10 +154,10 @@ module Selfid
       end
     end
 
-    # Allows incomming messages from the given identity.
+    # Permits incomming messages from the given identity.
     #
     # @param type [id] identity to be allowed
-    def acl_allow(id)
+    def acl_permit(id)
       @acl.allow id
     end
 
@@ -166,10 +166,10 @@ module Selfid
       @acl.list
     end
 
-    # Deny incomming messages from the given identity.
+    # Revokes incomming messages from the given identity.
     #
     # @param type [id] identity to be denied
-    def acl_deny(id)
+    def acl_revoke(id)
       @acl.deny id
     end
 
