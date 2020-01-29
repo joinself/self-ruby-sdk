@@ -15,7 +15,7 @@ module Selfid
         @origin = payload[:iss]
         @source = payload[:source]
         @name = key
-        @value = payload[key.to_sym]
+        @value = payload[field_map(key.to_sym)]
         @result = payload[:result]
         @verified = valid_signature?(jwt, from)
       end
@@ -36,6 +36,13 @@ module Selfid
                                 value: @value,
                                 result: @result,
                               ))
+
+      protected
+      
+          def field_map(key)
+            {name: :name, email: :email_address}[key]
+          end
+
       end
     end
   end
