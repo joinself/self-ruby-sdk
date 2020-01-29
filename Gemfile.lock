@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfid (0.0.60)
+    selfid (0.0.61)
       async
       ed25519
       eventmachine
@@ -22,7 +22,7 @@ GEM
       nio4r (~> 2.3)
       timers (~> 4.1)
     coderay (1.1.2)
-    console (1.7.0)
+    console (1.7.2)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
     ed25519 (1.2.4)
