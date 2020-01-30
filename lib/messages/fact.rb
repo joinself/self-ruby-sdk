@@ -40,7 +40,7 @@ module Selfid
       protected
       
           def field_map(key)
-            mapped = {"email"=>"email_address"}
+            mapped = {:email=>"email_address"}
             return mapped[key] if mapped.include? key
             key
           end
