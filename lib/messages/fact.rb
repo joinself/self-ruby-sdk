@@ -15,6 +15,7 @@ module Selfid
         @origin = payload[:iss]
         @source = payload[:source]
         @name = key
+        require 'pry'; binding.pry
         @value = payload[field_map(key).to_sym]
         @result = payload[:result]
         @verified = valid_signature?(jwt, from)
@@ -36,7 +37,7 @@ module Selfid
                                 value: @value,
                                 result: @result,
                               ))
-
+      end
       protected
       
           def field_map(key)
@@ -44,8 +45,6 @@ module Selfid
             return mapped[key] if mapped.include? key
             key
           end
-
-      end
     end
   end
 end

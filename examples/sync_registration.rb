@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 require_relative '../lib/selfid.rb'
-user = "23799253795"
+user = "91377189133"
 
 # Disable the debug logs
-Selfid.logger = Logger.new('/dev/null')
+# Selfid.logger = Logger.new('/dev/null')
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfid.net/
