@@ -15,7 +15,7 @@ module Selfid
         @origin = payload[:iss]
         @source = payload[:source]
         @name = key
-        @value = payload[field_map(key.to_sym)]
+        @value = payload[field_map(key).to_sym]
         @result = payload[:result]
         @verified = valid_signature?(jwt, from)
       end
@@ -40,7 +40,9 @@ module Selfid
       protected
       
           def field_map(key)
-            {name: :name, email: :email_address}[key]
+            mapped = {"email"=>"email_address"}
+            return mapped[key] if mapped.include? key
+            key
           end
 
       end
