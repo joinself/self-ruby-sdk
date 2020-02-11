@@ -15,7 +15,6 @@ module Selfid
         @origin = payload[:iss]
         @source = payload[:source]
         @name = key
-        require 'pry'; binding.pry
         @value = payload[field_map(key).to_sym]
         @result = payload[:result]
         @verified = valid_signature?(jwt, from)
