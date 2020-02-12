@@ -12,7 +12,7 @@ require_relative 'proto/aclcommand_pb'
 
 module Selfid
   class MessagingClient
-    attr_accessor :inbox, :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer
+    attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer
 
     # RestClient initializer
     #
@@ -20,7 +20,6 @@ module Selfid
     # @param jwt [Object] Selfid::Jwt object
     # @params client [Object] Selfid::Client object
     def initialize(url, jwt, client, options = {})
-      @inbox = {}
       @mon = Monitor.new
       @url = url
       @messages = {}
@@ -134,7 +133,6 @@ module Selfid
       Selfid.logger.info "response received for #{uuid}"
       @messages[uuid][:response]
     ensure
-      @inbox.delete(uuid)
       @messages.delete(uuid)
     end
 
@@ -318,7 +316,6 @@ module Selfid
       else
         Selfid.logger.info "Received async message #{input.id}"
         notify_observer(message)
-        @inbox[message.id] = message
       end
     rescue StandardError => e
       p input.to_json
