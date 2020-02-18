@@ -53,10 +53,10 @@ module Selfid
       protected
 
       def proto
-        recipient = if @proxy.nil?
+        recipient = if @intermediary.nil?
                       "#{@to}:#{@to_device}"
                     else
-                      "#{@proxy}:#{@to_device}"
+                      "#{@intermediary}:#{@to_device}"
                     end
 
         Msgproto::Message.new(

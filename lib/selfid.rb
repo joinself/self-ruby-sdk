@@ -20,6 +20,9 @@ module Selfid
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
+    BASE_URL = "https://api.selfid.net"
+    MESSAGING_URL = "wss://messaging.selfid.net/v1/messaging"
+
     attr_reader :app_id, :app_key, :client, :jwt
     attr_accessor :messaging
 
@@ -28,18 +31,25 @@ module Selfid
     # @param app_id [string] the app id.
     # @param app_key [string] the app api key provided by developer portal.
     # @param [Hash] opts the options to authenticate.
-    # @option opts [String] :self_url The self provider url.
+    # @option opts [String] :base_url The self provider url.
     # @option opts [String] :messaging_url The messaging self provider url.
+    # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
+    # @option opts [String] :device_id The device id to be used by the app defaults to "1".
     def initialize(app_id, app_key, opts = {})
       @jwt = Selfid::Jwt.new(app_id, app_key)
 
-      url = opts.fetch(:self_url, "https://api.review.selfid.net")
+      url = opts.fetch(:base_url, BASE_URL)
       Selfid.logger.info "client setup with #{url}"
       @client = RestClient.new(url, @jwt)
 
-      messaging_url = opts.fetch(:messaging_url, "wss://messaging.review.selfid.net/v1/messaging")
+      messaging_url = opts.fetch(:messaging_url, MESSAGING_URL)
       if not messaging_url.nil?
-        @messaging = MessagingClient.new(messaging_url, @jwt, @client)
+        @messaging = MessagingClient.new(messaging_url, 
+                                         @jwt, 
+                                         @client, 
+                                         auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
+                                         device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE),
+                                        )
         @acl = ACL.new(@messaging)
       end
     end
@@ -103,6 +113,7 @@ module Selfid
     # @param fields [array] list of fields to be requested
     # @param type [symbol] you can define if you want to request this
     # =>  information on a sync or an async way
+    # @option opts [String] :intermediary the intermediary selfid to be used.
     def request_information(id, fields, opts = {}, &block)
       async = opts.include?(:type) && (opts[:type] == :async)
       m = Selfid::Messages::IdentityInfoReq.new(@messaging)
@@ -111,12 +122,12 @@ module Selfid
       m.to = id
       m.fields = prepare_facts(fields)
       m.id = opts[:cid] if opts.include?(:cid)
-      m.proxy = opts[:proxy] if opts.include?(:proxy)
+      m.intermediary = opts[:intermediary] if opts.include?(:intermediary)
       m.description = opts[:description] if opts.include?(:description)
       return @jwt.prepare(m.body) if !opts.fetch(:request, true)
 
-      devices = if opts.include?(:proxy)
-                  @client.devices(opts[:proxy])
+      devices = if opts.include?(:intermediary)
+                  @client.devices(opts[:intermediary])
                 else
                   @client.devices(id)
                 end

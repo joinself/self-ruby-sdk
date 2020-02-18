@@ -12,6 +12,9 @@ require_relative 'proto/aclcommand_pb'
 
 module Selfid
   class MessagingClient
+    DEFAULT_DEVICE="1"
+    DEFAULT_AUTO_RECONNECT=true
+
     attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer
 
     # RestClient initializer
@@ -19,6 +22,8 @@ module Selfid
     # @param url [string] self-messaging url
     # @param jwt [Object] Selfid::Jwt object
     # @params client [Object] Selfid::Client object
+    # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
+    # @option opts [String] :device_id The device id to be used by the app defaults to "1".
     def initialize(url, jwt, client, options = {})
       @mon = Monitor.new
       @url = url
@@ -28,9 +33,11 @@ module Selfid
       @uuid_observer = {}
       @jwt = jwt
       @client = client
-      @device_id = "1"
       @ack_timeout = 60 # seconds
       @timeout = 120 # seconds
+      @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
+      @auto_reconnect = options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT)
+
       if options.include? :ws
         @ws = options[:ws]
       else
@@ -258,6 +265,9 @@ module Selfid
       end
 
       @ws.on :close do |event|
+        if !@auto_reconnect
+          raise StandardError "websocket connection closed"
+        end
         if !@reconnection_delay.nil?
           Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
           sleep @reconnection_delay
