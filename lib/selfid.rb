@@ -100,11 +100,18 @@ module Selfid
       authenticated?(resp.input)
     end
 
-    # Gets identity defails
+    # Gets an identity details
     #
     # @param id [string] identity SelfID
     def identity(id)
       @client.identity(id)
+    end
+
+    # Gets an app defails
+    #
+    # @param id [string] app SelfID
+    def app(id)
+      @client.app(id)
     end
 
     # Requests information to an entity

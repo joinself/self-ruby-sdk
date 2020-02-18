@@ -27,18 +27,27 @@ module Selfid
       raise body[:message]
     end
 
-    # Get identity / app details
+    # Get identity details
     #
-    # @param id [string] identity id.
+    # @param id [string] identity self_id.
     def identity(id)
-      res = if id.length == 11
-              get "/v1/identities/#{id}"
-            else
-              get "/v1/apps/#{id}"
-            end
+      res = get "/v1/identities/#{id}"
       body = JSON.parse(res.body, symbolize_names: true)
       if res.code != 200
         Selfid.logger.error "identity response : #{body[:message]}"
+        raise body[:message]
+      end
+      body
+    end
+
+    # Get app details
+    #
+    # @param id [string] app self_id.
+    def app(id)
+      res = get "/v1/apps/#{id}"
+      body = JSON.parse(res.body, symbolize_names: true)
+      if res.code != 200
+        Selfid.logger.error "app response : #{body[:message]}"
         raise body[:message]
       end
       body
