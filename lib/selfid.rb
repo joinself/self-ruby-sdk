@@ -102,16 +102,23 @@ module Selfid
 
     # Gets an identity details
     #
-    # @param id [string] identity SelfID
-    def identity(id)
-      @client.identity(id)
+    # @param self_id [string] identity SelfID
+    def identity(self_id)
+      @client.identity(self_id)
     end
 
     # Gets an app defails
     #
-    # @param id [string] app SelfID
-    def app(id)
-      @client.app(id)
+    # @param self_id [string] app SelfID
+    def app(self_id)
+      @client.app(self_id)
+    end
+
+    # Gets selfid registered devices
+    #
+    # @param self_id [string] identity/app selfID
+    def devices(self_id)
+      @client.devices(self_id)
     end
 
     # Requests information to an entity
