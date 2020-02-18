@@ -81,7 +81,7 @@ module Selfid
     #
     # @param id [string] identity id
     def public_keys(id)
-      i = identity(id)
+      i = entity(id)
       i[:public_keys]
     end
 
