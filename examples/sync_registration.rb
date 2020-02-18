@@ -11,7 +11,7 @@ user = "91377189133"
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"])
 
 # Allows connections from everyone on self network to your app.
-@app.acl_permit("*")
+@app.permit_connection("*")
 
 # Authenticate a user to our app.
 puts "Sending an authentication request to your device..."
