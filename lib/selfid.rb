@@ -177,9 +177,10 @@ module Selfid
           auth = authenticated?(res.input)
           block.call(auth)
         end
-
       else
-        @messaging.type_observer[type] = block
+        @messaging.type_observer[type] = Proc.new do |res|
+          block.call(res)
+        end
       end
     end
 
