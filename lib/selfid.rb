@@ -178,9 +178,7 @@ module Selfid
           block.call(auth)
         end
       else
-        @messaging.type_observer[type] = Proc.new do |res|
-          block.call(res)
-        end
+        @messaging.type_observer[type] = block
       end
     end
 
