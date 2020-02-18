@@ -53,6 +53,17 @@ module Selfid
       body
     end
 
+    # Get app/identity details
+    #
+    # @param id [string] app/identity self_id.
+    def entity(id)
+      if id.length == 11
+        return identity(id)
+      else
+        return app(id)
+      end
+    end
+
     # Lists all devices assigned to the given identity
     #
     # @param id [string] identity id

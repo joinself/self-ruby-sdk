@@ -114,6 +114,14 @@ module Selfid
       @client.app(self_id)
     end
 
+    # Gets an app/identity defails
+    #
+    # @param self_id [string] app/identity SelfID
+    def entity(self_id)
+      @client.entity(self_id)
+    end
+
+
     # Gets selfid registered devices
     #
     # @param self_id [string] identity/app selfID
