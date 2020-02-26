@@ -25,7 +25,7 @@ puts "Sending an authentication request to your device..."
   puts ""
   puts "Requesting basic information"
 
-  @app.request_information(user, [{fact:'display_name'},{fact:'email_address'}]) do |res|
+  @app.request_information(user, [{fact:'display_name'}, {fact:'email_address'}]) do |res|
     if res.nil?
       puts 'An undetermined problem happened with your request, try again in a few minutes'
       exit!

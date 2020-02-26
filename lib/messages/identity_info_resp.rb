@@ -34,7 +34,7 @@ module Selfid
       end
 
       def fact(name)
-        facts.select{|f| f[:fact] == name}.first
+        @facts.select{|f| f[:fact] == name}.first
       end
 
       protected
