@@ -8,6 +8,8 @@ module Selfid
     class IdentityInfoReq < Base
       MSG_TYPE = "identity_info_req"
 
+      attr_accessor :facts
+
       def parse(input)
         @input = input
         @typ = MSG_TYPE
