@@ -26,7 +26,7 @@ puts "You are now authenticated 🤘"
 puts ""
 puts "Requesting basic information"
 
-res = @app.request_information(user, ['name','email'])
+res = @app.request_information(user, [{fact:'display_name'}, {fact:'email_address'}])
 
 if res.nil?
   puts 'An undetermined problem happened with your request, try again in a few minutes'
@@ -37,4 +37,4 @@ if res.status == "rejected"
   return
 end
 
-puts "Hello #{res.facts[:name].value}"
+puts "Hello #{res.fact['display_name'].value}"

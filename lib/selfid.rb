@@ -44,9 +44,9 @@ module Selfid
 
       messaging_url = opts.fetch(:messaging_url, MESSAGING_URL)
       if not messaging_url.nil?
-        @messaging = MessagingClient.new(messaging_url, 
-                                         @jwt, 
-                                         @client, 
+        @messaging = MessagingClient.new(messaging_url,
+                                         @jwt,
+                                         @client,
                                          auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
                                          device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE),
                                         )
@@ -132,17 +132,17 @@ module Selfid
     # Requests information to an entity
     #
     # @param id [string] selfID to be requested
-    # @param fields [array] list of fields to be requested
+    # @param facts [array] list of facts to be requested
     # @param type [symbol] you can define if you want to request this
     # =>  information on a sync or an async way
     # @option opts [String] :intermediary the intermediary selfid to be used.
-    def request_information(id, fields, opts = {}, &block)
+    def request_information(id, facts, opts = {}, &block)
       async = opts.include?(:type) && (opts[:type] == :async)
       m = Selfid::Messages::IdentityInfoReq.new(@messaging)
       m.id = SecureRandom.uuid
       m.from = @jwt.id
       m.to = id
-      m.fields = prepare_facts(fields)
+      m.facts = facts
       m.id = opts[:cid] if opts.include?(:cid)
       m.intermediary = opts[:intermediary] if opts.include?(:intermediary)
       m.description = opts[:description] if opts.include?(:description)
@@ -212,21 +212,6 @@ module Selfid
     #   * :uuid [String] the request identifier.
     def authenticated?(response)
       Authenticated.new(valid_payload(response))
-    end
-
-    def prepare_facts(fields)
-      fs = []
-      fields.each do |f|
-        if f.is_a?(Hash)
-          fs << f
-        else
-          fs << {
-            source: "user-specified",
-            field: f,
-          }
-        end
-      end
-      fs
     end
 
     def valid_payload(response)

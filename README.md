@@ -77,16 +77,16 @@ You can request some information to other peers on the network. Same as with aut
 ```ruby
 # Blocking approach to fact request.
 # request name and email values to 1112223334
-res = @client.request_information("1112223334", ["name","email"])
+res = @client.request_information("1112223334", [{fact: "display_name"}, {fact: "email_address"}])
 # print the returned values
-puts "Hello #{res.facts[:name].value}"
+puts "Hello #{res.fact('display_name').value}"
 ```
 ```ruby
 # Non-blocking approach to fact request.
 # request name and email values to 1112223334
-@client.request_information("1112223334", ["name","email"]) do |res|
+@client.request_information("1112223334", [{fact: "display_name"}, {fact: "email_address"}]) do |res|
   # print the returned values
-  puts "Hello #{res.facts[:name].value}"
+  puts "Hello #{res.fact('display_name').value}"
 end
 ```
 

@@ -19,18 +19,22 @@ module Selfid
         @from = payload[:iss]
         @to = payload[:sub]
         @expires = payload[:exp]
-        @fields = payload[:fields]
         @status = payload[:status]
-        @facts = {}
-        payload[:facts] = {} if payload[:facts].nil?
-        payload[:facts].each do |k, v|
+        @facts = []
+        payload[:facts] = [] if payload[:facts].nil?
+        payload[:facts].each do |f|
           begin
-            @facts[k] = Selfid::Messages::Fact.new(@messaging)
-            @facts[k].parse(k, v, from)
+            fact = Selfid::Messages::Fact.new(@messaging)
+            fact.parse(f, from)
+            @facts.push(fact)
           rescue StandardError => e
             Selfid.logger.info e.message
           end
         end
+      end
+
+      def fact(name)
+        facts.select{|f| f[:fact] == name}.first
       end
 
       protected
@@ -50,7 +54,6 @@ module Selfid
             cid: @id,
             jti: SecureRandom.uuid,
             status: @status,
-            fields: @fields,
             facts: @facts,
           ),
         )
