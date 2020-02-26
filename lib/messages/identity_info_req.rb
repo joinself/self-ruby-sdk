@@ -16,7 +16,7 @@ module Selfid
         @from = @payload[:iss]
         @to = @payload[:sub]
         @expires = @payload[:exp]
-        @fields = @payload[:fields]
+        @facts = @payload[:facts]
       end
 
       def build_response
@@ -25,7 +25,7 @@ module Selfid
         m.from = @to
         m.to = @from
         m.to_device = @messaging.device_id
-        m.fields = @fields
+        m.facts = @facts
         m
       end
 
@@ -44,7 +44,7 @@ module Selfid
           exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
           cid: @id,
           jti: SecureRandom.uuid,
-          fields: @fields,
+          facts: @facts,
         }
         b[:description] = @description unless @description.nil?
         b

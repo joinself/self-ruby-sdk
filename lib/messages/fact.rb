@@ -3,47 +3,33 @@
 module Selfid
   module Messages
     class Fact
-      attr_accessor :name, :value, :verified, :origin, :source, :operator, :result
+      attr_accessor :name, :attestations, :operator, :result
 
       def initialize(messaging)
         @messaging = messaging
       end
 
-      def parse(key, input, from)
-        jwt = JSON.parse(@messaging.jwt.decode(input), symbolize_names: true)
-        payload = JSON.parse(@messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
-        @origin = payload[:iss]
-        @source = payload[:source]
-        @name = key
-        @value = payload[field_map(key).to_sym]
-        @result = payload[:result]
-        @verified = valid_signature?(jwt, from)
+      def parse(input, from)
+        fact = JSON.parse(input, symbolize_names: true)
+
+        @name = fact[:fact]
+        @result = fact[:result]
+        @operator = fact[:operator]
+        @attestations = []
+
+        fact[:attestations].each do |a|
+          attestation = Selfid::Messages::Attestation.new(@messaging)
+          attestation.parse(fact[:name].to_sym, a, from)
+          @attestations.push(attestation)
+        end
       end
 
-      def valid_signature?(jwt, _from)
-        k = @messaging.client.public_keys(@origin).first[:key]
-        raise StandardError("invalid signature") unless @messaging.jwt.verify(jwt, k)
-
-        true
-        # return @origin != from
+      def value
+        values = @attestations.collect{|a| a.value }.uniq
+        raise StandardError("fact attestation values do not match") unless values.length > 1
+        values.first
       end
 
-      def signed
-        @messaging.jwt.encode(@messaging.jwt.prepare(
-                                iss: @origin,
-                                source: @source,
-                                field: @name,
-                                value: @value,
-                                result: @result,
-                              ))
-      end
-      protected
-      
-          def field_map(key)
-            mapped = {:email=>"email_address"}
-            return mapped[key] if mapped.include? key
-            key
-          end
     end
   end
 end
