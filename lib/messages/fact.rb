@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'attestation'
+
 module Selfid
   module Messages
     class Fact
