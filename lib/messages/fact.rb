@@ -9,9 +9,7 @@ module Selfid
         @messaging = messaging
       end
 
-      def parse(input, from)
-        fact = JSON.parse(input, symbolize_names: true)
-
+      def parse(fact)
         @name = fact[:fact]
         @result = fact[:result]
         @operator = fact[:operator]
@@ -19,7 +17,7 @@ module Selfid
 
         fact[:attestations].each do |a|
           attestation = Selfid::Messages::Attestation.new(@messaging)
-          attestation.parse(fact[:name].to_sym, a, from)
+          attestation.parse(fact[:name].to_sym, a)
           @attestations.push(attestation)
         end
       end
