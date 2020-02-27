@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
     "lib/messages/",
     "lib/messages/base.rb",
     "lib/messages/fact.rb",
+    "lib/messages/attestation.rb",
     "lib/messages/identity_info_req.rb",
     "lib/messages/identity_info_resp.rb",
     "lib/messages/authentication_resp.rb",
