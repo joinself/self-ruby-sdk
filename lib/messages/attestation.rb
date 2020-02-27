@@ -2,7 +2,7 @@
 
 module Selfid
   module Messages
-    class Fact
+    class Attestation
       attr_accessor :verified, :origin, :source, :value
 
       def initialize(messaging)
