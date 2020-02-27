@@ -25,7 +25,7 @@ module Selfid
         payload[:facts].each do |f|
           begin
             fact = Selfid::Messages::Fact.new(@messaging)
-            fact.parse(f, from)
+            fact.parse(f)
             @facts.push(fact)
           rescue StandardError => e
             Selfid.logger.info e.message
@@ -34,7 +34,7 @@ module Selfid
       end
 
       def fact(name)
-        @facts.select{|f| f[:fact] == name}.first
+        @facts.select{|f| f.name == name}.first
       end
 
       protected
