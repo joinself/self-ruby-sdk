@@ -17,14 +17,14 @@ module Selfid
 
         fact[:attestations].each do |a|
           attestation = Selfid::Messages::Attestation.new(@messaging)
-          attestation.parse(fact[:name].to_sym, a)
+          attestation.parse(fact[:fact].to_sym, a)
           @attestations.push(attestation)
         end
       end
 
       def value
         values = @attestations.collect{|a| a.value }.uniq
-        raise StandardError("fact attestation values do not match") unless values.length > 1
+        raise StandardError("fact attestation values do not match") if values.length > 1
         values.first
       end
 

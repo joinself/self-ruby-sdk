@@ -9,18 +9,18 @@ module Selfid
         @messaging = messaging
       end
 
-      def parse(name, attestation, from)
-          payload = JSON.parse(@messaging.jwt.decode(a[:payload]), symbolize_names: true)
+      def parse(name, attestation)
+          payload = JSON.parse(@messaging.jwt.decode(attestation[:payload]), symbolize_names: true)
           @origin = payload[:iss]
           @source = payload[:source]
-          @verified = valid_signature?(attestation, from)
+          @verified = valid_signature?(attestation)
 
           unless payload[name].nil?
-            @value = payload[:name]
+            @value = payload[name]
           end
       end
 
-      def valid_signature?(jwt, _from)
+      def valid_signature?(jwt)
         k = @messaging.client.public_keys(@origin).first[:key]
         raise StandardError("invalid signature") unless @messaging.jwt.verify(jwt, k)
 
