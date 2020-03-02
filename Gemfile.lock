@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfid (0.0.71)
+    selfid (0.0.82)
       async
       ed25519
       eventmachine
@@ -22,7 +22,7 @@ GEM
       nio4r (~> 2.3)
       timers (~> 4.1)
     coderay (1.1.2)
-    console (1.8.1)
+    console (1.8.2)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
     ed25519 (1.2.4)
@@ -30,7 +30,7 @@ GEM
     faye-websocket (0.10.9)
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
-    google-protobuf (3.11.4-x86_64-linux)
+    google-protobuf (3.11.4)
     hashdiff (1.0.0)
     httparty (0.18.0)
       mime-types (~> 3.0)
