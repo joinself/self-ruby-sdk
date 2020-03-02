@@ -177,7 +177,6 @@ module Selfid
           auth = authenticated?(res.input)
           block.call(auth)
         end
-
       else
         @messaging.type_observer[type] = block
       end

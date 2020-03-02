@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
 require_relative '../lib/selfid.rb'
-user = "57340034173"
+user = "47347840589"
 
 # Disable the debug logs
-Selfid.logger = Logger.new('/dev/null')
+# Selfid.logger = Logger.new('/dev/null')
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfid.net/
-@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"])
-
+@app = Selfid::App.new(ENV["SELF_APP_ID"], 
+                       ENV["SELF_APP_SECRET"],
+                       base_url: "https://api.review.selfid.net",
+                       messaging_url: "wss://messaging.review.selfid.net/v1/messaging")
 # Allows connections from everyone on self network to your app.
 @app.permit_connection("*")
 

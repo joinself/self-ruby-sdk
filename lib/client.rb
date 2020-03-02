@@ -81,14 +81,8 @@ module Selfid
     #
     # @param id [string] identity id
     def public_keys(id)
-      # TODO : find a more reliable way to distinguish between an app and an identity
-      if id.length > 11
-        a = app(id)
-        return a[:public_keys]
-      else
-        i = identity(id)
-        return i[:public_keys]
-      end
+      i = entity(id)
+      i[:public_keys]
     end
 
     private
