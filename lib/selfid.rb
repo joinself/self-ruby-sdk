@@ -142,7 +142,7 @@ module Selfid
       m.id = SecureRandom.uuid
       m.from = @jwt.id
       m.to = id
-      m.facts = facts
+      m.facts = prepare_facts(facts)
       m.id = opts[:cid] if opts.include?(:cid)
       m.intermediary = opts[:intermediary] if opts.include?(:intermediary)
       m.description = opts[:description] if opts.include?(:description)
@@ -211,6 +211,18 @@ module Selfid
     #   * :uuid [String] the request identifier.
     def authenticated?(response)
       Authenticated.new(valid_payload(response))
+    end
+
+    def prepare_facts(fields)
+      fs = []
+      fields.each do |f|
+        if f.is_a?(Hash)
+          fs << f
+        else
+          fs << { fact: f }
+        end
+      end
+      fs
     end
 
     def valid_payload(response)
