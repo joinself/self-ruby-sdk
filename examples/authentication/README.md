@@ -1,6 +1,6 @@
 # SelfID based authentication request
 
-Self user's can be authenticated on your platform by providing its _SelfID_. 
+A Self user will be authenticated on your platform by only providing its _SelfID_ and accepting the authentication request on his phone. 
 
 As part of this process, you will provide users with a user interface so they can fill their _SelfID_.
 

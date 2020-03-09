@@ -49,7 +49,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"
-  s.add_development_dependency "rake", "~> 10.0"
+  s.add_development_dependency "rake", "~> 12.3"
   s.add_development_dependency "rubocop", "~> 0.49"
   s.add_development_dependency "timecop"
   s.add_development_dependency "webmock"
