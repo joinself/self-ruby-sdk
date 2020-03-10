@@ -19,7 +19,7 @@ user = ARGV.first
   end
 
   # Response comes in form of facts easy to access with facts method
-  puts "Hello #{res.fact('display_name').value}"
+  puts "Hello #{res.fact(Selfid::FACT_DISPLAY_NAME).value}"
   exit!
 end
 
