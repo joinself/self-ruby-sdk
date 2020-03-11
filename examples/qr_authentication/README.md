@@ -16,7 +16,7 @@ $ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb
 
 ## Process diagram
 
-This diagram shows how does an authentication process wrk internally.
+This diagram shows how does a QR based authentication request process works internally.
 
 ![Diagram](diagram.png)
 

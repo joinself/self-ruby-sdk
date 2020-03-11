@@ -21,7 +21,7 @@ Note you must provide a valid user self_id `your_self_id`, this exqample will se
 
 ## Process diagram
 
-This diagram shows how does an authentication process wrk internally.
+This diagram shows how does a SelfID authentication request process works internally.
 
 ![Diagram](diagram.png)
 
