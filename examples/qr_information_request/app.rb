@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 require 'rqrcode'
-
-require_relative '../../lib/selfid.rb'
+require 'selfid'
 
 # Disable the debug logs
 Selfid.logger = Logger.new('/dev/null')
@@ -36,8 +35,8 @@ png = RQRCode::QRCode.new(req, :level => 'l').as_png(
 )
 IO.binwrite("/tmp/qr.png", png.to_s)
 
-# This will open the exported qr.png with your default software, 
-# manually open /tmp/qr.png and scan it with your device if it 
+# This will open the exported qr.png with your default software,
+# manually open /tmp/qr.png and scan it with your device if it
 # does not work
 p "Scan /tmp/qr.png with your device"
 `open /tmp/qr.png`

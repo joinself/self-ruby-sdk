@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../../lib/selfid.rb'
+require 'selfid'
 
 # Process input data
 abort("provide self_id to request information to") if ARGV.length != 1
