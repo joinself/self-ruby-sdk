@@ -7,15 +7,18 @@ module Selfid
   class Time
     @@last_check = nil
     def self.now
+      timeout = 1
       ntp_time = nil
       5.times do
         begin
           ntp_time = get_ntp_current_time
           break
         rescue Timeout::Error
-          sleep 1
+          sleep timeout
+          timeout = timeout+1
         end
       end
+      raise Timeout::Error.new("ntp sync timed out") if ntp_time.nil?
       ntp_time
     end
 
