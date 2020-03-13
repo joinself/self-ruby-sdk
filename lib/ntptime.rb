@@ -7,6 +7,21 @@ module Selfid
   class Time
     @@last_check = nil
     def self.now
+      ntp_time = nil
+      5.times do
+        begin
+          ntp_time = get_ntp_current_time
+          break
+        rescue Timeout::Error
+          sleep 1
+        end
+      end
+      ntp_time
+    end
+
+    private
+
+    def self.get_ntp_current_time
       seconds_to_expire = 60
 
       return ::Time.now.utc if ENV["RAKE_ENV"] == "test"
