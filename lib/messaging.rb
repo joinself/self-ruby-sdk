@@ -228,8 +228,8 @@ module Selfid
 
     # Cleans expired messages
     def clean_timeouts
-      @messages.each do |uuid, msg|
-        next unless msg[:timeout] < Selfid::Time.now
+      @messages.clone.each do |uuid, _msg|
+        next unless @messages[uuid][:timeout] < Selfid::Time.now
 
         @mon.synchronize do
           Selfid.logger.info "message response timed out #{uuid}"
@@ -238,8 +238,8 @@ module Selfid
         end
       end
 
-      @acks.each do |uuid, ack|
-        next unless ack[:timeout] < Selfid::Time.now
+      @acks.clone.each do |uuid, _ack|
+        next unless @acks[uuid][:timeout] < Selfid::Time.now
 
         @mon.synchronize do
           Selfid.logger.info "acks response timed out #{uuid}"
