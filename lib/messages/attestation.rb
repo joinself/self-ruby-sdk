@@ -28,6 +28,13 @@ module Selfid
         # return @origin != from
       end
 
+      def signed
+        @messaging.jwt.encode(@messaging.jwt.prepare(
+                              iss: @origin,
+                              source: @source,
+                              value: @value,
+                            ))
+      end
     end
   end
 end
