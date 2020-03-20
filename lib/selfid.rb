@@ -11,6 +11,7 @@ require_relative 'messaging'
 require_relative 'ntptime'
 require_relative 'authenticated'
 require_relative 'acl'
+require_relative 'sources'
 
 # Namespace for classes and modules that handle Self interactions.
 module Selfid
