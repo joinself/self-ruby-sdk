@@ -4,7 +4,7 @@ require 'rqrcode'
 require 'selfid'
 
 # Disable the debug logs
-Selfid.logger = Logger.new('/dev/null')
+# Selfid.logger = Logger.new('/dev/null')
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfid.net/
@@ -26,7 +26,7 @@ Selfid.logger = Logger.new('/dev/null')
 end
 
 # Print a QR code for the information request
-req = @app.request_information(user, [Selfid::FACT_DISPLAY_NAME], request: false)
+req = @app.request_information('-', [Selfid::FACT_DISPLAY_NAME], request: false)
 
 # Share resulting image with your users
 png = RQRCode::QRCode.new(req, :level => 'l').as_png(
