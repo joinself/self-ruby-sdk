@@ -30,6 +30,14 @@ module Selfid
         values.first
       end
 
+      def to_hash
+        {
+          fact: @name,
+          result: @result,
+          operator: @operator,
+          attestations: @attestations,
+        }
+      end
     end
   end
 end

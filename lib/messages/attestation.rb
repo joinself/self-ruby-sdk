@@ -10,14 +10,14 @@ module Selfid
       end
 
       def parse(name, attestation)
-          payload = JSON.parse(@messaging.jwt.decode(attestation[:payload]), symbolize_names: true)
-          @origin = payload[:iss]
-          @source = payload[:source]
-          @verified = valid_signature?(attestation)
+        payload = JSON.parse(@messaging.jwt.decode(attestation[:payload]), symbolize_names: true)
+        @origin = payload[:iss]
+        @source = payload[:source]
+        @verified = valid_signature?(attestation)
 
-          unless payload[name].nil?
-            @value = payload[name]
-          end
+        unless payload[name].nil?
+          @value = payload[name]
+        end
       end
 
       def valid_signature?(jwt)
@@ -29,11 +29,11 @@ module Selfid
       end
 
       def signed
-        @messaging.jwt.encode(@messaging.jwt.prepare(
+        @messaging.jwt.signed(
                               iss: @origin,
                               source: @source,
                               value: @value,
-                            ))
+                            )
       end
     end
   end

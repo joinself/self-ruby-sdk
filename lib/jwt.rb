@@ -20,12 +20,16 @@ module Selfid
     #
     # @param input [string] input to be prepared
     def prepare(input)
+      signed(input).to_json
+    end
+
+    def signed(input)
       payload = encode(input.to_json)
       {
         payload: payload,
         protected: header,
         signature: sign("#{header}.#{payload}")
-      }.to_json
+      }
     end
 
     def parse(input)
