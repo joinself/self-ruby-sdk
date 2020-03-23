@@ -23,6 +23,7 @@ puts "Sending an authentication request to your device..."
   end
 
   puts "User is now authenticated 🤘"
+  exit!
 end
 
 # Wait for asyncrhonous process to finish

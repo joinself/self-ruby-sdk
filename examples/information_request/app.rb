@@ -8,7 +8,7 @@ user = ARGV.first
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfid.net/
-@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"])
+@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], base_url: "https://api.review.selfid.net", messaging_url: "wss://messaging.review.selfid.net/v1/messaging")
 
 # Request display_name and email_address to the specified user
 @app.request_information(user, [Selfid::FACT_DISPLAY_NAME, Selfid::FACT_EMAIL]) do |res|
