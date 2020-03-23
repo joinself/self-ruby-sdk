@@ -12,18 +12,18 @@ user = ARGV.first
 
 # Even its a silly test lets check if the user's email is equal test@test.org
 # without ever leaking information about the user's fact.
-res = settings.client.request_information(@selfid, [{
+res = @app.request_information(user, [{
   source: Selfid::SOURCE_USER_SPECIFIED,
   fact: Selfid::FACT_EMAIL,
   operator: '==',
   value: 'test@test.org'
-}], proxy: ENV['SELF_INTERMEDIARY'], type: :sync)
+}], intermediary: ENV['SELF_INTERMEDIARY'], type: :sync)
 
 if res.nil? # The request can timeout
   p "Request has timed out"
 elsif res.accepted? # The user accepts the intermediary request
   p "Request has been accepted"
-  p "Your assertion is #{res.facts[Selfid::FACT_EMAIL].result}"
+  p "Your assertion is #{res.fact(Selfid::FACT_EMAIL).result}"
 elsif res.rejected? # The user rejects the intermediary request
   p "Request has been rejected"
 elsif res.unauthorized? # You're not a connection for the specified user

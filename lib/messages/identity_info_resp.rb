@@ -40,22 +40,28 @@ module Selfid
       protected
 
       def proto
+        encoded_facts = []
+        @facts.each do |fact|
+          encoded_facts.push(fact.to_hash)
+        end
+        body = @jwt.prepare(
+          typ: MSG_TYPE,
+          iss: @jwt.id,
+          sub: @to,
+          iat: Selfid::Time.now.strftime('%FT%TZ'),
+          exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+          cid: @id,
+          jti: SecureRandom.uuid,
+          status: @status,
+          facts: encoded_facts,
+        )
+
         Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
           id: SecureRandom.uuid,
           sender: "#{@jwt.id}:#{@messaging.device_id}",
           recipient: "#{@to}:#{@to_device}",
-          ciphertext: @jwt.prepare(
-            typ: MSG_TYPE,
-            iss: @jwt.id,
-            sub: @to,
-            iat: Selfid::Time.now.strftime('%FT%TZ'),
-            exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
-            cid: @id,
-            jti: SecureRandom.uuid,
-            status: @status,
-            facts: @facts,
-          ),
+          ciphertext: body,
         )
       end
     end
