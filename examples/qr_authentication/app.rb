@@ -37,8 +37,7 @@ IO.binwrite("/tmp/qr.png", png.to_s)
 # This will open the exported qr.png with your default software,
 # manually open /tmp/qr.png and scan it with your device if it
 # does not work
-p "Scan /tmp/qr.png with your device"
-`open /tmp/qr.png`
+p "Open /tmp/qr.png and scan it with your device"
 
 # Wait for some time
 sleep 100
