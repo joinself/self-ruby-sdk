@@ -14,7 +14,7 @@ module Selfid
           ntp_time = get_ntp_current_time
           break
         rescue Timeout::Error
-          puts "ntp.google.com timed out, retrying in #{timeout} seconds..."
+          puts "time.google.com timed out, retrying in #{timeout} seconds..."
           sleep timeout
           timeout = timeout+1
         end
@@ -31,19 +31,21 @@ module Selfid
       return ::Time.now.utc if ENV["RAKE_ENV"] == "test"
 
       if @diff.nil?
-        Net::NTP.get("time.google.com", "ntp", 5)
-        @@last_check = ::Time.parse(Net::NTP.get.time.to_s).utc
-        @diff = (@@last_check - ::Time.now.utc).abs
-        @now = (::Time.now + @diff).utc
+        self.sync
         return @now
       end
       @now = (::Time.now + @diff).utc
       if @@last_check + seconds_to_expire < @now
-        Net::NTP.get("time.google.com")
-        @@last_check = ::Time.parse(Net::NTP.get.time.to_s).utc
-        @diff = (@@last_check - ::Time.now.utc).abs
+        self.sync
       end
       @now
+    end
+
+    def self.sync
+      Net::NTP.get("time.google.com", "ntp", 10)
+      @@last_check = ::Time.parse(Net::NTP.get.time.to_s).utc
+      @diff = (@@last_check - ::Time.now.utc).abs
+      @now = (::Time.now + @diff).utc
     end
   end
 end
