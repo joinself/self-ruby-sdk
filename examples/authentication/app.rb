@@ -8,7 +8,7 @@ user = ARGV.first
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfid.net/
-@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], base_url: "https://api.review.selfid.net", messaging_url: "wss://messaging.review.selfid.net/v1/messaging")
+@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"])
 
 # Allows connections from everyone on self network to your app.
 @app.permit_connection("*")
