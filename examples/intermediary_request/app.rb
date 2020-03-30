@@ -16,14 +16,14 @@ res = @app.request_information(user, [{
   source: Selfid::SOURCE_USER_SPECIFIED,
   fact: Selfid::FACT_EMAIL,
   operator: '==',
-  value: 'test@test.org'
+  expected_value: 'test@test.org'
 }], intermediary: ENV['SELF_INTERMEDIARY'], type: :sync)
 
 if res.nil? # The request can timeout
   p "Request has timed out"
 elsif res.accepted? # The user accepts the intermediary request
   p "Request has been accepted"
-  p "Your assertion is #{res.fact(Selfid::FACT_EMAIL).result}"
+  p "Your assertion is #{res.fact(Selfid::FACT_EMAIL).attestations.first.value}"
 elsif res.rejected? # The user rejects the intermediary request
   p "Request has been rejected"
 elsif res.unauthorized? # You're not a connection for the specified user
