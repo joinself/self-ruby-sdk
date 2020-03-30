@@ -5,7 +5,7 @@ require_relative 'attestation'
 module Selfid
   module Messages
     class Fact
-      attr_accessor :name, :attestations, :operator, :result
+      attr_accessor :name, :attestations, :operator, :expected_value
 
       def initialize(messaging)
         @messaging = messaging
@@ -13,7 +13,6 @@ module Selfid
 
       def parse(fact)
         @name = fact[:fact]
-        @result = fact[:result]
         @operator = fact[:operator]
         @attestations = []
 
@@ -24,18 +23,12 @@ module Selfid
         end
       end
 
-      def value
-        values = @attestations.collect{|a| a.value }.uniq
-        raise StandardError("fact attestation values do not match") if values.length > 1
-        values.first
-      end
-
       def to_hash
         {
           fact: @name,
-          result: @result,
           operator: @operator,
           attestations: @attestations,
+          expected_value: @expected_value,
         }
       end
     end
