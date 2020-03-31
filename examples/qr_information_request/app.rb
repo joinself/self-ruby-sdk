@@ -6,9 +6,13 @@ require 'selfid'
 # Disable the debug logs
 # Selfid.logger = Logger.new('/dev/null')
 
+# You can point to a different environment by passing optional values to the initializer
+opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
+
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfid.net/
-@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"])
+@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
+
 # Allows connections from everyone on self network to your app.
 @app.permit_connection("*")
 
