@@ -3,7 +3,7 @@
 module Selfid
   module Messages
     class Attestation
-      attr_accessor :verified, :origin, :source, :value, :operator, :expected_value, :fact_name
+      attr_accessor :verified, :origin, :source, :value, :operator, :expected_value, :fact_name, :to
 
       def initialize(messaging)
         @messaging = messaging
@@ -12,6 +12,7 @@ module Selfid
       def parse(name, attestation)
         payload = JSON.parse(@messaging.jwt.decode(attestation[:payload]), symbolize_names: true)
         @origin = payload[:iss]
+        @to = payload[:sub]
         @source = payload[:source]
         @verified = valid_signature?(attestation)
         @expected_value = payload[:expected_value]
@@ -32,9 +33,10 @@ module Selfid
 
       def signed
         o = {
+            sub: @to,
             iss: @origin,
             source: @source,
-            name: @fact_name,
+            fact: @fact_name,
             expected_value: @expected_value,
             operator: @operator,
         }
