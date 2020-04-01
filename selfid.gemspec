@@ -36,9 +36,13 @@ Gem::Specification.new do |s|
     "lib/messages/identity_info_req.rb",
     "lib/messages/identity_info_resp.rb",
     "lib/messages/authentication_resp.rb",
-    "lib/messages/message.rb"
+    "lib/messages/message.rb",
+    "lib/services/auth",
+    "lib/services/facts",
+    "lib/services/identity",
+    "lib/services/messaging"
   ]
-  s.require_paths = ["lib", "lib/proto", "lib/messages"]
+  s.require_paths = ["lib", "lib/proto", "lib/messages", "lib/services"]
   s.add_dependency "async"
   s.add_dependency "ed25519"
   s.add_dependency "eventmachine"

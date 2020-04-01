@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'selfid'
+require '../../lib/selfid'
 
 # Process input data
 abort("provide self_id to authenticate") if ARGV.length != 1
