@@ -54,7 +54,9 @@ module Selfid
       end
 
       def generate_qr(opts = {})
-        req = request("-", request: false)
+        opts[:request] = false
+        selfid = opts.fetch(:selfid, "-")
+        req = request(selfid, opts)
         ::RQRCode::QRCode.new(req, level: 'l')
       end
 

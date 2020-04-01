@@ -49,8 +49,10 @@ module Selfid
         @app.messaging.subscribe(Selfid::Messages::IdentityInfoResp::MSG_TYPE, &block)
       end
 
-      def generate_qr(facts)
-        req = request("-", facts, request: false)
+      def generate_qr(facts, opts = {})
+        opts[:request] = false
+        selfid = opts.fetch(:selfid, "-")
+        req = request(selfid, facts, opts)
         ::RQRCode::QRCode.new(req, level: 'l')
       end
 
