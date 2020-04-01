@@ -47,6 +47,7 @@ Gem::Specification.new do |s|
   s.add_dependency "httparty"
   s.add_dependency "logger"
   s.add_dependency "net-ntp"
+  s.add_dependency "rqrcode"
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"

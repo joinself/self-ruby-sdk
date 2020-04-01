@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'rqrcode'
 require 'selfid'
 
 # Disable the debug logs
@@ -26,14 +25,8 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
   exit!
 end
 
-# Print a QR code for the information request
-req = @app.facts.request('-', [Selfid::FACT_DISPLAY_NAME], request: false)
-
-# Share resulting image with your users
-png = RQRCode::QRCode.new(req, :level => 'l').as_png(
-  border: 0,
-  size: 400
-)
+# Generate a QR code for the information request
+png = @app.facts.generate_qr([Selfid::FACT_DISPLAY_NAME])
 IO.binwrite("/tmp/qr.png", png.to_s)
 
 # This will open the exported qr.png with your default software,

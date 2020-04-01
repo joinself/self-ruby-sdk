@@ -4,6 +4,7 @@ require 'securerandom'
 require "ed25519"
 require 'json'
 require 'net/http'
+require 'rqrcode'
 require_relative 'log'
 require_relative 'jwt'
 require_relative 'client'
@@ -211,6 +212,11 @@ module Selfid
       authenticated?(resp.input)
     end
 
+    def generate_qr(opts = {})
+      req = request("-", request: false)
+      ::RQRCode::QRCode.new(req, level: 'l').as_png(border: 0, size: 400)
+    end
+
     # Adds an observer for an authentication response
     def subscribe(&block)
       @app.messaging.subscribe Selfid::Messages::AuthenticationResp::MSG_TYPE do |res|
@@ -300,6 +306,11 @@ module Selfid
     # Adds an observer for an fact response
     def subscribe(&block)
       @app.messaging.subscribe(Selfid::Messages::IdentityInfoResp::MSG_TYPE, &block)
+    end
+
+    def generate_qr(facts)
+      req = request("-", facts, request: false)
+      ::RQRCode::QRCode.new(req, level: 'l').as_png(border: 0, size: 400)
     end
 
     private
