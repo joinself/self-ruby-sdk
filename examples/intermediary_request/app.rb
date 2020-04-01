@@ -15,7 +15,7 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 
 # Even its a silly test lets check if the user's email is equal test@test.org
 # without ever leaking information about the user's fact.
-res = @app.request_information(user, [{
+res = @app.facts.request(user, [{
   source: Selfid::SOURCE_USER_SPECIFIED,
   fact: Selfid::FACT_EMAIL,
   operator: '==',

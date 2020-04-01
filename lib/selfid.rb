@@ -21,8 +21,8 @@ module Selfid
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
-    BASE_URL = "https://api.selfid.net"
-    MESSAGING_URL = "wss://messaging.selfid.net/v1/messaging"
+    BASE_URL = "https://api.selfid.net".freeze
+    MESSAGING_URL = "wss://messaging.selfid.net/v1/messaging".freeze
 
     attr_reader :app_id, :app_key, :client, :jwt
     attr_accessor :messaging
@@ -44,61 +44,22 @@ module Selfid
       @client = RestClient.new(url, @jwt)
 
       messaging_url = opts.fetch(:messaging_url, MESSAGING_URL)
-      if not messaging_url.nil?
+      if !messaging_url.nil?
         @messaging = MessagingClient.new(messaging_url,
                                          @jwt,
                                          @client,
                                          auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
-                                         device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE),
-                                        )
+                                         device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE),)
         @acl = ACL.new(@messaging)
       end
     end
 
-    # Sends an authentication request to the specified user_id.
-    #
-    # @param user_id [string] the receiver of the authentication request.
-    # @param [Hash] opts the options to authenticate.
-    # @option opts [String] :uuid The unique identifier of the authentication request.
-    # @option opts [String] :async don't wait for the client to respond
-    # @option opts [String] :jti specify the jti to be used.
-    def authenticate(user_id, opts = {}, &block)
-      Selfid.logger.info "authenticating #{user_id}"
-      uuid = opts.fetch(:uuid, SecureRandom.uuid)
-      jti = opts.fetch(:jti, SecureRandom.uuid)
-      async = opts.fetch(:async, false)
-      body = {
-        device_id: @messaging.device_id,
-        typ: 'authentication_req',
-        aud: @client.self_url,
-        iss: @jwt.id,
-        sub: user_id,
-        iat: Selfid::Time.now.strftime('%FT%TZ'),
-        exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
-        cid: uuid,
-        jti: jti,
-      }
-      body = @jwt.prepare(body)
-      return body if !opts.fetch(:request, true)
+    def facts
+      @facts ||= Facts.new(self)
+    end
 
-      if block_given?
-        @messaging.uuid_observer[uuid] = Proc.new do |res|
-          auth = authenticated?(res.input)
-          block.call(auth)
-        end
-        # when a block is given the request will always be asynchronous.
-        async = true
-      end
-
-      Selfid.logger.info "authenticating uuid #{uuid}"
-      if async
-        @client.auth(body)
-        return uuid
-      end
-      resp = @messaging.wait_for uuid do
-        @client.auth(body)
-      end
-      authenticated?(resp.input)
+    def authentication
+      @authentication ||= Authentication.new(self)
     end
 
     # Gets an identity details
@@ -122,7 +83,6 @@ module Selfid
       @client.entity(self_id)
     end
 
-
     # Gets selfid registered devices
     #
     # @param self_id [string] identity/app selfID
@@ -130,57 +90,19 @@ module Selfid
       @client.devices(self_id)
     end
 
-    # Requests information to an entity
-    #
-    # @param id [string] selfID to be requested
-    # @param facts [array] list of facts to be requested
-    # @param type [symbol] you can define if you want to request this
-    # =>  information on a sync or an async way
-    # @option opts [String] :intermediary the intermediary selfid to be used.
-    def request_information(id, facts, opts = {}, &block)
-      async = opts.include?(:type) && (opts[:type] == :async)
-      m = Selfid::Messages::IdentityInfoReq.new(@messaging)
-      m.id = SecureRandom.uuid
-      m.from = @jwt.id
-      m.to = id
-      m.facts = prepare_facts(facts)
-      m.id = opts[:cid] if opts.include?(:cid)
-      m.intermediary = opts[:intermediary] if opts.include?(:intermediary)
-      m.description = opts[:description] if opts.include?(:description)
-      return @jwt.prepare(m.body) if !opts.fetch(:request, true)
-
-      devices = if opts.include?(:intermediary)
-                  @client.devices(opts[:intermediary])
-                else
-                  @client.devices(id)
-                end
-      device = devices.first
-      m.to_device = device
-
-      if block_given?
-        @messaging.uuid_observer[m.id] = block
-        # when a block is given the request will always be asynchronous.
-        async = true
-      end
-
-      return m.send_message if async
-
-      m.request
-    end
-
     # Adds an observer for a message type
     #
     # @param type [string] message type (ex: Selfid::Messages::AuthenticationResp.MSG_TYPE
     # @param block [block] observer to be executed.
     def on_message(type, &block)
-      if type == Selfid::Messages::AuthenticationResp::MSG_TYPE
-        @messaging.type_observer[type] = Proc.new do |res|
-          auth = authenticated?(res.input)
-          block.call(auth)
-        end
-      else
-        @messaging.type_observer[type] = block
-      end
+      @messaging.type_observer[type] = if type == Selfid::Messages::AuthenticationResp::MSG_TYPE
+                                         proc do |res|
+                                           auth = authenticated?(res.input)
+                                           block.call(auth)
+                                         end
+                                       else
+                                         block
+                                       end
     end
 
     # Permits incomming messages from the given identity.
@@ -202,6 +124,59 @@ module Selfid
       @acl.deny id
     end
 
+  end
+
+  class Authentication
+    def initialize(app)
+      @app = app
+    end
+
+    # Sends an authentication request to the specified user_id.
+    #
+    # @param user_id [string] the receiver of the authentication request.
+    # @param [Hash] opts the options to authenticate.
+    # @option opts [String] :uuid The unique identifier of the authentication request.
+    # @option opts [String] :async don't wait for the client to respond
+    # @option opts [String] :jti specify the jti to be used.
+    def request(user_id, opts = {}, &block)
+      Selfid.logger.info "authenticating #{user_id}"
+      uuid = opts.fetch(:uuid, SecureRandom.uuid)
+      jti = opts.fetch(:jti, SecureRandom.uuid)
+      async = opts.fetch(:async, false)
+      body = {
+        device_id: @app.messaging.device_id,
+        typ: 'authentication_req',
+        aud: @app.client.self_url,
+        iss: @app.jwt.id,
+        sub: user_id,
+        iat: Selfid::Time.now.strftime('%FT%TZ'),
+        exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+        cid: uuid,
+        jti: jti,
+      }
+      body = @app.jwt.prepare(body)
+      return body if !opts.fetch(:request, true)
+
+      if block_given?
+        @app.messaging.uuid_observer[uuid] = proc do |res|
+          auth = authenticated?(res.input)
+          block.call(auth)
+        end
+        # when a block is given the request will always be asynchronous.
+        async = true
+      end
+
+      Selfid.logger.info "authenticating uuid #{uuid}"
+      if async
+        @app.client.auth(body)
+        return uuid
+      end
+      resp = @app.messaging.wait_for uuid do
+        @app.client.auth(body)
+      end
+      authenticated?(resp.input)
+    end
+
     private
 
     # Checks if the given input is an accepted authentication request.
@@ -214,38 +189,86 @@ module Selfid
       Authenticated.new(valid_payload(response))
     end
 
-    def prepare_facts(fields)
-      fs = []
-      fields.each do |f|
-        if f.is_a?(Hash)
-          fs << f
-        else
-          fs << { fact: f }
-        end
-      end
-      fs
-    end
-
     def valid_payload(response)
-      jws = @jwt.parse(response)
+      jws = @app.jwt.parse(response)
       return nil unless jws.include? :payload
 
-      payload = JSON.parse(@jwt.decode(jws[:payload]), symbolize_names: true)
+      payload = JSON.parse(@app.jwt.decode(jws[:payload]), symbolize_names: true)
 
       return nil if payload.nil?
 
-      identity = identity(payload[:sub])
+      identity = @app.identity(payload[:sub])
       return nil if identity.nil?
 
       identity[:public_keys].each do |key|
-        return payload if @jwt.verify(jws, key[:key])
+        return payload if @app.jwt.verify(jws, key[:key])
       end
       nil
     rescue StandardError => e
       uuid = ""
       uuid = payload[:cid] unless payload.nil?
       Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
+      p e.backtrace
       nil
+    end
+
+  end
+
+  class Facts
+    def initialize(app)
+      @app = app
+    end
+
+    # Request fact to an identity
+    #
+    # @param id [string] selfID to be requested
+    # @param facts [array] list of facts to be requested
+    # @option opts [String] :intermediary the intermediary selfid to be used.
+    # @option opts [String] :type you can define if you want to request this information on a sync or an async way
+    def request(id, facts, opts = {}, &block)
+      async = opts.include?(:type) && (opts[:type] == :async)
+      m = Selfid::Messages::IdentityInfoReq.new(@app.messaging)
+      m.id = SecureRandom.uuid
+      m.from = @app.jwt.id
+      m.to = id
+      m.facts = prepare_facts(facts)
+      m.id = opts[:cid] if opts.include?(:cid)
+      m.intermediary = opts[:intermediary] if opts.include?(:intermediary)
+      m.description = opts[:description] if opts.include?(:description)
+      return @app.jwt.prepare(m.body) if !opts.fetch(:request, true)
+
+      devices = if opts.include?(:intermediary)
+                  @app.client.devices(opts[:intermediary])
+                else
+                  @app.client.devices(id)
+                end
+      device = devices.first
+      m.to_device = device
+
+      if block_given?
+        @app.messaging.uuid_observer[m.id] = block
+        # when a block is given the request will always be asynchronous.
+        async = true
+      end
+
+      return m.send_message if async
+
+      m.request
+    end
+
+    private
+
+    # fills facts with default values
+    def prepare_facts(fields)
+      fs = []
+      fields.each do |f|
+        fs << if f.is_a?(Hash)
+                f
+              else
+                { fact: f }
+              end
+      end
+      fs
     end
   end
 end
