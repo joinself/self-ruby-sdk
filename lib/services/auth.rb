@@ -55,7 +55,7 @@ module Selfid
 
       def generate_qr(opts = {})
         req = request("-", request: false)
-        ::RQRCode::QRCode.new(req, level: 'l').as_png(border: 0, size: 400)
+        ::RQRCode::QRCode.new(req, level: 'l')
       end
 
       # Adds an observer for an authentication response

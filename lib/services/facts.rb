@@ -51,7 +51,7 @@ module Selfid
 
       def generate_qr(facts)
         req = request("-", facts, request: false)
-        ::RQRCode::QRCode.new(req, level: 'l').as_png(border: 0, size: 400)
+        ::RQRCode::QRCode.new(req, level: 'l')
       end
 
       private

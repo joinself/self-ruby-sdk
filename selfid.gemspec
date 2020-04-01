@@ -37,10 +37,10 @@ Gem::Specification.new do |s|
     "lib/messages/identity_info_resp.rb",
     "lib/messages/authentication_resp.rb",
     "lib/messages/message.rb",
-    "lib/services/auth",
-    "lib/services/facts",
-    "lib/services/identity",
-    "lib/services/messaging"
+    "lib/services/auth.rb",
+    "lib/services/facts.rb",
+    "lib/services/identity.rb",
+    "lib/services/messaging.rb"
   ]
   s.require_paths = ["lib", "lib/proto", "lib/messages", "lib/services"]
   s.add_dependency "async"

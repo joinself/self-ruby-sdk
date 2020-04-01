@@ -25,7 +25,7 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 end
 
 # Generate a QR code to authenticate
-png = @app.authentication.generate_qr
+png = @app.authentication.generate_qr.as_png(border: 0, size: 400)
 IO.binwrite("/tmp/qr.png", png.to_s)
 `open /tmp/qr.png`
 
