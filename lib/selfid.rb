@@ -25,6 +25,7 @@ module Selfid
     MESSAGING_URL = "wss://messaging.selfid.net/v1/messaging".freeze
 
     attr_reader :app_id, :app_key, :client, :jwt
+    attr_accessor :messaging_client
 
     # Initializes a Selfid App
     #
@@ -70,7 +71,7 @@ module Selfid
   end
 
   class Messaging
-    attr_reader :client
+    attr_accessor :client
     def initialize(client)
       @client = client
     end

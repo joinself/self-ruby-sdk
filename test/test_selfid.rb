@@ -10,7 +10,13 @@ class SelfidTest < Minitest::Test
   describe "selfid" do
     let(:seed)    { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:app_id)  { "o9mpng9m2jv" }
-    let(:app)     { Selfid::App.new(app_id, seed, messaging_url: nil) }
+    let(:app)     do
+      a = Selfid::App.new(app_id, seed, messaging_url: nil)
+      mm = Minitest::Mock.new
+      def mm.device_id; "1"; end
+      a.messaging_client = mm
+      a
+    end
     let(:atoken)    { app.jwt.auth_token }
     let(:headers) {
       {
@@ -19,10 +25,6 @@ class SelfidTest < Minitest::Test
     }
 
     def setup
-      messaging_mock = Minitest::Mock.new
-      def messaging_mock.device_id; "1"; end
-      app.messaging = messaging_mock
-
       ENV["RAKE_ENV"] = "test"
       t = ::Time.local(2019, 9, 1, 10, 5, 0).utc
       Timecop.travel(t)
@@ -51,7 +53,7 @@ class SelfidTest < Minitest::Test
         with(body: body, headers: headers).
         to_return(status: 200, body: "", headers: {})
 
-      app.authenticate("xxxxxxxx", uuid: "uuid", jti: "uuid", async: true)
+      app.authentication.request("xxxxxxxx", uuid: "uuid", jti: "uuid", async: true)
     end
 
     def test_identity
@@ -62,7 +64,7 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      identity = app.identity(id)
+      identity = app.identity.get(id)
       assert_equal pk, identity[:public_keys].first[:key]
     end
 
@@ -74,7 +76,7 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      a = app.app(id)
+      a = app.identity.app(id)
       assert_equal pk, a[:public_keys].first[:key]
     end
 
