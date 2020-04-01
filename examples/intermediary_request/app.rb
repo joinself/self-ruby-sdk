@@ -15,12 +15,12 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 
 # Even its a silly test lets check if the user's email is equal test@test.org
 # without ever leaking information about the user's fact.
-res = @app.facts.request(user, [{
+res = @app.facts.request_via_intermediary(user, [{
   source: Selfid::SOURCE_USER_SPECIFIED,
   fact: Selfid::FACT_EMAIL,
   operator: '==',
   expected_value: 'test@test.org'
-}], intermediary: ENV['SELF_INTERMEDIARY'], type: :sync)
+}], type: :sync)
 
 if res.nil? # The request can timeout
   p "Request has timed out"

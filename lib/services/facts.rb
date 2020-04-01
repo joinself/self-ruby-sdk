@@ -2,6 +2,8 @@
 
 module Selfid
   module Services
+    DEFAULT_INTERMEDIARY = "self_intermediary"
+
     class Facts
       def initialize(app)
         @app = app
@@ -42,6 +44,11 @@ module Selfid
         return m.send_message if async
 
         m.request
+      end
+
+      def request_via_intermediary(id, facts, opts, &block)
+        opts[:intermediary] = opts.fetch(:intermediary, DEFAULT_INTERMEDIARY)
+        request(id, facts, opts, &block)
       end
 
       # Adds an observer for an fact response
