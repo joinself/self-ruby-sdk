@@ -47,7 +47,7 @@ module Selfid
           @app.client.auth(body)
           return uuid
         end
-        resp = @app.messaging.wait_for uuid do
+        resp = @app.messaging.client.wait_for uuid do
           @app.client.auth(body)
         end
         authenticated?(resp.input)

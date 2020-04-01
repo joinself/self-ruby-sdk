@@ -3,7 +3,7 @@
 require 'selfid'
 
 # Process input data
-abort("provide self_id to authenticate") if ARGV.length != 1
+abort("provide self_id to request information to") if ARGV.length != 1
 user = ARGV.first
 
 # You can point to a different environment by passing optional values to the initializer
@@ -13,18 +13,14 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 # app on https://developer.selfid.net/
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
 
-# Authenticate a user to your app.
-puts "Sending an authentication request to your device..."
-@app.authentication.request user do |auth|
-  # The user has rejected the authentication
-  if not auth.accepted?
-    puts "Authentication request has been rejected"
-    exit!
-  end
+# Request display_name and email_address to the specified user
+res = @app.facts.request(user, [Selfid::FACT_DISPLAY_NAME, Selfid::FACT_EMAIL])
 
-  puts "User is now authenticated 🤘"
+# Information request has been rejected by the user
+if res.status == "rejected"
+  puts 'Information request rejected'
   exit!
 end
 
-# Wait for asyncrhonous process to finish
-sleep 100
+# Response comes in form of facts easy to access with facts method
+puts "Hello #{res.fact(Selfid::FACT_DISPLAY_NAME).attestations.first.value}"
