@@ -12,11 +12,9 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfid.net/
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
-# Allows connections from everyone on self network to your app.
-@app.permit_connection("*")
 
 # Register an observer for an authentication response
-@app.on_message Selfid::Messages::AuthenticationResp::MSG_TYPE do |auth|
+@app.authentication.subscribe do |auth|
   # The user has rejected the authentication
   if not auth.accepted?
     puts "Authentication request has been rejected"
@@ -28,7 +26,7 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 end
 
 # Print a QR code to authenticate
-req = @app.authenticate("-", request: false)
+req = @app.authentication.request("-", request: false)
 
 # Share resulting image with your users
 png = RQRCode::QRCode.new(req, :level => 'l').as_png(

@@ -14,16 +14,16 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
 
 # Allow connections from user
-@app.permit_connection(user)
-connections = @app.allowed_connections
+@app.messaging.permit_connection(user)
+connections = @app.messaging.allowed_connections
 p connections
 
 # Block connections from user
-@app.revoke_connection(user)
-connections = @app.allowed_connections
+@app.messaging.revoke_connection(user)
+connections = @app.messaging.allowed_connections
 p connections
 
 # Allow connections from user
-@app.permit_connection(user)
-connections = @app.allowed_connections
+@app.messaging.permit_connection(user)
+connections = @app.messaging.allowed_connections
 p connections

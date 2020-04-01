@@ -25,7 +25,6 @@ module Selfid
     MESSAGING_URL = "wss://messaging.selfid.net/v1/messaging".freeze
 
     attr_reader :app_id, :app_key, :client, :jwt
-    attr_accessor :messaging
 
     # Initializes a Selfid App
     #
@@ -44,13 +43,12 @@ module Selfid
       @client = RestClient.new(url, @jwt)
 
       messaging_url = opts.fetch(:messaging_url, MESSAGING_URL)
-      if !messaging_url.nil?
-        @messaging = MessagingClient.new(messaging_url,
-                                         @jwt,
-                                         @client,
-                                         auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
-                                         device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE),)
-        @acl = ACL.new(@messaging)
+      unless messaging_url.nil?
+        @messaging_client = MessagingClient.new(messaging_url,
+                                                @jwt,
+                                                @client,
+                                                auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
+                                                device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE),)
       end
     end
 
@@ -62,10 +60,80 @@ module Selfid
       @authentication ||= Authentication.new(self)
     end
 
+    def identity
+      @identity ||= Identity.new(@client)
+    end
+
+    def messaging
+      @messaging ||= Messaging.new(@messaging_client)
+    end
+  end
+
+  class Messaging
+    attr_reader :client
+    def initialize(client)
+      @client = client
+    end
+
+    # Adds an observer for a message type
+    #
+    # @param type [string] message type (ex: Selfid::Messages::AuthenticationResp.MSG_TYPE
+    # @param block [block] observer to be executed.
+    def subscribe(type, &block)
+      @client.type_observer[type] = block
+    end
+
+    # Permits incoming messages from the given identity.
+    #
+    # @param id [string] identity to be allowed
+    def permit_connection(id)
+      acl.allow id
+    end
+
+    # Lists allowed connections.
+    def allowed_connections
+      acl.list
+    end
+
+    # Revokes incoming messages from the given identity.
+    #
+    # @param id [string] identity to be denied
+    def revoke_connection(id)
+      acl.deny id
+    end
+
+    # Gets the current running app device_id
+    def device_id
+      @client.device_id
+    end
+
+    # Get the observer by uuid
+    #
+    # @param id [string] uuid of the observer to be retrieved
+    def observer(id)
+      @client.uuid_observer[id]
+    end
+
+    def set_observer(id, &block)
+      @client.uuid_observer[id] = block
+    end
+
+    private
+
+    def acl
+      @acl ||= ACL.new(@client)
+    end
+  end
+
+  class Identity
+    def initialize(client)
+      @client = client
+    end
+
     # Gets an identity details
     #
     # @param self_id [string] identity SelfID
-    def identity(self_id)
+    def user(self_id)
       @client.identity(self_id)
     end
 
@@ -79,7 +147,7 @@ module Selfid
     # Gets an app/identity defails
     #
     # @param self_id [string] app/identity SelfID
-    def entity(self_id)
+    def get(self_id)
       @client.entity(self_id)
     end
 
@@ -89,41 +157,6 @@ module Selfid
     def devices(self_id)
       @client.devices(self_id)
     end
-
-    # Adds an observer for a message type
-    #
-    # @param type [string] message type (ex: Selfid::Messages::AuthenticationResp.MSG_TYPE
-    # @param block [block] observer to be executed.
-    def on_message(type, &block)
-      @messaging.type_observer[type] = if type == Selfid::Messages::AuthenticationResp::MSG_TYPE
-                                         proc do |res|
-                                           auth = authenticated?(res.input)
-                                           block.call(auth)
-                                         end
-                                       else
-                                         block
-                                       end
-    end
-
-    # Permits incomming messages from the given identity.
-    #
-    # @param type [id] identity to be allowed
-    def permit_connection(id)
-      @acl.allow id
-    end
-
-    # Lists allowed connections.
-    def allowed_connections
-      @acl.list
-    end
-
-    # Revokes incomming messages from the given identity.
-    #
-    # @param type [id] identity to be denied
-    def revoke_connection(id)
-      @acl.deny id
-    end
-
   end
 
   class Authentication
@@ -158,9 +191,9 @@ module Selfid
       return body if !opts.fetch(:request, true)
 
       if block_given?
-        @app.messaging.uuid_observer[uuid] = proc do |res|
+        @app.messaging.set_observer uuid do |res|
           auth = authenticated?(res.input)
-          block.call(auth)
+          yield(auth)
         end
         # when a block is given the request will always be asynchronous.
         async = true
@@ -175,6 +208,14 @@ module Selfid
         @app.client.auth(body)
       end
       authenticated?(resp.input)
+    end
+
+    # Adds an observer for an authentication response
+    def subscribe(&block)
+      @app.messaging.subscribe Selfid::Messages::AuthenticationResp::MSG_TYPE do |res|
+        auth = authenticated?(res.input)
+        yield(auth)
+      end
     end
 
     private
@@ -197,7 +238,7 @@ module Selfid
 
       return nil if payload.nil?
 
-      identity = @app.identity(payload[:sub])
+      identity = @app.identity.get(payload[:sub])
       return nil if identity.nil?
 
       identity[:public_keys].each do |key|
@@ -211,7 +252,6 @@ module Selfid
       p e.backtrace
       nil
     end
-
   end
 
   class Facts
@@ -227,7 +267,7 @@ module Selfid
     # @option opts [String] :type you can define if you want to request this information on a sync or an async way
     def request(id, facts, opts = {}, &block)
       async = opts.include?(:type) && (opts[:type] == :async)
-      m = Selfid::Messages::IdentityInfoReq.new(@app.messaging)
+      m = Selfid::Messages::IdentityInfoReq.new(@app.messaging.client)
       m.id = SecureRandom.uuid
       m.from = @app.jwt.id
       m.to = id
@@ -238,15 +278,15 @@ module Selfid
       return @app.jwt.prepare(m.body) if !opts.fetch(:request, true)
 
       devices = if opts.include?(:intermediary)
-                  @app.client.devices(opts[:intermediary])
+                  @app.identity.devices(opts[:intermediary])
                 else
-                  @app.client.devices(id)
+                  @app.identity.devices(id)
                 end
       device = devices.first
       m.to_device = device
 
       if block_given?
-        @app.messaging.uuid_observer[m.id] = block
+        @app.messaging.set_observer(m.id, &block)
         # when a block is given the request will always be asynchronous.
         async = true
       end
@@ -254,6 +294,11 @@ module Selfid
       return m.send_message if async
 
       m.request
+    end
+
+    # Adds an observer for an fact response
+    def subscribe(&block)
+      @app.messaging.subscribe(Selfid::Messages::IdentityInfoResp::MSG_TYPE, &block)
     end
 
     private

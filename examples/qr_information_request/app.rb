@@ -13,11 +13,8 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 # app on https://developer.selfid.net/
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
 
-# Allows connections from everyone on self network to your app.
-@app.permit_connection("*")
-
 # Register an observer for an information response
-@app.on_message Selfid::Messages::IdentityInfoResp::MSG_TYPE do |res|
+@app.messaging.subscribe Selfid::Messages::IdentityInfoResp::MSG_TYPE do |res|
   # Information request has been rejected by the user
   if res.status == "rejected"
     puts 'Information request rejected'
@@ -25,12 +22,12 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
   end
 
   # Response comes in form of facts easy to access with facts method
-  puts "Hello #{res.fact(Selfid::FACT_DISPLAY_NAME).value}"
+  puts "Hello #{res.fact(Selfid::FACT_DISPLAY_NAME).attestations.first.value}"
   exit!
 end
 
 # Print a QR code for the information request
-req = @app.request_information('-', [Selfid::FACT_DISPLAY_NAME], request: false)
+req = @app.facts.request('-', [Selfid::FACT_DISPLAY_NAME], request: false)
 
 # Share resulting image with your users
 png = RQRCode::QRCode.new(req, :level => 'l').as_png(

@@ -13,9 +13,6 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 # app on https://developer.selfid.net/
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
 
-# Allows connections from everyone on self network to your app.
-@app.permit_connection("*")
-
 # Authenticate a user to your app.
 puts "Sending an authentication request to your device..."
 @app.authentication.request user do |auth|
