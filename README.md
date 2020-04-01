@@ -46,7 +46,7 @@ Authenticate allows your users to authenticate or register on your app. You can 
 ```ruby
 # This is a blocking approach to self authentication.
 # send an authentication request
-auth = @client.authenticate("1112223334")
+auth = @client.authentication.request("1112223334")
 # check if the auth response is accepted
 puts "You are now authenticated 🤘" if auth.accepted?
 end
@@ -54,7 +54,7 @@ end
 ```ruby
 # This is a non-blocking approach to self authentication.
 # send an authentication request
-@client.authenticate "1112223334" do |auth|
+@client.authentication.request "1112223334" do |auth|
   puts "You are now authenticated 🤘" if auth.accepted?
 end
 ```
@@ -63,7 +63,7 @@ end
 
 Other peers on self network can send you messages, this client offers you a subscription model to process them by type.
 ```ruby
-@client.on_message Selfid::Messages::AuthenticationResp::MSG_TYPE do |auth|
+@client.authentication.subscribe do |auth|
   if auth.accepted?
     puts "#{auth.id} has accepted your auth request"
   else
@@ -77,14 +77,14 @@ You can request some information to other peers on the network. Same as with aut
 ```ruby
 # Blocking approach to fact request.
 # request name and email values to 1112223334
-res = @client.request_information("1112223334", [{fact: "display_name"}, {fact: "email_address"}])
+res = @client.fact.request("1112223334", ["display_name", "email_address"])
 # print the returned values
-puts "Hello #{res.fact('display_name').value}"
+puts "Hello #{res.fact('display_name').attestations.first.value}"
 ```
 ```ruby
 # Non-blocking approach to fact request.
 # request name and email values to 1112223334
-@client.request_information("1112223334", [{fact: "display_name"}, {fact: "email_address"}]) do |res|
+@client.fact.request("1112223334", ["display_name", "email_address"]) do |res|
   # print the returned values
   puts "Hello #{res.fact('display_name').value}"
 end
@@ -96,27 +96,27 @@ Even when your app is created you set its default permissions so `Everyone` or `
 
 #### List ACL
 ```ruby
-@app.acl_list
+@app.messaging.allowed_connections
 ```
 #### Allow new connections
 ```ruby
-@app.acl_permit "1112223334"
+@app.messaging.permit_connection "1112223334"
 ```
 #### Block incoming connections from the specified identity
 ```ruby
-@app.acl_revoke "1112223334"
+@app.messaging.revoke_connection "1112223334"
 ```
 
 ### Identity
 You can access some network details of a specific identity only if that identity gave you permissions to do so.
 ```ruby
-@app.identity "1112223334"
+@app.identity.get "1112223334"
 ```
 
 ### Identity
 You can access some network details of a specific app only if that app gave you permissions to do so.
 ```ruby
-@app.app "1112223334"
+@app.identity.user "1112223334"
 ```
 
 ## Documentation
