@@ -1,3 +1,4 @@
 *.gem
 .rubocop-https---relaxed-ruby-style-rubocop-yml
 test.rb
+.idea
