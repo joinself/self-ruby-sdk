@@ -5,10 +5,9 @@ module Selfid
     DEFAULT_INTERMEDIARY = "self_intermediary"
 
     class Facts
-      def initialize(messaging, jwt, identity)
+      def initialize(messaging, client)
         @messaging = messaging
-        @jwt = jwt
-        @identity = identity
+        @client = client
       end
 
       # Request fact to an identity
@@ -21,18 +20,18 @@ module Selfid
         async = opts.include?(:type) && (opts[:type] == :async)
         m = Selfid::Messages::IdentityInfoReq.new(@messaging.client)
         m.id = SecureRandom.uuid
-        m.from = @jwt.id
+        m.from = @client.jwt.id
         m.to = id
         m.facts = prepare_facts(facts)
         m.id = opts[:cid] if opts.include?(:cid)
         m.intermediary = opts[:intermediary] if opts.include?(:intermediary)
         m.description = opts[:description] if opts.include?(:description)
-        return @jwt.prepare(m.body) if !opts.fetch(:request, true)
+        return @client.jwt.prepare(m.body) if !opts.fetch(:request, true)
 
         devices = if opts.include?(:intermediary)
-                    @identity.devices(opts[:intermediary])
+                    @client.devices(opts[:intermediary])
                   else
-                    @identity.devices(id)
+                    @client.devices(id)
                   end
         device = devices.first
         m.to_device = device

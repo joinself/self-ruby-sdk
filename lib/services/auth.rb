@@ -3,11 +3,9 @@
 module Selfid
   module Services
     class Authentication
-      def initialize(messaging, client, jwt, identity)
+      def initialize(messaging, client)
         @messaging = messaging
         @client = client
-        @jwt = jwt
-        @identity = identity
       end
 
       # Sends an authentication request to the specified user_id.
@@ -26,14 +24,14 @@ module Selfid
             device_id: @messaging.device_id,
             typ: 'authentication_req',
             aud: @client.self_url,
-            iss: @jwt.id,
+            iss: @client.jwt.id,
             sub: user_id,
             iat: Selfid::Time.now.strftime('%FT%TZ'),
             exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
             cid: uuid,
             jti: jti,
         }
-        body = @jwt.prepare(body)
+        body = @client.jwt.prepare(body)
         return body if !opts.fetch(:request, true)
 
         if block_given?
@@ -84,18 +82,18 @@ module Selfid
       end
 
       def valid_payload(response)
-        jws = @jwt.parse(response)
+        jws = @client.jwt.parse(response)
         return nil unless jws.include? :payload
 
-        payload = JSON.parse(@jwt.decode(jws[:payload]), symbolize_names: true)
+        payload = JSON.parse(@client.jwt.decode(jws[:payload]), symbolize_names: true)
 
         return nil if payload.nil?
 
-        identity = @identity.get(payload[:sub])
+        identity = @client.entity(payload[:sub])
         return nil if identity.nil?
 
         identity[:public_keys].each do |key|
-          return payload if @jwt.verify(jws, key[:key])
+          return payload if @client.jwt.verify(jws, key[:key])
         end
         nil
       rescue StandardError => e

@@ -24,14 +24,14 @@ module Selfid
     # @params client [Object] Selfid::Client object
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
-    def initialize(url, jwt, client, options = {})
+    def initialize(url, client, options = {})
       @mon = Monitor.new
       @url = url
       @messages = {}
       @acks = {}
       @type_observer = {}
       @uuid_observer = {}
-      @jwt = jwt
+      @jwt = client.jwt
       @client = client
       @ack_timeout = 60 # seconds
       @timeout = 120 # seconds
