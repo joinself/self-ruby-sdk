@@ -60,12 +60,12 @@ module Selfid
 
     # Provides access to Selfid::Services::Facts service
     def facts
-      @facts ||= Selfid::Services::Facts.new(self)
+      @facts ||= Selfid::Services::Facts.new(@messaging_client, @jwt, @identity)
     end
 
     # Provides access to Selfid::Services::Authentication service
     def authentication
-      @authentication ||= Selfid::Services::Authentication.new(self)
+      @authentication ||= Selfid::Services::Authentication.new(@messaging, @client, @jwt, @identity)
     end
 
     # Provides access to Selfid::Services::Identity service

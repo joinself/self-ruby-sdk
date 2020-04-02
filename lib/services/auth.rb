@@ -3,8 +3,11 @@
 module Selfid
   module Services
     class Authentication
-      def initialize(app)
-        @app = app
+      def initialize(messaging, client, jwt, identity)
+        @messaging = messaging
+        @client = client
+        @jwt = jwt
+        @identity = identity
       end
 
       # Sends an authentication request to the specified user_id.
@@ -20,21 +23,21 @@ module Selfid
         jti = opts.fetch(:jti, SecureRandom.uuid)
         async = opts.fetch(:async, false)
         body = {
-            device_id: @app.messaging.device_id,
+            device_id: @messaging.device_id,
             typ: 'authentication_req',
-            aud: @app.client.self_url,
-            iss: @app.jwt.id,
+            aud: @client.self_url,
+            iss: @jwt.id,
             sub: user_id,
             iat: Selfid::Time.now.strftime('%FT%TZ'),
             exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
             cid: uuid,
             jti: jti,
         }
-        body = @app.jwt.prepare(body)
+        body = @jwt.prepare(body)
         return body if !opts.fetch(:request, true)
 
         if block_given?
-          @app.messaging.set_observer uuid do |res|
+          @messaging.set_observer uuid do |res|
             auth = authenticated?(res.input)
             yield(auth)
           end
@@ -44,11 +47,11 @@ module Selfid
 
         Selfid.logger.info "authenticating uuid #{uuid}"
         if async
-          @app.client.auth(body)
+          @client.auth(body)
           return uuid
         end
-        resp = @app.messaging.client.wait_for uuid do
-          @app.client.auth(body)
+        resp = @messaging.client.wait_for uuid do
+          @client.auth(body)
         end
         authenticated?(resp.input)
       end
@@ -62,7 +65,7 @@ module Selfid
 
       # Adds an observer for an authentication response
       def subscribe(&block)
-        @app.messaging.subscribe Selfid::Messages::AuthenticationResp::MSG_TYPE do |res|
+        @messaging.subscribe Selfid::Messages::AuthenticationResp::MSG_TYPE do |res|
           auth = authenticated?(res.input)
           yield(auth)
         end
@@ -81,18 +84,18 @@ module Selfid
       end
 
       def valid_payload(response)
-        jws = @app.jwt.parse(response)
+        jws = @jwt.parse(response)
         return nil unless jws.include? :payload
 
-        payload = JSON.parse(@app.jwt.decode(jws[:payload]), symbolize_names: true)
+        payload = JSON.parse(@jwt.decode(jws[:payload]), symbolize_names: true)
 
         return nil if payload.nil?
 
-        identity = @app.identity.get(payload[:sub])
+        identity = @identity.get(payload[:sub])
         return nil if identity.nil?
 
         identity[:public_keys].each do |key|
-          return payload if @app.jwt.verify(jws, key[:key])
+          return payload if @jwt.verify(jws, key[:key])
         end
         nil
       rescue StandardError => e
