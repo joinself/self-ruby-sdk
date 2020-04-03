@@ -18,26 +18,21 @@ module Selfid
       @messaging.list_acl_rules.each do |c|
         rules[c['acl_source']] = DateTime.parse(c['acl_exp'])
       end
-      return rules
+      rules
     end
 
     # Allows incomming messages from the given identity.
     def allow(id)
       Selfid.logger.info "Allowing connections from #{id}"
-      @messaging.add_acl_rule(@jwt.prepare(
-                           iss: @jwt.id,
-                           acl_source: id,
-                           acl_exp: (Selfid::Time.now + 360_000).to_datetime.rfc3339
-                         ))
+      @messaging.add_acl_rule(@jwt.prepare(iss: @jwt.id,
+                                           acl_source: id,
+                                           acl_exp: (Selfid::Time.now + 360_000).to_datetime.rfc3339))
     end
 
     # Deny incomming messages from the given identity.
     def deny(id)
       Selfid.logger.info "Allowing connections from #{id}"
-      @messaging.remove_acl_rule(@jwt.prepare(
-                           iss: @jwt.id,
-                           acl_source: id,
-                         ))
+      @messaging.remove_acl_rule(@jwt.prepare(iss: @jwt.id, acl_source: id))
     end
   end
 end
