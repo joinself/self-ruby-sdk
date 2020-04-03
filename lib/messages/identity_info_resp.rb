@@ -39,6 +39,15 @@ module Selfid
 
       protected
 
+      def validate!
+        @facts.each do |f|
+          f.attestations.each do |a|
+            raise StandardError("invalid sub on attestation") if a.sub != @from
+            raise StandardError("invalid sub on attestation") if a.sub != @from
+          end
+        end
+      end
+
       def proto
         encoded_facts = []
         @facts.each do |fact|

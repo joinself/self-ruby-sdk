@@ -59,4 +59,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rubocop", "~> 0.49"
   s.add_development_dependency "timecop"
   s.add_development_dependency "webmock"
+  s.add_development_dependency "rspec"
+  s.add_development_dependency "simplecov"
 end

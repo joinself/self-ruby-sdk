@@ -29,7 +29,7 @@ module Selfid
     BASE_URL = "https://api.selfid.net".freeze
     MESSAGING_URL = "wss://messaging.selfid.net/v1/messaging".freeze
 
-    attr_reader :app_id, :app_key, :client, :jwt
+    attr_reader :client
     attr_accessor :messaging_client
 
     # Initializes a Selfid App
@@ -42,16 +42,11 @@ module Selfid
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
     def initialize(app_id, app_key, opts = {})
-      @jwt = Selfid::Jwt.new(app_id, app_key)
-
-      url = opts.fetch(:base_url, BASE_URL)
-      Selfid.logger.info "client setup with #{url}"
-      @client = RestClient.new(url, @jwt)
+      @client = RestClient.new(opts.fetch(:base_url, BASE_URL), app_id, app_key)
 
       messaging_url = opts.fetch(:messaging_url, MESSAGING_URL)
       unless messaging_url.nil?
         @messaging_client = MessagingClient.new(messaging_url,
-                                                @jwt,
                                                 @client,
                                                 auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
                                                 device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE),)
@@ -60,12 +55,12 @@ module Selfid
 
     # Provides access to Selfid::Services::Facts service
     def facts
-      @facts ||= Selfid::Services::Facts.new(self)
+      @facts ||= Selfid::Services::Facts.new(@messaging_client, @client)
     end
 
     # Provides access to Selfid::Services::Authentication service
     def authentication
-      @authentication ||= Selfid::Services::Authentication.new(self)
+      @authentication ||= Selfid::Services::Authentication.new(@messaging_client, @client)
     end
 
     # Provides access to Selfid::Services::Identity service
@@ -76,6 +71,14 @@ module Selfid
     # Provides access to Selfid::Services::Messaging service
     def messaging
       @messaging ||= Selfid::Services::Messaging.new(@messaging_client)
+    end
+
+    def app_id
+      client.jwt.id
+    end
+
+    def app_key
+      client.jwt.key
     end
   end
 end
