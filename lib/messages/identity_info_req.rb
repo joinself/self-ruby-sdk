@@ -10,6 +10,25 @@ module Selfid
 
       attr_accessor :facts
 
+      def populate(selfid, facts, opts)
+        @id = SecureRandom.uuid
+        @from = @client.jwt.id
+        @to = selfid
+        @facts = facts
+
+        @id = opts[:cid] if opts.include?(:cid)
+        @description = opts.include?(:description) ? opts[:description] : nil
+
+        if opts.include?(:intermediary)
+          @intermediary = opts[:intermediary]
+          devices = @client.devices(@intermediary)
+        else
+          @intermediary = nil
+          devices = @client.devices(selfid)
+        end
+        @to_device = devices.first
+      end
+
       def parse(input)
         @input = input
         @typ = MSG_TYPE
@@ -18,6 +37,7 @@ module Selfid
         @from = @payload[:iss]
         @to = @payload[:sub]
         @expires = @payload[:exp]
+        @description = @payload.include?(:description) ? @payload[:description] : nil
         @facts = @payload[:facts]
       end
 
@@ -48,7 +68,8 @@ module Selfid
           jti: SecureRandom.uuid,
           facts: @facts,
         }
-        b[:description] = @description unless @description.nil?
+
+        b[:description] = @description unless (@description.nil? || @description.empty?)
         b
       end
 

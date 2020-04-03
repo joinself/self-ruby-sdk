@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'minitest/autorun'
+require_relative 'test_helper'
 require 'selfid'
 
 require 'webmock/minitest'
@@ -36,15 +36,15 @@ class SelfidTest < Minitest::Test
 
     def test_init_with_defaults
       assert_equal "https://api.selfid.net", app.client.self_url
-      assert_equal app_id, app.jwt.id
-      assert_equal seed, app.jwt.key
+      assert_equal app_id, app.app_id
+      assert_equal seed, app.app_key
     end
 
     def test_init_with_custom_parameters
       custom_app = Selfid::App.new(app_id, seed, base_url: "http://custom.self.net", messaging_url: nil)
       assert_equal "http://custom.self.net", custom_app.client.self_url
-      assert_equal app_id, custom_app.jwt.id
-      assert_equal seed, custom_app.jwt.key
+      assert_equal app_id, custom_app.app_id
+      assert_equal seed, custom_app.app_key
     end
 
     def test_authenticate
@@ -53,12 +53,12 @@ class SelfidTest < Minitest::Test
         with(body: body, headers: headers).
         to_return(status: 200, body: "", headers: {})
 
-      app.authentication.request("xxxxxxxx", uuid: "uuid", jti: "uuid", async: true)
+      app.authentication.request("xxxxxxxx", uuid: "uuid", jti: "uuid", request: false)
     end
 
     def test_identity
       pk = "pk_111222333"
-      id = "111222333"
+      id = "11122233344"
 
       stub_request(:get, "https://api.selfid.net/v1/identities/#{id}").
         with(headers: headers).

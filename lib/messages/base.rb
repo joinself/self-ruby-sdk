@@ -9,7 +9,7 @@ module Selfid
 
       def initialize(messaging)
         @client = messaging.client
-        @jwt = messaging.jwt
+        @jwt = @client.jwt
         @messaging = messaging
         @device_id = "1"
       end
