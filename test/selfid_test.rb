@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'minitest/autorun'
+require_relative 'test_helper'
 require 'selfid'
 
 require 'webmock/minitest'
@@ -53,7 +53,7 @@ class SelfidTest < Minitest::Test
         with(body: body, headers: headers).
         to_return(status: 200, body: "", headers: {})
 
-      app.authentication.request("xxxxxxxx", uuid: "uuid", jti: "uuid", async: true)
+      app.authentication.request("xxxxxxxx", uuid: "uuid", jti: "uuid", request: false)
     end
 
     def test_identity

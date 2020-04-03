@@ -6,6 +6,7 @@ require 'net/ntp'
 module Selfid
   class Time
     @@last_check = nil
+    @diff = nil
     def self.now
       timeout = 1
       ntp_time = nil

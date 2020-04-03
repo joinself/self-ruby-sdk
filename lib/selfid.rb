@@ -29,7 +29,7 @@ module Selfid
     BASE_URL = "https://api.selfid.net".freeze
     MESSAGING_URL = "wss://messaging.selfid.net/v1/messaging".freeze
 
-    attr_reader :app_id, :app_key, :client
+    attr_reader :client
     attr_accessor :messaging_client
 
     # Initializes a Selfid App

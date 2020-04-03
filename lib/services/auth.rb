@@ -1,59 +1,71 @@
 # frozen_string_literal: true
 
+# Namespace for classes and modules that handle Selfid gem
 module Selfid
+  # Namespace for classes and modules that handle selfid-gem public ui
   module Services
+    # Input class to handle authentication requests on self network.
     class Authentication
+      # Creates a new authentication service.
+      # Authentication service mainly manages authentication requests against self
+      # users wanting to authenticate on your app.
+      #
+      # @param messaging [Selfid::Messaging] messaging object.
+      # @param client [Selfid::Client] http client object.
+      #
+      # @return [Selfid::Services::Authentication] authentication service.
       def initialize(messaging, client)
         @messaging = messaging
         @client = client
       end
 
-      # Sends an authentication request to the specified user_id.
+      # Sends an authentication request to the specified selfid.
+      # An authentication requests allows your users to authenticate on your app using
+      # a secure self app.
       #
-      # @param user_id [string] the receiver of the authentication request.
-      # @param [Hash] opts the options to authenticate.
-      # @option opts [String] :uuid The unique identifier of the authentication request.
-      # @option opts [String] :async don't wait for the client to respond
-      # @option opts [String] :jti specify the jti to be used.
-      def request(user_id, opts = {}, &block)
-        Selfid.logger.info "authenticating #{user_id}"
-        uuid = opts.fetch(:uuid, SecureRandom.uuid)
-        jti = opts.fetch(:jti, SecureRandom.uuid)
-        async = opts.fetch(:async, false)
-        body = {
-            device_id: @messaging.device_id,
-            typ: 'authentication_req',
-            aud: @client.self_url,
-            iss: @client.jwt.id,
-            sub: user_id,
-            iat: Selfid::Time.now.strftime('%FT%TZ'),
-            exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
-            cid: uuid,
-            jti: jti,
-        }
-        body = @client.jwt.prepare(body)
-        return body if !opts.fetch(:request, true)
+      # @overload request(selfid, opts = {}, &block)
+      #  @param selfid [string] the receiver of the authentication request.
+      #  @param [Hash] opts the options to authenticate.
+      #  @option opts [String] :uuid The unique identifier of the authentication request.
+      #  @option opts [String] :jti specify the jti to be used.
+      #  @yield [request] Invokes the block with an authentication response for each result.
+      #  @return [String, String] conversation id or encoded body.
+      #
+      # @overload request(selfid, opts = {})
+      #  @param selfid [string] the receiver of the authentication request.
+      #  @param [Hash] opts the options to authenticate.
+      #  @option opts [String] :uuid The unique identifier of the authentication request.
+      #  @option opts [String] :jti specify the jti to be used.
+      #  @return [String, String] conversation id or encoded body.
+      def request(selfid, opts = {}, &block)
+        Selfid.logger.info "authenticating #{selfid}"
+        cid = opts.fetch(:uuid, SecureRandom.uuid)
 
+        body = prepare_payload(selfid, cid)
+        return body unless opts.fetch(:request, true)
+
+        # When a block is given the request will always be asynchronous.
         if block_given?
-          @messaging.set_observer uuid do |res|
-            auth = authenticated?(res.input)
-            yield(auth)
-          end
-          # when a block is given the request will always be asynchronous.
-          async = true
+          observe cid, &block
+          @client.auth(body)
+
+          return cid
         end
 
-        Selfid.logger.info "authenticating uuid #{uuid}"
-        if async
-          @client.auth(body)
-          return uuid
-        end
-        resp = @messaging.client.wait_for uuid do
+        # Otherwise the request is synchronous
+        resp = @messaging.wait_for cid do
           @client.auth(body)
         end
         authenticated?(resp.input)
       end
 
+      # Generates a QR code so users can authenticate to your app.
+      #
+      # @option opts [String] :selfid the user selfid you want to authenticate.
+      # @option opts [String] :jti specify the jti to be used.
+      # @option opts [String] :uuid The unique identifier of the authentication request.
+      #
+      # @return [String, String] conversation id or encoded body.
       def generate_qr(opts = {})
         opts[:request] = false
         selfid = opts.fetch(:selfid, "-")
@@ -81,6 +93,9 @@ module Selfid
         Authenticated.new(valid_payload(response))
       end
 
+      # checks if a payload is valid or not.
+      #
+      # @param response [string] the response to an authentication request from self-api.
       def valid_payload(response)
         jws = @client.jwt.parse(response)
         return nil unless jws.include? :payload
@@ -102,6 +117,36 @@ module Selfid
         Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
         p e.backtrace
         nil
+      end
+
+      # Prepares an authentication payload to be sent to a user.
+      #
+      # @param selfid [string] the selfid of the user you want to send the auth request to.
+      # @param cid [string] the conversation id to be used.
+      def prepare_payload(selfid, cid)
+        # TODO should this be moved to its own message/auth_req.rb?
+        body = {
+            typ: 'authentication_req',
+            aud: @client.self_url,
+            iss: @client.jwt.id,
+            sub: selfid,
+            iat: Selfid::Time.now.strftime('%FT%TZ'),
+            exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+            cid: cid,
+            jti: SecureRandom.uuid,
+            device_id: @messaging.device_id,
+        }
+
+        @client.jwt.prepare(body)
+      end
+
+      # Waits for the response of a specific conversation and executes a block
+      #
+      # @param cid [string] the conversation id to be used.
+      def observe(cid, &block)
+        @messaging.set_observer cid do |res|
+          yield(authenticated?(res.input))
+        end
       end
     end
   end
