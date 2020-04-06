@@ -27,7 +27,7 @@ module Selfid
       # @param [String] type message type (ex: Selfid::Messages::AuthenticationResp.MSG_TYPE
       # @yield [Selfid::Messages::Message] receives incoming message.
       def subscribe(type, &block)
-        @client.type_observer[type] = block
+        @client.subscribe(type, &block)
       end
 
       # Permits incoming messages from the a identity.

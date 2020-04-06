@@ -30,7 +30,6 @@ class SelfidTest < Minitest::Test
     let(:client) do
       mm = double("client")
       expect(mm).to receive(:jwt).and_return(jwt).at_least(:once)
-      expect(mm).to receive(:devices).and_return([app_device_id])
       mm
     end
     let(:messaging) do
@@ -52,6 +51,7 @@ class SelfidTest < Minitest::Test
       expect(messaging).to receive(:device_id).and_return(app_device_id)
       expect(messaging).to receive(:set_observer).with(cid).once
       expect(messaging).to receive(:send_message).and_return(cid)
+      expect(client).to receive(:devices).and_return([app_device_id])
       res = service.request selfid, cid: cid do
         assert_true true
       end
@@ -62,6 +62,7 @@ class SelfidTest < Minitest::Test
       payload = {cid: "cid", sub: "sub", status: "accepted"}
       expect(messaging).to receive(:device_id).and_return(app_device_id)
       expect(messaging).to receive(:send_and_wait_for_response).and_return(cid)
+      expect(client).to receive(:devices).and_return([app_device_id])
 
       res = service.request selfid, cid: cid
       assert_equal "cid", res

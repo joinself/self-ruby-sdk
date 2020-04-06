@@ -20,8 +20,6 @@ module Selfid
 
         @id = opts[:cid] if opts.include?(:cid)
         @description = opts.include?(:description) ? opts[:description] : nil
-
-        @to_device = @client.devices(selfid).first
       end
 
 
@@ -51,6 +49,7 @@ module Selfid
       protected
 
       def proto
+        @to_device = @client.devices(@to).first
         Msgproto::Message.new(type: Msgproto::MsgType::MSG,
                               sender: "#{@jwt.id}:#{@messaging.device_id}",
                               id: @id,

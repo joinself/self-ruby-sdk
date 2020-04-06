@@ -19,14 +19,12 @@ module Selfid
         @id = opts[:cid] if opts.include?(:cid)
         @description = opts.include?(:description) ? opts[:description] : nil
 
-        if opts.include?(:intermediary)
-          @intermediary = opts[:intermediary]
-          devices = @client.devices(@intermediary)
-        else
-          @intermediary = nil
-          devices = @client.devices(selfid)
-        end
-        @to_device = devices.first
+        @intermediary = if opts.include?(:intermediary)
+                          opts[:intermediary]
+                        else
+          nil
+                        end
+
       end
 
       def parse(input)
@@ -76,6 +74,13 @@ module Selfid
       protected
 
       def proto
+        devices = if @intermediary.nil?
+                    @client.devices(@to)
+                  else
+                    @client.devices(@intermediary)
+                  end
+        @to_device = devices.first
+
         recipient = if @intermediary.nil?
                       "#{@to}:#{@to_device}"
                     else

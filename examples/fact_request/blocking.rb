@@ -5,6 +5,7 @@ require 'selfid'
 # Process input data
 abort("provide self_id to request information to") if ARGV.length != 1
 user = ARGV.first
+Selfid.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
 
 # You can point to a different environment by passing optional values to the initializer
 opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}

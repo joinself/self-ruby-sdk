@@ -24,6 +24,12 @@ SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby auth
 echo ""
 
 echo "---------------------------------------"
+echo "Testing blocking authentication for $selfid"
+echo "---------------------------------------"
+SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby authentication/blocking.rb $selfid
+echo ""
+
+echo "---------------------------------------"
 echo "Testing QR auth request for $selfid"
 echo "---------------------------------------"
 SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby qr_authentication/app.rb $selfid
@@ -36,7 +42,13 @@ SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby fact
 echo ""
 
 echo "---------------------------------------"
-echo "Testing fact request for $selfid"
+echo "Testing blocking fact request for $selfid"
+echo "---------------------------------------"
+SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby fact_request/blocking.rb $selfid
+echo ""
+
+echo "---------------------------------------"
+echo "Testing QR fact request for $selfid"
 echo "---------------------------------------"
 SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby qr_fact_request/app.rb $selfid
 echo ""

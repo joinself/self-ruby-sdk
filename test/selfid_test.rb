@@ -50,7 +50,6 @@ class SelfidTest < Minitest::Test
     def test_authenticate
       jwt = double("jwt", id: "appid")
       client = double("client", jwt: jwt)
-      expect(client).to receive(:devices).with('xxxxxxxx').and_return(["1"])
       expect(app.messaging_client).to receive(:client).and_return(client)
       res = JSON.parse(app.authentication.request("xxxxxxxx", cid: "uuid", jti: "uuid", request: false))
       payload = JSON.parse(Base64.urlsafe_decode64(res['payload']))
