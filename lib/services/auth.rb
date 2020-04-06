@@ -94,16 +94,7 @@ module Selfid
       #
       # @param response [string] the response to an authentication request from self-api.
       def valid_payload(response)
-        payload = @client.jwt.parse_payload(input)
-        return if payload.nil?
-
-        identity = @client.entity(payload[:sub])
-        return nil if identity.nil?
-
-        identity[:public_keys].each do |key|
-          return payload if @client.jwt.verify(jws, key[:key])
-        end
-        nil
+        parse_payload(response)
       rescue StandardError => e
         uuid = ""
         uuid = payload[:cid] unless payload.nil?
@@ -140,6 +131,19 @@ module Selfid
         @messaging.set_observer cid do |res|
           yield(authenticated?(res.input))
         end
+      end
+
+      def parse_payload(response)
+        payload = @client.jwt.parse_payload(response)
+        return if payload.nil?
+
+        identity = @client.entity(payload[:sub])
+        return nil if identity.nil?
+
+        identity[:public_keys].each do |key|
+          return payload if @client.jwt.verify(jws, key[:key])
+        end
+        nil
       end
     end
   end
