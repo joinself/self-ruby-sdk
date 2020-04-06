@@ -13,7 +13,8 @@ module Selfid
 
       def parse(fact)
         @name = fact[:fact]
-        @operator = fact[:operator]
+        @operator = fact[:operator] || ""
+        @expected_value = fact[:expected_value] || ""
         @attestations = []
 
         fact[:attestations].each do |a|
