@@ -15,7 +15,7 @@ module Selfid
       end
 
       def request
-        Selfid.logger.info "synchronously requesting information to #{@to}:#{@to_device}"
+        Selfid.logger.info "synchronously messaging to #{@to}:#{@to_device}"
         @messaging.send_and_wait_for_response(proto)
       end
 

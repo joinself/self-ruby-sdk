@@ -3,6 +3,7 @@
 require_relative "identity_info_req"
 require_relative "identity_info_resp"
 require_relative "authentication_resp"
+require_relative "authentication_req"
 
 module Selfid
   module Messages
@@ -27,6 +28,10 @@ module Selfid
         return m
       when "authentication_resp"
         m = AuthenticationResp.new(messaging)
+        m.parse(body)
+        return m
+      when "authentication_req"
+        m = AuthenticationReq.new(messaging)
         m.parse(body)
         return m
       else

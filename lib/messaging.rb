@@ -187,6 +187,10 @@ module Selfid
       end
     end
 
+    def set_observer(uuid, &block)
+      @uuid_observer[uuid] = block
+    end
+
     private
 
     # Start sthe websocket listener

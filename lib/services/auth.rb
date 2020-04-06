@@ -39,24 +39,21 @@ module Selfid
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
         Selfid.logger.info "authenticating #{selfid}"
-        cid = opts.fetch(:uuid, SecureRandom.uuid)
 
-        body = prepare_payload(selfid, cid)
+        req = Selfid::Messages::AuthenticationReq.new(@messaging)
+        req.populate(selfid, opts)
+
+        body = @client.jwt.prepare(req.body)
         return body unless opts.fetch(:request, true)
 
-        # When a block is given the request will always be asynchronous.
+        # when a block is given the request will always be asynchronous.
         if block_given?
-          observe cid, &block
-          @client.auth(body)
-
-          return cid
+          @messaging.set_observer(req.id, &block)
+          return req.send_message
         end
 
         # Otherwise the request is synchronous
-        resp = @messaging.wait_for cid do
-          @client.auth(body)
-        end
-        authenticated?(resp.input)
+        req.request
       end
 
       # Generates a QR code so users can authenticate to your app.
