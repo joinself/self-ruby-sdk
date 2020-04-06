@@ -3,7 +3,7 @@
 require 'selfid'
 
 # Disable the debug logs
-Selfid.logger = Logger.new('/dev/null')
+Selfid.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
 
 # You can point to a different environment by passing optional values to the initializer
 opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
