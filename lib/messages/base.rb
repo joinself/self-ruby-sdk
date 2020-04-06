@@ -15,13 +15,15 @@ module Selfid
       end
 
       def request
+        res = @messaging.send_and_wait_for_response(proto)
         Selfid.logger.info "synchronously messaging to #{@to}:#{@to_device}"
-        @messaging.send_and_wait_for_response(proto)
+        res
       end
 
       def send_message
-        Selfid.logger.info "asynchronously requesting information to #{@to}:#{@to_device}"
-        @messaging.send_message proto
+        res = @messaging.send_message proto
+        Selfid.logger.info "asynchronously requested information to #{@to}:#{@to_device}"
+        res
       end
 
       def unauthorized?

@@ -31,7 +31,6 @@ class SelfidTest < Minitest::Test
     let(:client) do
       mm = double("client")
       expect(mm).to receive(:jwt).and_return(jwt).at_least(:once)
-      expect(mm).to receive(:devices).and_return(devices)
       mm
     end
     let(:messaging) do
@@ -52,6 +51,7 @@ class SelfidTest < Minitest::Test
     def test_non_blocking_request
       expect(messaging).to receive(:set_observer).with(cid).once
       expect(messaging).to receive(:device_id).and_return("1").once
+      expect(client).to receive(:devices).and_return(devices)
       expect(messaging).to receive(:send_message) do |arg|
         assert_equal arg.type, :MSG
         assert_equal arg.id, cid
@@ -69,6 +69,7 @@ class SelfidTest < Minitest::Test
     def test_blocking_request
       expect(messaging).to receive(:device_id).once.and_return("1")
       expect(messaging).to receive(:send_and_wait_for_response).once.and_return("response")
+      expect(client).to receive(:devices).and_return(devices)
 
       res = service.request selfid, ["email_address", "name"], cid: cid
       assert_equal "response", res
@@ -82,6 +83,7 @@ class SelfidTest < Minitest::Test
     def test_intermediary_request
       expect(messaging).to receive(:set_observer).with(cid).once
       expect(messaging).to receive(:device_id).and_return("1").once
+      expect(client).to receive(:devices).and_return(devices)
       expect(messaging).to receive(:send_message) do |arg|
         assert_equal arg.type, :MSG
         assert_equal arg.id, cid
