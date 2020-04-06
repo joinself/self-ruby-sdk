@@ -12,7 +12,7 @@ fi
 if [[ -z "${SELF_APP_SECRET}" ]]; then
   read -p "SELF_APP_SECRET: "  self_app_secret
 else
-  self_app_secret=$SELF_APP_ID
+  self_app_secret=$SELF_APP_SECRET
 fi
 read -p "Provide the user selfid you want to test against: "  selfid
 echo ""
