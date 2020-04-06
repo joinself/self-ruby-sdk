@@ -2,27 +2,15 @@
 
 require_relative 'base'
 require_relative '../ntptime'
+require_relative 'authentication_message'
 
 module Selfid
   module Messages
-    class AuthenticationResp < Base
+    class AuthenticationResp < AuthenticationMessage
       MSG_TYPE = "authentication_resp"
-
       def initialize(messaging)
         @typ = MSG_TYPE
         super
-      end
-
-      def parse(input)
-        @input = input
-        @typ = MSG_TYPE
-        @payload = get_payload input
-        @id = payload[:cid]
-        @from = payload[:iss]
-        @to = payload[:sub]
-        @from_device = payload[:device_id]
-        @expires = payload[:exp]
-        @status = payload[:status]
       end
 
       protected

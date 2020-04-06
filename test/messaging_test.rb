@@ -53,5 +53,33 @@ class SelfidTest < Minitest::Test
       messaging_client.send(:notify_observer, message)
     end
 
+    def test_clean_timeouts
+      messaging_client.instance_variable_get(:@acks)['uuid1'] = {
+          waiting_cond: messaging_client.instance_variable_get(:@mon).new_cond,
+          waiting: true,
+          timeout: Selfid::Time.now - 150,
+      }
+      messaging_client.instance_variable_get(:@acks)['uuid2'] = {
+          waiting_cond: messaging_client.instance_variable_get(:@mon).new_cond,
+          waiting: true,
+          timeout: Selfid::Time.now + 150,
+      }
+      messaging_client.instance_variable_get(:@messages)['uuid1'] = {
+          waiting_cond: messaging_client.instance_variable_get(:@mon).new_cond,
+          waiting: true,
+          timeout: Selfid::Time.now - 150,
+      }
+      messaging_client.instance_variable_get(:@messages)['uuid2'] = {
+          waiting_cond: messaging_client.instance_variable_get(:@mon).new_cond,
+          waiting: true,
+          timeout: Selfid::Time.now + 150,
+      }
+      messaging_client.send(:clean_timeouts)
+      assert_equal false, messaging_client.instance_variable_get(:@messages)['uuid1'][:waiting]
+      assert_equal true, messaging_client.instance_variable_get(:@messages)['uuid2'][:waiting]
+      assert_equal false, messaging_client.instance_variable_get(:@acks)['uuid1'][:waiting]
+      assert_equal true, messaging_client.instance_variable_get(:@acks)['uuid2'][:waiting]
+    end
+
   end
 end

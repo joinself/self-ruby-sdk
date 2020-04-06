@@ -94,12 +94,8 @@ module Selfid
       #
       # @param response [string] the response to an authentication request from self-api.
       def valid_payload(response)
-        jws = @client.jwt.parse(response)
-        return nil unless jws.include? :payload
-
-        payload = JSON.parse(@client.jwt.decode(jws[:payload]), symbolize_names: true)
-
-        return nil if payload.nil?
+        payload = @client.jwt.parse_payload(input)
+        return if payload.nil?
 
         identity = @client.entity(payload[:sub])
         return nil if identity.nil?

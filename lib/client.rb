@@ -20,32 +20,21 @@ module Selfid
     #
     # @param id [string] identity self_id.
     def identity(id)
-      res = get "/v1/identities/#{id}"
-      body = JSON.parse(res.body, symbolize_names: true)
-      if res.code != 200
-        Selfid.logger.error "identity response : #{body[:message]}"
-        raise body[:message]
-      end
-      body
+      get_identity "/v1/identities/#{id}"
     end
 
     # Get app details
     #
     # @param id [string] app self_id.
     def app(id)
-      res = get "/v1/apps/#{id}"
-      body = JSON.parse(res.body, symbolize_names: true)
-      if res.code != 200
-        Selfid.logger.error "app response : #{body[:message]}"
-        raise body[:message]
-      end
-      body
+      get_identity "/v1/apps/#{id}"
     end
 
     # Get app/identity details
     #
     # @param id [string] app/identity self_id.
     def entity(id)
+      #TODO : Consider a better check for this conditional
       if id.length == 11
         return identity(id)
       else
@@ -75,6 +64,16 @@ module Selfid
     end
 
     private
+
+    def get_identity(endpoint)
+      res = get endpoint
+      body = JSON.parse(res.body, symbolize_names: true)
+      if res.code != 200
+        Selfid.logger.error "app response : #{body[:message]}"
+        raise body[:message]
+      end
+      body
+    end
 
     def get(endpoint)
       HTTParty.get("#{@self_url}#{endpoint}", headers: {

@@ -41,8 +41,8 @@ module Selfid
 
       def validate!
         @facts.each do |f|
+          f.validate!
           f.attestations.each do |a|
-            raise StandardError("invalid sub on attestation") if a.sub != @from
             raise StandardError("invalid sub on attestation") if a.sub != @from
           end
         end

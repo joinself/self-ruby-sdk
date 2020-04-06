@@ -21,22 +21,19 @@ module Selfid
       when "identity_info_req"
         m = IdentityInfoReq.new(messaging)
         m.parse(body)
-        return m
       when "identity_info_resp"
         m = IdentityInfoResp.new(messaging)
         m.parse(body)
-        return m
       when "authentication_resp"
         m = AuthenticationResp.new(messaging)
         m.parse(body)
-        return m
       when "authentication_req"
         m = AuthenticationReq.new(messaging)
         m.parse(body)
-        return m
       else
         raise StandardError.new("Invalid message type.")
       end
+      return m
     end
   end
 end
