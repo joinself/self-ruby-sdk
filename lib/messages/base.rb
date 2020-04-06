@@ -43,7 +43,7 @@ module Selfid
       protected
 
       def proto
-        raise StandardError "must define this method"
+        raise ::StandardError.new("must define this method")
       end
 
       private
@@ -67,7 +67,7 @@ module Selfid
         return if @jwt.verify(jwt, k)
 
         Selfid.logger.info "skipping message, invalid signature"
-        raise StandardError "invalid signature on incoming message"
+        raise ::StandardError.new("invalid signature on incoming message")
       end
     end
   end
