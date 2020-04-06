@@ -59,7 +59,6 @@ class SelfidTest < Minitest::Test
     end
 
     def test_blocking_request
-      payload = {cid: "cid", sub: "sub", status: "accepted"}
       expect(messaging).to receive(:device_id).and_return(app_device_id)
       expect(messaging).to receive(:send_and_wait_for_response).and_return(cid)
       expect(client).to receive(:devices).and_return([app_device_id])
