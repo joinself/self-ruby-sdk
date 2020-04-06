@@ -27,23 +27,6 @@ class SelfidTest < Minitest::Test
       Timecop.return
     end
 
-    describe "auth" do
-      let(:body) { "test_body" }
-      let(:res_body) { "yolo" }
-      let(:bearer) { "Bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5ZTVmMGQ3MC03YTY3LTQ5NjUtODQyMy0xNWE0ODVmMWQzYjEiLCJpYXQiOjE1NjczMzIyOTUsImV4cCI6MTU2NzMzMjM2MCwiaXNzIjoibzltcG5nOW0yanYifQ.SzlcYvCJcrkwSj_RhwU5mYqSc3v1gguJcSs_icokN26tSww6puSmHW9wzdTNJIfq2m7mQ3N4kcmstg4WNgGgAg" }
-      def test_parse
-        stub_request(:post, "#{url}/v1/auth").with do |request|
-          assert_equal body, request.body
-          token = request.headers['Authorization'].split(" ").last.split(".")[1]
-          auth = JSON.parse(Base64.urlsafe_decode64(token))
-          assert_equal "o9mpng9m2jv", auth['iss']
-          assert !auth['jti'].empty?
-        end.to_return(status: 200, body: '', headers: {})
-
-        subject.auth(body)
-      end
-    end
-
     describe "devices" do
       let(:selfid) { "1112223334" }
       let(:res_body) { {message: 'yolo'} }

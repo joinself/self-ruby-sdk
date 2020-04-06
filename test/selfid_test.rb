@@ -5,16 +5,16 @@ require 'selfid'
 
 require 'webmock/minitest'
 require 'timecop'
+require 'base64'
 
 class SelfidTest < Minitest::Test
   describe "selfid" do
     let(:seed)    { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:app_id)  { "o9mpng9m2jv" }
-    let(:app)     do
+    let(:messaging_client) { double("messaging", device_id: "1") }
+    let(:app) do
       a = Selfid::App.new(app_id, seed, messaging_url: nil)
-      mm = Minitest::Mock.new
-      def mm.device_id; "1"; end
-      a.messaging_client = mm
+      a.messaging_client = messaging_client
       a
     end
     let(:atoken)    { app.jwt.auth_token }
@@ -48,12 +48,17 @@ class SelfidTest < Minitest::Test
     end
 
     def test_authenticate
-      body = "{\"payload\":\"eyJkZXZpY2VfaWQiOiIxIiwidHlwIjoiYXV0aGVudGljYXRpb25fcmVxIiwiYXVkIjoiaHR0cHM6Ly9hcGkuc2VsZmlkLm5ldCIsImlzcyI6Im85bXBuZzltMmp2Iiwic3ViIjoieHh4eHh4eHgiLCJpYXQiOiIyMDE5LTA5LTAxVDEwOjA1OjAwWiIsImV4cCI6IjIwMTktMDktMDFUMTE6MDU6MDBaIiwiY2lkIjoidXVpZCIsImp0aSI6InV1aWQifQ\",\"protected\":\"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9\",\"signature\":\"9IrKkOUxUsEpQeR-7QR1wYzmgglkrl8XX_sqixZMONOSqXw0QCKr7zy_YyOpob-Lq5rHsYbIE7j1tz-w1ee2Ag\"}"
-      stub_request(:post, "https://api.selfid.net/v1/auth").
-        with(body: body, headers: headers).
-        to_return(status: 200, body: "", headers: {})
-
-      app.authentication.request("xxxxxxxx", uuid: "uuid", jti: "uuid", request: false)
+      jwt = double("jwt", id: "appid")
+      client = double("client", jwt: jwt)
+      expect(client).to receive(:devices).with('xxxxxxxx').and_return(["1"])
+      expect(app.messaging_client).to receive(:client).and_return(client)
+      res = JSON.parse(app.authentication.request("xxxxxxxx", cid: "uuid", jti: "uuid", request: false))
+      payload = JSON.parse(Base64.urlsafe_decode64(res['payload']))
+      assert_equal "appid", payload['iss']
+      assert_equal "authentication_req", payload['typ']
+      assert_equal "xxxxxxxx", payload['sub']
+      assert_equal "xxxxxxxx", payload['aud']
+      assert_equal "uuid", payload['cid']
     end
 
     def test_identity

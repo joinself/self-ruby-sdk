@@ -16,18 +16,6 @@ module Selfid
       @jwt = Selfid::Jwt.new(app_id, app_key)
     end
 
-    # Sends an auth http request to self-api.
-    #
-    # @param body [string] the payload to be sent as body of request.
-    def auth(body)
-      res = post("/v1/auth", body)
-      return unless res.code != 200
-
-      body = JSON.parse(res.body, symbolize_names: true)
-      Selfid.logger.error "auth response : #{body[:message]}"
-      raise body[:message]
-    end
-
     # Get identity details
     #
     # @param id [string] identity self_id.
