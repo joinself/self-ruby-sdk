@@ -201,11 +201,9 @@ module Selfid
     def start
       Selfid.logger.info "starting"
       @mon.synchronize do
-        @acks["authentication"] = {
-          waiting_cond: @mon.new_cond,
-          waiting: true,
-          timeout: Selfid::Time.now + @ack_timeout,
-        }
+        @acks["authentication"] = { waiting_cond: @mon.new_cond,
+                                    waiting: true,
+                                    timeout: Selfid::Time.now + @ack_timeout }
       end
 
       Thread.new do
@@ -213,23 +211,15 @@ module Selfid
       end
 
       Thread.new do
-        loop do
-          sleep 10
-          clean_timeouts
-        end
+        loop { sleep 10; clean_timeouts }
       end
 
       Thread.new do
-        loop do
-          sleep 30
-          ping
-        end
+        loop { sleep 30; ping }
       end
 
       @mon.synchronize do
-        @acks["authentication"][:waiting_cond].wait_while do
-          @acks["authentication"][:waiting]
-        end
+        @acks["authentication"][:waiting_cond].wait_while { @acks["authentication"][:waiting] }
         @acks.delete("authentication")
       end
     end
