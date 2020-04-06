@@ -24,7 +24,7 @@ module Selfid
       # a secure self app.
       #
       # @overload request(selfid, opts = {}, &block)
-      #  @param selfid [string] the receiver of the authentication request.
+      #  @param [String] selfid the receiver of the authentication request.
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :uuid The unique identifier of the authentication request.
       #  @option opts [String] :jti specify the jti to be used.
@@ -32,7 +32,7 @@ module Selfid
       #  @return [String, String] conversation id or encoded body.
       #
       # @overload request(selfid, opts = {})
-      #  @param selfid [string] the receiver of the authentication request.
+      #  @param [String] selfid the receiver of the authentication request.
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :uuid The unique identifier of the authentication request.
       #  @option opts [String] :jti specify the jti to be used.

@@ -30,7 +30,7 @@ module Selfid
         m.parse(body)
         return m
       else
-        raise StandardError "Invalid message type."
+        raise StandardError.new("Invalid message type.")
       end
     end
   end

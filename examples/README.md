@@ -4,8 +4,8 @@ Find below a list of usage examples of this library.
 
 - [x] [SelfID based authetication request](./authentication)
 - [x] [QR based authentication request](./qr_authentication)
-- [x] [Information request](./information_request)
-- [x] [QR based information request](./qr_information_request)
+- [x] [Information request](./fact_request)
+- [x] [QR based information request](./qr_fact_request)
 - [x] [Zero knowledge information request](./intermediary_request)
 - [x] [Manage app connections](./connections)
 
