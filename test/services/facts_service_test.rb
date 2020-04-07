@@ -49,7 +49,7 @@ class SelfidTest < Minitest::Test
     end
 
     def test_non_blocking_request
-      expect(messaging).to receive(:set_observer).with(cid).once
+      expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:device_id).and_return("1").once
       expect(client).to receive(:devices).and_return(devices)
       expect(messaging).to receive(:send_message) do |arg|
@@ -81,7 +81,7 @@ class SelfidTest < Minitest::Test
     end
 
     def test_intermediary_request
-      expect(messaging).to receive(:set_observer).with(cid).once
+      expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:device_id).and_return("1").once
       expect(client).to receive(:devices).and_return(devices)
       expect(messaging).to receive(:send_message) do |arg|

@@ -26,10 +26,13 @@ module Selfid
 
       def valid_signature?(body)
         k = @messaging.client.public_keys(@origin).first[:key]
-        raise StandardError("invalid signature") unless @messaging.jwt.verify(body, k)
+        raise ::StandardError.new("invalid signature") unless @messaging.jwt.verify(body, k)
 
         true
-        # return @origin != from
+      end
+
+      def validate!(original)
+        raise ::StandardError.new("invalid origin") if @to != original.to
       end
 
       def signed

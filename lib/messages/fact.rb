@@ -24,6 +24,12 @@ module Selfid
         end
       end
 
+      def validate!(original)
+        @attestations.each do |a|
+          a.validate! original
+        end
+      end
+
       def to_hash
         {
           fact: @name,

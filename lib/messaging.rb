@@ -108,8 +108,8 @@ module Selfid
     # Sends a message and waits for the response
     #
     # @params msg [Msgproto::Message] message object to be sent
-    def send_and_wait_for_response(msg)
-      wait_for msg.id do
+    def send_and_wait_for_response(msg, original)
+      wait_for msg.id, original do
         send_message msg
       end
     end
@@ -118,13 +118,14 @@ module Selfid
     # the uuid.
     #
     # @params uuid [string] unique identifier for a conversation
-    def wait_for(uuid)
+    def wait_for(uuid, msg = nil)
       Selfid.logger.info "sending #{uuid}"
       @mon.synchronize do
         @messages[uuid] = {
           waiting_cond: @mon.new_cond,
           waiting: true,
           timeout: Selfid::Time.now + @timeout,
+          original_message: msg,
         }
       end
 
@@ -172,8 +173,10 @@ module Selfid
     # Notify the type observer for the given message
     def notify_observer(message)
       if @uuid_observer.include? message.id
+        observer = @uuid_observer[message.id]
+        message.validate!(observer[:original_message]) if observer.include?(:original_message)
         Thread.new do
-          @uuid_observer[message.id].call(message)
+          @uuid_observer[message.id][:block].call(message)
           @uuid_observer.delete(message.id)
         end
         return
@@ -183,16 +186,16 @@ module Selfid
       return unless @type_observer.include? message.typ
 
       Thread.new do
-        @type_observer[message.typ].call(message)
+        @type_observer[message.typ][:block].call(message)
       end
     end
 
-    def set_observer(uuid, &block)
-      @uuid_observer[uuid] = block
+    def set_observer(original, &block)
+      @uuid_observer[original.id] = { original_message: original, block: block }
     end
 
     def subscribe(type, &block)
-      @type_observer[type] = block
+      @type_observer[type] = { block: block }
     end
 
     private
@@ -305,8 +308,9 @@ module Selfid
       @messages['acl_list'][:response] = list
       mark_as_arrived 'acl_list'
     rescue StandardError => e
-      p input.to_json
+      p "Error processing incoming ACL #{input.to_json}"
       Selfid.logger.info e
+      Selfid.logger.info e.backtrace
       nil
     end
 
@@ -314,15 +318,18 @@ module Selfid
       message = Selfid::Messages.parse(input, self)
 
       if @messages.include? message.id
+        message.validate! @messages[message.id][:original_message]
         @messages[message.id][:response] = message
         mark_as_arrived message.id
       else
         Selfid.logger.info "Received async message #{input.id}"
+        message.validate! @uuid_observer[message.id][:original_message] if @uuid_observer.include? message.id
         notify_observer(message)
       end
     rescue StandardError => e
-      p input.to_json
+      p "Error processing incoming message #{input.to_json}"
       Selfid.logger.info e
+      p e.backtrace
       nil
     end
 
