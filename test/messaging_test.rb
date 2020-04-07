@@ -10,20 +10,16 @@ require 'timecop'
 class SelfidTest < Minitest::Test
   describe "send" do
     let(:body) { '{"my":"payload"}' }
-    let(:ws)   { MiniTest::Mock.new }
-    let(:client) do
-      mm = Minitest::Mock.new
-      def mm.jwt; Selfid::Jwt.new("o9mpng9m2jv", "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI"); end
-      mm
-    end
+    let(:ws)   { double("ws") }
+    let(:jwt)  { Selfid::Jwt.new("o9mpng9m2jv", "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI"); }
+    let(:client) { double("client", jwt: jwt) }
 
     let(:messaging_client) do
       Selfid::MessagingClient.new("", client, ws: ws)
     end
 
     def test_share_information
-
-      ws.expect :send, "{}" do |msg|
+      expect(ws).to receive(:send) do |msg|
         input = Msgproto::Message.decode(msg.pack('c*'))
         jwt = JSON.parse(input.ciphertext, symbolize_names: true)
         payload = JSON.parse(messaging_client.jwt.decode(jwt[:payload]), symbolize_names: true)
