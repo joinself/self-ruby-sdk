@@ -21,10 +21,7 @@ module Selfid
 
         @intermediary = if opts.include?(:intermediary)
                           opts[:intermediary]
-                        else
-          nil
                         end
-
       end
 
       def parse(input)

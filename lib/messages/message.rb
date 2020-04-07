@@ -7,7 +7,7 @@ require_relative "authentication_req"
 
 module Selfid
   module Messages
-    def self.parse(input, messaging)
+    def self.parse(input, messaging, original=nil)
       body = if input.is_a? String
                input
              else

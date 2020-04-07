@@ -48,7 +48,7 @@ module Selfid
 
         # when a block is given the request will always be asynchronous.
         if block_given?
-          @messaging.set_observer(req.id, &block)
+          @messaging.set_observer(req, &block)
           return req.send_message
         end
 
@@ -97,7 +97,7 @@ module Selfid
         parse_payload(response)
       rescue StandardError => e
         uuid = ""
-        uuid = payload[:cid] unless payload.nil?
+        uuid = response[:cid] unless response.nil?
         Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
         p e.backtrace
         nil
@@ -124,21 +124,15 @@ module Selfid
         @client.jwt.prepare(body)
       end
 
-      # Waits for the response of a specific conversation and executes a block
-      #
-      # @param cid [string] the conversation id to be used.
-      def observe(cid, &block)
-        @messaging.set_observer cid do |res|
-          yield(authenticated?(res.input))
-        end
-      end
-
       def parse_payload(response)
-        payload = @client.jwt.parse_payload(response)
+        jws = @client.jwt.parse(response)
+        return unless jws.include? :payload
+
+        payload = JSON.parse(@client.jwt.decode(jws[:payload]), symbolize_names: true)
         return if payload.nil?
 
         identity = @client.entity(payload[:sub])
-        return nil if identity.nil?
+        return if identity.nil?
 
         identity[:public_keys].each do |key|
           return payload if @client.jwt.verify(jws, key[:key])
