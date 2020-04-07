@@ -41,6 +41,7 @@ module Selfid
         m.id = @id
         m.from = @to
         m.to = @from
+        m.audience = @from
         m.to_device = @messaging.device_id
         m.facts = @facts
         m
