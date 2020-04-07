@@ -50,7 +50,7 @@ module Selfid
 
         # when a block is given the request will always be asynchronous.
         if block_given?
-          @messaging.set_observer(req.id, &block)
+          @messaging.set_observer(req, &block)
           return req.send_message
         end
 

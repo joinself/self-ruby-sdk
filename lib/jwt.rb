@@ -36,13 +36,6 @@ module Selfid
       JSON.parse(input, symbolize_names: true)
     end
 
-    def parse_payload(input)
-      jws = parse(input)
-      return nil unless jws.include? :payload
-
-      JSON.parse(@client.jwt.decode(jws[:payload]), symbolize_names: true)
-    end
-
     # Encodes the input with base64
     #
     # @param input [string] the string to be encoded.

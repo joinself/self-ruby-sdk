@@ -6,6 +6,8 @@ require 'webmock/minitest'
 
 class SelfidTest < Minitest::Test
   describe 'parse string' do
+    let(:exp) { (Time.now + 3600 * 24).to_s }
+    let(:iat) { (Time.now - 3600 * 24).to_s }
     let(:jwt) { double("jwt") }
     let(:messaging) do
       double("messaging", jwt: jwt)
@@ -40,8 +42,9 @@ class SelfidTest < Minitest::Test
       let(:input) { '{"payload":"identity_info_resp"}' }
       let(:typ) { "identity_info_resp" }
       let(:client) { double("client") }
+      let(:body) { '{"typ":"identity_info_resp","exp":"'+exp+'","iat":"'+iat+'"}' }
       def test_parse_identity_info_req
-        expect(jwt).to receive(:decode).with("identity_info_resp").and_return('{"typ":"identity_info_resp"}').twice
+        expect(jwt).to receive(:decode).with("identity_info_resp").and_return(body).twice
         expect(jwt).to receive(:verify).and_return(true)
         expect(messaging).to receive(:client).and_return(client)
         expect(messaging).to receive(:jwt).and_return(jwt)
@@ -56,8 +59,9 @@ class SelfidTest < Minitest::Test
       let(:input) { '{"payload":"authentication_resp"}' }
       let(:typ) { "authentication_resp" }
       let(:client) { double("client") }
+      let(:body) { '{"typ":"authentication_resp","exp":"'+exp+'","iat":"'+iat+'"}' }
       def test_parse_identity_info_req
-        expect(jwt).to receive(:decode).with("authentication_resp").and_return('{"typ":"authentication_resp"}').twice
+        expect(jwt).to receive(:decode).with("authentication_resp").and_return(body).twice
         expect(jwt).to receive(:verify).and_return(true)
         expect(messaging).to receive(:client).and_return(client)
         expect(messaging).to receive(:jwt).and_return(jwt)
@@ -72,8 +76,9 @@ class SelfidTest < Minitest::Test
       let(:input) { double("input", ciphertext: '{"payload":"identity_info_req"}') }
       let(:typ) { "identity_info_req" }
       let(:client) { double("client") }
+      let(:body) { '{"typ":"identity_info_req","exp":"'+exp+'","iat":"'+iat+'"}' }
       def test_parse_identity_info_req
-        expect(jwt).to receive(:decode).with("identity_info_req").and_return('{"typ":"identity_info_req"}').twice
+        expect(jwt).to receive(:decode).with("identity_info_req").and_return(body).twice
         expect(jwt).to receive(:verify).and_return(true)
         expect(messaging).to receive(:client).and_return(client)
         expect(messaging).to receive(:jwt).and_return(jwt)

@@ -49,7 +49,7 @@ class SelfidTest < Minitest::Test
 
     def test_non_blocking_request
       expect(messaging).to receive(:device_id).and_return(app_device_id)
-      expect(messaging).to receive(:set_observer).with(cid).once
+      expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:send_message).and_return(cid)
       expect(client).to receive(:devices).and_return([app_device_id])
       res = service.request selfid, cid: cid do

@@ -18,7 +18,9 @@ module Selfid
         @id = payload[:cid]
         @from = payload[:iss]
         @to = payload[:sub]
-        @expires = payload[:exp]
+        @expires = ::Time.parse(payload[:exp])
+        @issued = ::Time.parse(payload[:iat])
+        @audience = payload[:aud]
         @status = payload[:status]
         @facts = []
         payload[:facts] = [] if payload[:facts].nil?
@@ -37,16 +39,14 @@ module Selfid
         @facts.select{|f| f.name == name}.first
       end
 
-      protected
-
-      def validate!
+      def validate!(original)
+        super
         @facts.each do |f|
-          f.validate!
-          f.attestations.each do |a|
-            raise StandardError("invalid sub on attestation") if a.sub != @from
-          end
+          f.validate! original
         end
       end
+
+      protected
 
       def proto
         encoded_facts = []
@@ -57,6 +57,7 @@ module Selfid
           typ: MSG_TYPE,
           iss: @jwt.id,
           sub: @to,
+          aud: @audience,
           iat: Selfid::Time.now.strftime('%FT%TZ'),
           exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
           cid: @id,

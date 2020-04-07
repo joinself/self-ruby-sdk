@@ -15,7 +15,7 @@ module Selfid
       end
 
       def request
-        res = @messaging.send_and_wait_for_response(proto)
+        res = @messaging.send_and_wait_for_response(proto, self)
         Selfid.logger.info "synchronously messaging to #{@to}:#{@to_device}"
         res
       end
@@ -40,6 +40,15 @@ module Selfid
 
       def errored?
         status == "errored"
+      end
+
+      def validate!(original)
+        unless original.nil?
+          raise ::StandardError.new("bad response audience") if @audience != original.from
+          raise ::StandardError.new("bad issuer") if @from != original.to
+        end
+        raise ::StandardError.new("expired message") if @expires < Selfid::Time.now
+        raise ::StandardError.new("issued too soon") if @issued > Selfid::Time.now
       end
 
       protected

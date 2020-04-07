@@ -7,15 +7,17 @@ module Selfid
   module Messages
     class AuthenticationMessage < Base
 
-      def parse(input)
+      def parse(input, original=nil)
         @input = input
         @typ = @typ
         @payload = get_payload input
         @id = payload[:cid]
         @from = payload[:iss]
         @to = payload[:sub]
+        @audience = payload[:aud]
         @from_device = payload[:device_id]
-        @expires = payload[:exp]
+        @expires = ::Time.parse(payload[:exp])
+        @issued = ::Time.parse(payload[:iat])
         @status = payload[:status]
       end
     end
