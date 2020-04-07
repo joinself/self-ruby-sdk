@@ -45,7 +45,6 @@ module Selfid
       def validate!(original)
         unless original.nil?
           raise ::StandardError.new("bad response audience") if @audience != original.from
-          raise ::StandardError.new("bad issuer") if @from != original.to
         end
         raise ::StandardError.new("expired message") if @expires < Selfid::Time.now
         raise ::StandardError.new("issued too soon") if @issued > Selfid::Time.now

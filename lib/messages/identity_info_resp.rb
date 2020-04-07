@@ -9,7 +9,7 @@ module Selfid
     class IdentityInfoResp < Base
       MSG_TYPE = "identity_info_resp"
 
-      attr_accessor :facts
+      attr_accessor :facts, :audience
 
       def parse(input)
         @input = input
