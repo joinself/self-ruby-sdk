@@ -31,6 +31,12 @@ SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby $DIR
 echo ""
 
 echo "---------------------------------------"
+echo "Testing asynchronous authentication for $selfid"
+echo "---------------------------------------"
+SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby $DIR/authentication/subscription.rb $selfid
+echo ""
+
+echo "---------------------------------------"
 echo "Testing QR auth request for $selfid"
 echo "---------------------------------------"
 SELF_APP_ID=$self_app_id SELF_APP_SECRET=$self_app_secret NO_LOGS=true ruby $DIR/qr_authentication/app.rb $selfid

@@ -34,6 +34,7 @@ module Selfid
       # @overload request(selfid, opts = {})
       #  @param [String] selfid the receiver of the authentication request.
       #  @param [Hash] opts the options to authenticate.
+      #  @option [Boolean] :async if the request is asynchronous.
       #  @option opts [String] :cid The unique identifier of the authentication request.
       #  @option opts [String] :jti specify the jti to be used.
       #  @return [String, String] conversation id or encoded body.
@@ -45,6 +46,7 @@ module Selfid
 
         body = @client.jwt.prepare(req.body)
         return body unless opts.fetch(:request, true)
+        return req.send_message if opts.fetch(:async, false)
 
         # when a block is given the request will always be asynchronous.
         if block_given?
