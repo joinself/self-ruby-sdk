@@ -7,6 +7,7 @@ module Selfid
   module Messages
     class IdentityInfoReq < Base
       MSG_TYPE = "identity_info_req"
+      DEFAULT_EXP_TIMEOUT = 900
 
       attr_accessor :facts
 
@@ -18,6 +19,7 @@ module Selfid
 
         @id = opts[:cid] if opts.include?(:cid)
         @description = opts.include?(:description) ? opts[:description] : nil
+        @exp_timeout = opts.fetch(:exp_timeout, DEFAULT_EXP_TIMEOUT)
 
         @intermediary = if opts.include?(:intermediary)
                           opts[:intermediary]
@@ -59,7 +61,7 @@ module Selfid
           iss: @jwt.id,
           sub: @to,
           iat: Selfid::Time.now.strftime('%FT%TZ'),
-          exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+          exp: (Selfid::Time.now + @exp_timeout).strftime('%FT%TZ'),
           cid: @id,
           jti: SecureRandom.uuid,
           facts: @facts,
