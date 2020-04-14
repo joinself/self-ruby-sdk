@@ -38,6 +38,7 @@ module Selfid
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :uuid The unique identifier of the authentication request.
       #  @option opts [String] :jti specify the jti to be used.
+      #  @option opts [Integer] :exp_timeout timeout in seconds to expire the request.
       #  @return [Object] Selfid:::Messages::IdentityInfoReq
       def request(selfid, facts, opts = {}, &block)
         Selfid.logger.info "authenticating #{selfid}"
