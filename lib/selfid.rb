@@ -42,6 +42,7 @@ module Selfid
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
     def initialize(app_id, app_key, opts = {})
+      Selfid.logger.debug "syncing ntp times #{Selfid::Time.now}"
       @client = RestClient.new(opts.fetch(:base_url, BASE_URL), app_id, app_key)
 
       messaging_url = opts.fetch(:messaging_url, MESSAGING_URL)
@@ -49,7 +50,7 @@ module Selfid
         @messaging_client = MessagingClient.new(messaging_url,
                                                 @client,
                                                 auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
-                                                device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE),)
+                                                device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE))
       end
     end
 
