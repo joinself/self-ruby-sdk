@@ -1,4 +1,4 @@
-# Web based SelfID integration examples
+# Web based SelfID authentication example
 
 On this example you can see how you can implement SelfID authentication feature based on users *SelfID*.
 
