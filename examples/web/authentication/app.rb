@@ -13,6 +13,7 @@ require 'selfid'
 class AuthExample < Sinatra::Base
   enable :inline_templates
   enable :sessions
+  set :bind, '0.0.0.0'
 
   # Initialize self sdk client on the initialization to avoid multiple instances to be ran together.
   configure do
