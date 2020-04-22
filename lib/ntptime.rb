@@ -43,8 +43,7 @@ module Selfid
     end
 
     def self.sync
-      Net::NTP.get("time.google.com", "ntp", 2)
-      @@last_check = ::Time.parse(Net::NTP.get.time.to_s).utc
+      @@last_check = ::Time.parse(Net::NTP.get("time.google.com", "ntp", 2).time.to_s).utc
       @diff = (@@last_check - ::Time.now.utc).abs
       @now = (::Time.now + @diff).utc
     end
