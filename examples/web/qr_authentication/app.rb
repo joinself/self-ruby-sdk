@@ -29,8 +29,11 @@ class AuthExample < Sinatra::Base
     # Connect your app to Self network, get your connection details creating a new
     # app on https://developer.selfid.net/
     client = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
+
+    # let's subscribe to all authentication responses
     client.authentication.subscribe do |auth|
       if auth.accepted?
+        # for each accepted response we will store the incoming selfid and will relate it with the cid we sent
         USERS[auth.uuid] = User.new(auth.uuid, auth.selfid)
       end
     end
@@ -38,10 +41,12 @@ class AuthExample < Sinatra::Base
     set :client, client
   end
 
-  before do   # Before every request, make sure they get assigned an ID.
+  before do
+    # before every request let's make sure the session id exists
     session['id'] ||= SecureRandom.uuid
   end
 
+  # homepage presenting the user with a QR code to authenticate
   get '/' do
     settings.client
         .authentication
@@ -51,11 +56,14 @@ class AuthExample < Sinatra::Base
     erb :home
   end
 
+  # dashboard is the 'private' part of the web you want to be only accessible to authenticated users
   get '/dashboard' do
+    # if the user does not exists redirect to the homepage
     redirect '/' unless USERS.key?(session['id'])
     erb :dashboard
   end
 
+  # json endpoint to get current user data if exists
   get '/user' do
     if USERS.key?(session['id'])
       user = USERS[session['id']]
@@ -67,8 +75,7 @@ class AuthExample < Sinatra::Base
     end
   end
 
-
-helpers do
+  helpers do
     # Returns the signed in user if any
     def current_user
       USERS[session['id']]
