@@ -69,7 +69,7 @@ module Selfid
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] intermediary an intermediary identity to be used.
       #  @return [Object] Selfid:::Messages::IdentityInfoReq
-      def request_via_intermediary(selfid, facts, opts, &block)
+      def request_via_intermediary(selfid, facts, opts = {}, &block)
         opts[:intermediary] = opts.fetch(:intermediary, DEFAULT_INTERMEDIARY)
         request(selfid, facts, opts, &block)
       end
