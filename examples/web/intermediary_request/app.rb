@@ -5,7 +5,6 @@ gemfile(true) do
   source 'https://rubygems.org'
   gem 'sinatra', '~> 1.4'
   gem 'selfid'
-  gem 'pry'
 end
 
 require 'sinatra/base'
@@ -53,7 +52,6 @@ class AuthExample < Sinatra::Base
         @error = "An error occured"
         erb :facts
       else
-        require 'pry'; binding.pry
         if res.fact(Selfid::FACT_DATE_OF_BIRTH).attestations.first.value
           @profile =  Profile.new(params['selfid'])
           erb :home
