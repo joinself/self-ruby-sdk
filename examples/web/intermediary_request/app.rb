@@ -37,7 +37,7 @@ class AuthExample < Sinatra::Base
   #
   post '/facts' do
     date = Date.today
-    dob = Date.civil(date.year-19, date.month, date.day)
+    dob = Date.civil(date.year-18, date.month, date.day)
     res = settings.client.facts.request_via_intermediary(params['selfid'], [{ source: Selfid::SOURCE_PASSPORT,
                                                        fact: Selfid::FACT_DATE_OF_BIRTH,
                                                        operator: '>',
@@ -96,7 +96,7 @@ __END__
 
 @@ home
   <p><strong>Hello, <%= @profile.selfid %></strong></p>
-  <p>you are over 18 years old and you've been successfully logged in</p>
+  <p>you are over 18 years old</p>
 
 @@ layout
   <!DOCTYPE html>
