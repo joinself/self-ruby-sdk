@@ -109,7 +109,7 @@ __END__
         <div id="formContent">
           <!-- Icon -->
           <div class="fadeIn first">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/MindMate_App_.png" id="icon" alt="User Icon" style="width:120px" />
+            <img src="https://storage.googleapis.com/self-public/images/logo.jpg" id="icon" alt="User Icon" style="width:120px" />
           </div>
           <% if @error %>
             <p class="error"><%= @error %></p>
