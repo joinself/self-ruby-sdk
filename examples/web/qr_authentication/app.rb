@@ -75,6 +75,13 @@ class AuthExample < Sinatra::Base
     end
   end
 
+  # Endpoint to log out
+  post '/sign_out' do
+    session.clear
+    USERS = {}
+    redirect '/'
+  end
+
   helpers do
     # Returns the signed in user if any
     def current_user
@@ -99,6 +106,9 @@ __END__
   <br />
   <p>Hello, <%= current_user.selfid %>!</p>
   <p>you've been successfully logged in</p>
+  <form action="/sign_out" method="POST">
+    <input type="submit" class="fadeIn second" value="Sign Out" />
+  </form>
   <br />
   <br />
 
