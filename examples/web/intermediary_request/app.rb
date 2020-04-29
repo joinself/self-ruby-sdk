@@ -38,7 +38,7 @@ class AuthExample < Sinatra::Base
   post '/facts' do
     date = Date.today
     dob = Date.civil(date.year-18, date.month, date.day)
-    res = settings.client.facts.request_via_intermediary(params['selfid'], [{ source: Selfid::SOURCE_PASSPORT,
+    res = settings.client.facts.request_via_intermediary(params['selfid'], [{ sources: [Selfid::SOURCE_PASSPORT],
                                                        fact: Selfid::FACT_DATE_OF_BIRTH,
                                                        operator: '>',
                                                        expected_value: dob.strftime('%FT%TZ')}])
