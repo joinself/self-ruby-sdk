@@ -18,7 +18,7 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 # without ever leaking information about the user's fact.
 res_opts = {}
 res_opts[:intermediary] = ENV['SELF_INTERMEDIARY'] if ENV.has_key?('SELF_INTERMEDIARY')
-res = @app.facts.request_via_intermediary(user, [{ source: Selfid::SOURCE_USER_SPECIFIED,
+res = @app.facts.request_via_intermediary(user, [{ sources: [Selfid::SOURCE_USER_SPECIFIED],
                                                          fact: Selfid::FACT_EMAIL,
                                                          operator: '==',
                                                          expected_value: 'test@test.org' }], res_opts)
