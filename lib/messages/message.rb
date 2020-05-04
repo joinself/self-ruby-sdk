@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "identity_info_req"
-require_relative "identity_info_resp"
+require_relative "fact_request"
+require_relative "fact_response"
 require_relative "authentication_resp"
 require_relative "authentication_req"
 
@@ -19,10 +19,10 @@ module Selfid
 
       case payload[:typ]
       when "identity_info_req"
-        m = IdentityInfoReq.new(messaging)
+        m = FactRequest.new(messaging)
         m.parse(body)
       when "identity_info_resp"
-        m = IdentityInfoResp.new(messaging)
+        m = FactResponse.new(messaging)
         m.parse(body)
       when "authentication_resp"
         m = AuthenticationResp.new(messaging)

@@ -5,7 +5,7 @@ require_relative '../ntptime'
 
 module Selfid
   module Messages
-    class IdentityInfoReq < Base
+    class FactRequest < Base
       MSG_TYPE = "identity_info_req"
       DEFAULT_EXP_TIMEOUT = 900
 
@@ -39,7 +39,7 @@ module Selfid
       end
 
       def build_response
-        m = Selfid::Messages::IdentityInfoResp.new(@messaging)
+        m = Selfid::Messages::FactResponse.new(@messaging)
         m.id = @id
         m.from = @to
         m.to = @from

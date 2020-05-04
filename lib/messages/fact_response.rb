@@ -6,7 +6,7 @@ require_relative '../ntptime'
 
 module Selfid
   module Messages
-    class IdentityInfoResp < Base
+    class FactResponse < Base
       MSG_TYPE = "identity_info_resp"
 
       attr_accessor :facts, :audience

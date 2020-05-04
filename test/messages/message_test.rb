@@ -34,7 +34,7 @@ class SelfidTest < Minitest::Test
         expect(client).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:public_keys).and_return([{key: "pk1"}])
         res = Selfid::Messages.parse(input, messaging)
-        assert_equal res.class, Selfid::Messages::IdentityInfoReq
+        assert_equal res.class, Selfid::Messages::FactRequest
       end
     end
 
@@ -51,7 +51,7 @@ class SelfidTest < Minitest::Test
         expect(client).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:public_keys).and_return([{key: "pk1"}])
         res = Selfid::Messages.parse(input, messaging)
-        assert_equal res.class, Selfid::Messages::IdentityInfoResp
+        assert_equal res.class, Selfid::Messages::FactResponse
       end
     end
 
@@ -85,7 +85,7 @@ class SelfidTest < Minitest::Test
         expect(client).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:public_keys).and_return([{key: "pk1"}])
         res = Selfid::Messages.parse(input, messaging)
-        assert_equal res.class, Selfid::Messages::IdentityInfoReq
+        assert_equal res.class, Selfid::Messages::FactRequest
       end
     end
   end

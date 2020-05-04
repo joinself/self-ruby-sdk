@@ -24,8 +24,8 @@ module Selfid
     def message_type(s)
       types = { authentication_request: Selfid::Messages::AuthenticationReq::MSG_TYPE,
                 authentication_response: Selfid::Messages::AuthenticationResp::MSG_TYPE,
-                fact_request: Selfid::Messages::IdentityInfoReq::MSG_TYPE,
-                fact_response: Selfid::Messages::IdentityInfoResp::MSG_TYPE }
+                fact_request: Selfid::Messages::FactRequest::MSG_TYPE,
+                fact_response: Selfid::Messages::FactResponse::MSG_TYPE }
       raise "invalid message type" unless types.key? s
       return types[s]
     end
