@@ -56,7 +56,7 @@ module Selfid
         body = @jwt.prepare(
           typ: MSG_TYPE,
           iss: @jwt.id,
-          sub: @to,
+          sub: @sub || @to,
           aud: @audience,
           iat: Selfid::Time.now.strftime('%FT%TZ'),
           exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
