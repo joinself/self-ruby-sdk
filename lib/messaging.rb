@@ -195,6 +195,7 @@ module Selfid
     end
 
     def subscribe(type, &block)
+      type = Selfid::message_type(type) if type.is_a? Symbol
       @type_observer[type] = { block: block }
     end
 

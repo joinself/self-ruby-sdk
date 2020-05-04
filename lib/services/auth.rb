@@ -74,7 +74,7 @@ module Selfid
 
       # Adds an observer for an authentication response
       def subscribe(&block)
-        @messaging.subscribe Selfid::Messages::AuthenticationResp::MSG_TYPE do |res|
+        @messaging.subscribe :authentication_response do |res|
           auth = authenticated?(res.input)
           yield(auth)
         end

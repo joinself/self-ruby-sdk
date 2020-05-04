@@ -13,7 +13,7 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
 
 # Register an observer for an information response
-@app.messaging.subscribe Selfid::Messages::IdentityInfoResp::MSG_TYPE do |res|
+@app.messaging.subscribe :fact_response do |res|
   # Information request has been rejected by the user
   if res.status == "rejected"
     puts 'Information request rejected'

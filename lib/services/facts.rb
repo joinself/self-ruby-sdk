@@ -79,7 +79,7 @@ module Selfid
       #
       #  @yield [request] Invokes the block with a fact response message.
       def subscribe(&block)
-        @messaging.subscribe(Selfid::Messages::IdentityInfoResp::MSG_TYPE, &block)
+        @messaging.subscribe(:fact_response, &block)
       end
 
       # Generates a QR code so users can send facts to your app.
