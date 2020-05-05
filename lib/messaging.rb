@@ -14,6 +14,7 @@ module Selfid
   class MessagingClient
     DEFAULT_DEVICE="1"
     DEFAULT_AUTO_RECONNECT=true
+    ON_DEMAND_CLOSE_CODE=3999
 
     attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer
 
@@ -53,6 +54,10 @@ module Selfid
         mark_as_acknowledged(k)
         mark_as_arrived(k)
       end
+    end
+
+    def close
+      @ws.close(ON_DEMAND_CLOSE_CODE, "connection closed by the client")
     end
 
     # Responds a request information request
@@ -262,16 +267,20 @@ module Selfid
       end
 
       @ws.on :close do |event|
-        if !@auto_reconnect
-          raise StandardError "websocket connection closed"
+        if event.code == ON_DEMAND_CLOSE_CODE
+          puts "client closed connection"
+        else
+          if !@auto_reconnect
+            raise StandardError "websocket connection closed"
+          end
+          if !@reconnection_delay.nil?
+            Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
+            sleep @reconnection_delay
+            Selfid.logger.info "reconnecting..."
+          end
+          @reconnection_delay = 3
+          start_connection
         end
-        if !@reconnection_delay.nil?
-          Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
-          sleep @reconnection_delay
-          Selfid.logger.info "reconnecting..."
-        end
-        @reconnection_delay = 3
-        start_connection
       end
     end
 
