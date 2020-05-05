@@ -36,13 +36,14 @@ module Selfid
     #
     # @param app_id [string] the app id.
     # @param app_key [string] the app api key provided by developer portal.
+    # @param storage_key [string] the key to be used to encrypt persisted data.
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :base_url The self provider url.
     # @option opts [String] :messaging_url The messaging self provider url.
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
     # @option opts [Symbol] :env The environment to be used, defaults to ":production".
-    def initialize(app_id, app_key, opts = {})
+    def initialize(app_id, app_key, storage_key, opts = {})
       Selfid.logger.debug "syncing ntp times #{Selfid::Time.now}"
 
       @client = RestClient.new(base_url(opts), app_id, app_key)
