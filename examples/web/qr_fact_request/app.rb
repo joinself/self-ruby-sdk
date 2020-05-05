@@ -28,7 +28,7 @@ class AuthExample < Sinatra::Base
 
     # Connect your app to Self network, get your connection details creating a new
     # app on https://developer.selfid.net/
-    client = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
+    client = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
     # let's subscribe to all fact responses
     client.facts.subscribe do |res|

@@ -12,7 +12,7 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfid.net/
-@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], opts)
+@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
 # Even its a silly test lets check if the user's email is equal test@test.org
 # without ever leaking information about the user's fact.

@@ -13,7 +13,7 @@ class SelfidTest < Minitest::Test
     let(:app_id)  { "o9mpng9m2jv" }
     let(:messaging_client) { double("messaging", device_id: "1") }
     let(:app) do
-      a = Selfid::App.new(app_id, seed, messaging_url: nil)
+      a = Selfid::App.new(app_id, seed, "", messaging_url: nil)
       a.messaging_client = messaging_client
       a
     end
@@ -41,7 +41,7 @@ class SelfidTest < Minitest::Test
     end
 
     def test_init_with_custom_parameters
-      custom_app = Selfid::App.new(app_id, seed, base_url: "http://custom.self.net", messaging_url: nil)
+      custom_app = Selfid::App.new(app_id, seed, "",base_url: "http://custom.self.net", messaging_url: nil)
       assert_equal "http://custom.self.net", custom_app.client.self_url
       assert_equal app_id, custom_app.app_id
       assert_equal seed, custom_app.app_key
