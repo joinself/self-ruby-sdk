@@ -63,6 +63,7 @@ rubygems:
       #sed -i "s/VERSION = .*/VERSION = ${version}/g" lib/version.rb
       #bundle install
       #gem push selfid-${version}.gem
+      #
       echo "Deploying to Rubygems"
     else
       echo "Nothing to do"
