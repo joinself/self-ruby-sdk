@@ -45,7 +45,7 @@ rubygems:
 
   function build() {
     local version=$(cat VERSION)
-    sed -i "s/VERSION = .*/VERSION = ${version}/g" lib/version.rb
+    sed -i "s/VERSION = .*/VERSION = \"${version}\"/g" lib/version.rb
     bundle install
     gem build selfid.gemspec
     gem install selfid-${version}.gem
