@@ -83,6 +83,11 @@ module Selfid
       client.jwt.key
     end
 
+    # Closes the websocket connection
+    def close
+      @messaging_client.close
+    end
+
     protected
 
       def base_url(opts)
