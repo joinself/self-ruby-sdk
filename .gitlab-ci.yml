@@ -3,7 +3,7 @@ variables:
   DOCKER_TLS_CERTDIR: ""
 
 default:
-  image: ruby:2.6.3-stretch
+  image: aldgateventuresbot/ruby-build
 
 stages:
   - Test
@@ -69,8 +69,8 @@ rubygems:
 
   function slackNotify() {
     local version=$1
-    curl -L -o /usr/local/bin/slack https://raw.githubusercontent.com/rockymadden/slack-cli/master/src/slack
-    chmod +x /usr/local/bin/slack
+    #curl -L -o /usr/local/bin/slack https://raw.githubusercontent.com/rockymadden/slack-cli/master/src/slack
+    #chmod +x /usr/local/bin/slack
     slack chat send "New release <https://github.com/selfid-net/selfid-gem|selfid-gem> <https://github.com/selfid-net/selfid-gem/commits/${version}|${version}>" '#test'
 
     #chmod +x $SLACK_CLI
