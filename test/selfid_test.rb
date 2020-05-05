@@ -60,7 +60,7 @@ class SelfidTest < Minitest::Test
       assert_equal "uuid", payload['cid']
     end
 
-    def test_identity
+    def test_public_keys
       pk = "pk_111222333"
       id = "11122233344"
 
@@ -68,20 +68,8 @@ class SelfidTest < Minitest::Test
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      identity = app.identity.get(id)
-      assert_equal pk, identity[:public_keys].first[:key]
-    end
-
-    def test_app
-      pk = "pk_111222333"
-      id = "111222333"
-
-      stub_request(:get, "https://api.selfid.net/v1/apps/#{id}").
-        with(headers: headers).
-        to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
-
-      a = app.identity.app(id)
-      assert_equal pk, a[:public_keys].first[:key]
+      pks = app.identity.public_keys(id)
+      assert_equal pk, pks.first[:key]
     end
 
   end

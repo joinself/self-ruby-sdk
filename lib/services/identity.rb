@@ -16,30 +16,6 @@ module Selfid
         @client = client
       end
 
-      # Gets user details
-      #
-      # @param [String] selfid identity SelfID
-      # @return [Hash] with user details
-      def user(selfid)
-        @client.identity(selfid)
-      end
-
-      # Gets an the app details
-      #
-      # @param [string] selfid app SelfID
-      # @return [Hash] with app details
-      def app(selfid)
-        @client.app(selfid)
-      end
-
-      # Gets an app/identity details
-      #
-      # @param [String] selfid gets the identity details (app/user)
-      # @return [Hash] with identity details
-      def get(selfid)
-        @client.entity(selfid)
-      end
-
       # Gets registered devices for a self identity
       #
       # @param [String] selfid identity/app selfID
