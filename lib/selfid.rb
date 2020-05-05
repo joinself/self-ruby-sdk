@@ -41,11 +41,12 @@ module Selfid
     # @option opts [String] :messaging_url The messaging self provider url.
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
+    # @option opts [Symbol] :env The environment to be used, defaults to ":production".
     def initialize(app_id, app_key, opts = {})
       Selfid.logger.debug "syncing ntp times #{Selfid::Time.now}"
-      @client = RestClient.new(opts.fetch(:base_url, BASE_URL), app_id, app_key)
 
-      messaging_url = opts.fetch(:messaging_url, MESSAGING_URL)
+      @client = RestClient.new(base_url(opts), app_id, app_key)
+      messaging_url = messaging_url(opts)
       unless messaging_url.nil?
         @messaging_client = MessagingClient.new(messaging_url,
                                                 @client,
@@ -81,5 +82,20 @@ module Selfid
     def app_key
       client.jwt.key
     end
+
+    protected
+
+      def base_url(opts)
+        return opts[:base_url] if opts.key? :base_url
+        return "https://api.#{opts[:env].to_s}.selfid.net" if opts.key? :env
+        BASE_URL
+      end
+
+      def messaging_url(opts)
+        return opts[:messaging_url] if opts.key? :messaging_url
+        return "wss://messaging.#{opts[:env].to_s}.selfid.net/v1/messaging" if opts.key? :env
+        MESSAGING_URL
+      end
+
   end
 end
