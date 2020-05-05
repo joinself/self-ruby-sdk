@@ -31,7 +31,6 @@ rubygems:
   stage: Deploy
   script:
     - deploy
-    - slackNotify
   only:
     - branches
 
@@ -55,9 +54,6 @@ rubygems:
     local version=$(cat VERSION)
     local currentGitTag=$(currentGitTag)
 
-    echo $version
-    echo $currentGitTag
-
     if [[ $version != $currentGitTag ]]; then
       echo "Deploying to Rubygems"
       # create & push git tag
@@ -65,13 +61,16 @@ rubygems:
       #bundle install
       #gem push selfid-${version}.gem
       #
+      slackNotify $version
     else
-      echo "Nothing to do"
+      echo "Version hasn't changed. Nothing to do here."
     fi
   }
 
   function slackNotify() {
-    echo "Sending Slack notification"
+    local version=$1
+    chmod +x $SLACK_CLI
+    $SLACK_CLI chat send "New release <https://github.com/selfid-net/selfid-gem|selfid-gem> <https://github.com/selfid-net/selfid-gem/commits/${version}|${version}>" '#test'
   }
 
   function currentGitTag() {
