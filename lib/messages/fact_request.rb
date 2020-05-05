@@ -15,7 +15,11 @@ module Selfid
         @id = SecureRandom.uuid
         @from = @client.jwt.id
         @to = selfid
-        @facts = facts
+        @facts = []
+        facts.each do |fact|
+          fact[:operator] = Selfid::operator(fact[:operator]) if fact.key? :operator
+          @facts << fact
+        end
 
         @id = opts[:cid] if opts.include?(:cid)
         @description = opts.include?(:description) ? opts[:description] : nil

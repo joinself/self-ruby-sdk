@@ -29,5 +29,16 @@ module Selfid
       raise "invalid message type" unless types.key? s
       return types[s]
     end
+
+    def operator(s)
+      operators = { equals: '==',
+                    different: '!=',
+                    great_or_equal_than: '>=',
+                    less_or_equal: '<=',
+                    great_than: '>',
+                    less_than: '<' }
+      raise "invalid operator" unless operators.key? s
+      return operators[s]
+    end
   end
 end

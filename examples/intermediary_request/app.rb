@@ -20,7 +20,7 @@ res_opts = {}
 res_opts[:intermediary] = ENV['SELF_INTERMEDIARY'] if ENV.has_key?('SELF_INTERMEDIARY')
 res = @app.facts.request_via_intermediary(user, [{ sources: [Selfid::SOURCE_USER_SPECIFIED],
                                                          fact: Selfid::FACT_EMAIL,
-                                                         operator: '==',
+                                                         operator: :equals,
                                                          expected_value: 'test@test.org' }], res_opts)
 
 if res.nil? # The request can timeout
