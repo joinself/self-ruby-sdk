@@ -15,6 +15,6 @@ git push origin master --tags
 echo "compiling and pushing gem"
 gem build selfid.gemspec
 gem install selfid-$OUT.gem
-gem install selfid-$OUT.gem
+gem push selfid-$OUT.gem
 
 echo "process completed"
