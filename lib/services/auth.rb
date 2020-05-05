@@ -27,7 +27,6 @@ module Selfid
       #  @param [String] selfid the receiver of the authentication request.
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :cid The unique identifier of the authentication request.
-      #  @option opts [String] :jti specify the jti to be used.
       #  @yield [request] Invokes the block with an authentication response for each result.
       #  @return [String, String] conversation id or encoded body.
       #
@@ -36,7 +35,6 @@ module Selfid
       #  @param [Hash] opts the options to authenticate.
       #  @option [Boolean] :async if the request is asynchronous.
       #  @option opts [String] :cid The unique identifier of the authentication request.
-      #  @option opts [String] :jti specify the jti to be used.
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
         Selfid.logger.info "authenticating #{selfid}"
@@ -61,7 +59,6 @@ module Selfid
       # Generates a QR code so users can authenticate to your app.
       #
       # @option opts [String] :selfid the user selfid you want to authenticate.
-      # @option opts [String] :jti specify the jti to be used.
       # @option opts [String] :uuid The unique identifier of the authentication request.
       #
       # @return [String, String] conversation id or encoded body.

@@ -26,8 +26,10 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 end
 
 # Generate a QR code for the information request
-png = @app.facts.generate_qr([Selfid::FACT_DISPLAY_NAME]).as_png(border: 0, size: 400)
-IO.binwrite("/tmp/qr.png", png.to_s)
+@app.facts
+    .generate_qr([Selfid::FACT_DISPLAY_NAME])
+    .as_png(border: 0, size: 400)
+    .save('/tmp/qr.png', :interlace => true)
 
 # This will open the exported qr.png with your default software,
 # manually open /tmp/qr.png and scan it with your device if it
