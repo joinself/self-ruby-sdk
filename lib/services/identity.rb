@@ -47,6 +47,14 @@ module Selfid
       def devices(selfid)
         @client.devices(selfid)
       end
+
+      # Gets an identity public keys
+      #
+      # @param [String] selfid gets the identity details (app/user)
+      # @return [Array] with the identity public keys
+      def public_keys(selfid)
+        @client.public_keys(selfid)
+      end
     end
   end
 end
