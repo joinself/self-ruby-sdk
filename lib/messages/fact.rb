@@ -17,10 +17,12 @@ module Selfid
         @expected_value = fact[:expected_value] || ""
         @attestations = []
 
-        fact[:attestations].each do |a|
-          attestation = Selfid::Messages::Attestation.new(@messaging)
-          attestation.parse(fact[:fact].to_sym, a)
-          @attestations.push(attestation)
+        if fact[:attestations]
+          fact[:attestations].each do |a|
+            attestation = Selfid::Messages::Attestation.new(@messaging)
+            attestation.parse(fact[:fact].to_sym, a)
+            @attestations.push(attestation)
+          end
         end
       end
 
