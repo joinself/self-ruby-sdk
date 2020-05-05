@@ -1,0 +1,20 @@
+echo "bumping a new gem version"
+IN=`grep VERSION lib/version.rb | cut -d'"' -f 2`
+OUT="${IN%.*}.$((${IN##*.}+1))"
+sed -i '' "s/$IN/$OUT/g" lib/version.rb
+
+echo "installing dependencies"
+bundle install
+
+echo "commit and tag release"
+git add .
+git commit -m "Bump version $OUT"
+git tag -a $OUT -m 'Bump version $OUT'
+git push origin master --tags
+
+echo "compiling and pushing gem"
+gem build selfid.gemspec
+gem install selfid-$OUT.gem
+gem install selfid-$OUT.gem
+
+echo "process completed"
