@@ -34,7 +34,7 @@ You can instantiate an app with the command above.
 # Require SelfID gem
 require 'selfid'
 # setup client connection
-@client = Selfid::App.new(ENV['SELF_APP_ID'], ENV['SELF_APP_SECRET'])
+@client = Selfid::App.new(ENV['SELF_APP_ID'], ENV['SELF_APP_SECRET'], ENV['STORAGE_KEY'])
 ```
 
 At this point your app will be able to interact with self network, find below some useful features.
@@ -77,16 +77,16 @@ You can request some information to other peers on the network. Same as with aut
 ```ruby
 # Blocking approach to fact request.
 # request name and email values to 1112223334
-res = @client.fact.request("1112223334", ["display_name", "email_address"])
+res = @client.fact.request("1112223334", [:display_name, :email_address])
 # print the returned values
-puts "Hello #{res.fact('display_name').attestations.first.value}"
+puts "Hello #{res.attestation_values_for(:display_name).first}"
 ```
 ```ruby
 # Non-blocking approach to fact request.
 # request name and email values to 1112223334
-@client.fact.request("1112223334", ["display_name", "email_address"]) do |res|
+@client.fact.request("1112223334", [:display_name, :email_address]) do |res|
   # print the returned values
-  puts "Hello #{res.fact('display_name').value}"
+  puts "Hello #{res.attestation_values_for(:display_name).first}"
 end
 ```
 
@@ -105,18 +105,6 @@ Even when your app is created you set its default permissions so `Everyone` or `
 #### Block incoming connections from the specified identity
 ```ruby
 @app.messaging.revoke_connection "1112223334"
-```
-
-### Identity
-You can access some network details of a specific identity only if that identity gave you permissions to do so.
-```ruby
-@app.identity.get "1112223334"
-```
-
-### Identity
-You can access some network details of a specific app only if that app gave you permissions to do so.
-```ruby
-@app.identity.user "1112223334"
 ```
 
 ## Documentation
