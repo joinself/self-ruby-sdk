@@ -5,7 +5,7 @@ require_relative 'attestation'
 module Selfid
   module Messages
     class Fact
-      attr_accessor :name, :attestations, :operator, :expected_value
+      attr_accessor :name, :attestations, :operator, :expected_value, :sources
 
       def initialize(messaging)
         @messaging = messaging
@@ -13,17 +13,23 @@ module Selfid
 
       def parse(fact)
         @name = Selfid::fact_name(fact[:fact])
-        @operator = fact[:operator] || ""
+
+        @operator = ""
+        @operator = Selfid::operator(fact[:operator]) if fact[:operator]
+
+        @sources = []
+        fact[:sources]&.each do |s|
+          @sources << Selfid::source(s)
+        end
+
         @expected_value = fact[:expected_value] || ""
         @attestations = []
 
-        if fact[:attestations]
-          fact[:attestations].each do |a|
+        fact[:attestations]&.each do |a|
             attestation = Selfid::Messages::Attestation.new(@messaging)
             attestation.parse(fact[:fact].to_sym, a)
             @attestations.push(attestation)
           end
-        end
       end
 
       def validate!(original)
@@ -33,12 +39,12 @@ module Selfid
       end
 
       def to_hash
-        {
-          fact: @name,
-          operator: @operator,
-          attestations: @attestations,
-          expected_value: @expected_value,
-        }
+        h = { fact: @name }
+        h[:sources] = @sources if @sources.length > 0
+        h[:operator] = @operator unless @operator.empty?
+        h[:attestations] = @attestations if attestations.length > 0
+        h[:expected_value] = @expected_value unless @expected_value.empty?
+        h
       end
     end
   end
