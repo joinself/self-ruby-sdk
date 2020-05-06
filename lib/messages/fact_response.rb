@@ -36,7 +36,19 @@ module Selfid
       end
 
       def fact(name)
+        name = Selfid::fact_name(name)
         @facts.select{|f| f.name == name}.first
+      end
+
+      def attestations_for(name)
+        f = fact(name)
+        return [] if f.nil?
+        f.attestations
+      end
+
+      def attestation_values_for(name)
+        a = attestations_for(name)
+        a.map{|a| a.value}
       end
 
       def validate!(original)

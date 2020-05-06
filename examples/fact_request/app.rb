@@ -24,7 +24,8 @@ begin
     end
 
     # Response comes in form of facts easy to access with facts method
-    puts "Hello #{res.fact(Selfid::FACT_DISPLAY_NAME).attestations.first.value}"
+    attestations = res.attestation_values_for(:display_name).join(", ")
+    puts "Hello #{attestations}!"
     exit!
   end
 rescue => e

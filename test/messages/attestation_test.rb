@@ -22,8 +22,8 @@ class SelfidTest < Minitest::Test
       let(:operator) { "==" }
       let(:pkey) { "pkey" }
       let(:val) { "val" }
-      let(:fact_name) {"fact_name"}
-      let(:payload) { { iss: iss, sub:sub, aud:aud, source:source, expected_value: expected_value, operator: operator, fact_name: val }.to_json }
+      let(:fact_name) {"display_name"}
+      let(:payload) { { iss: iss, sub:sub, aud:aud, source:source, expected_value: expected_value, operator: operator, display_name: val }.to_json }
       let(:attestation) { { payload: "encrypted_payload" } }
       def test_parse
         expect(jwt).to receive(:decode).with('encrypted_payload').and_return(payload).once
@@ -38,7 +38,7 @@ class SelfidTest < Minitest::Test
         assert_equal source, subject.source
         assert_equal expected_value, subject.expected_value
         assert_equal operator, subject.operator
-        assert_equal "fact_name", subject.fact_name
+        assert_equal fact_name, subject.fact_name
         assert_equal source, subject.source
         assert_equal val, subject.value
       end
