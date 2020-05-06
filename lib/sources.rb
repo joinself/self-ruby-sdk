@@ -63,5 +63,18 @@ module Selfid
       raise "invalid fact name '#{s}'" unless facts.values.include? s
       s
     end
+
+    def source(s)
+      sources = { user_specified: SOURCE_USER_SPECIFIED,
+                passport: SOURCE_PASSPORT,
+                driving_license: SOURCE_DRIVING_LICENSE }
+      if s.is_a? Symbol
+        raise "invalid source '#{s.to_s}'" unless sources.key? s
+        return sources[s]
+      end
+      raise "invalid source '#{s}'" unless sources.values.include? s
+      s
+    end
+
   end
 end

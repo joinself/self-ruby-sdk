@@ -16,7 +16,7 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 
 # Request display_name and email_address to the specified user
 begin
-  @app.facts.request(user, [Selfid::FACT_DISPLAY_NAME, Selfid::FACT_EMAIL]) do |res|
+  @app.facts.request(user, [:display_name, :email_address]) do |res|
     # Information request has been rejected by the user
     if res.status == "rejected"
       puts 'Information request rejected'

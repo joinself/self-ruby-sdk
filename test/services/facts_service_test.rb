@@ -24,7 +24,7 @@ class SelfidTest < Minitest::Test
         assert_equal arg[:sub], "user_self_id"
         assert_equal arg[:facts].length, 2
         assert_equal arg[:facts].first[:fact], "email_address"
-        assert_equal arg[:facts].last[:fact], "name"
+        assert_equal arg[:facts].last[:fact], "display_name"
       end.and_return(json_body)
       j
     end
@@ -44,7 +44,7 @@ class SelfidTest < Minitest::Test
     let(:identity) { { public_keys: [ { key: "pk1"} ] } }
 
     def test_get_request_body
-      req = service.request(selfid, ["email_address", "name"], request: false)
+      req = service.request(selfid, ["email_address", "display_name"], request: false)
       assert_equal json_body, req
     end
 
@@ -60,7 +60,7 @@ class SelfidTest < Minitest::Test
         assert_equal arg.ciphertext, '{}'
       end.and_return(json_body)
 
-      res = service.request selfid, ["email_address", "name"], cid: cid do
+      res = service.request selfid, ["email_address", "display_name"], cid: cid do
         assert_true true
       end
       assert_equal json_body, res
@@ -71,12 +71,12 @@ class SelfidTest < Minitest::Test
       expect(messaging).to receive(:send_and_wait_for_response).once.and_return("response")
       expect(client).to receive(:devices).and_return(devices)
 
-      res = service.request selfid, ["email_address", "name"], cid: cid
+      res = service.request selfid, ["email_address", "display_name"], cid: cid
       assert_equal "response", res
     end
 
     def test_generate_qr
-      res = service.generate_qr(["email_address", "name"], cid: cid, selfid: selfid)
+      res = service.generate_qr(["email_address", "display_name"], cid: cid, selfid: selfid)
       assert_equal RQRCode::QRCode, res.class
     end
 
@@ -92,7 +92,7 @@ class SelfidTest < Minitest::Test
         assert_equal arg.ciphertext, '{}'
       end.and_return(json_body)
 
-      res = service.request selfid, ["email_address", "name"], cid: cid do
+      res = service.request selfid, ["email_address", "display_name"], cid: cid do
         assert_true true
       end
       assert_equal json_body, res

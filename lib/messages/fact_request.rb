@@ -18,7 +18,9 @@ module Selfid
         @facts = []
         facts.each do |fact|
           fact[:operator] = Selfid::operator(fact[:operator]) if fact.key? :operator
-          @facts << fact
+          f = Selfid::Messages::Fact.new(@messaging)
+          f.parse(fact)
+          @facts << f.to_hash
         end
 
         @id = opts[:cid] if opts.include?(:cid)
