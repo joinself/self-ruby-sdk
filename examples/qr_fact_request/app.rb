@@ -21,13 +21,14 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
   end
 
   # Response comes in form of facts easy to access with facts method
-  puts "Hello #{res.fact(Selfid::FACT_DISPLAY_NAME).attestations.first.value}"
+  attestations = res.attestation_values_for(:display_name).join(", ")
+  puts "Hello #{attestations}!"
   exit!
 end
 
 # Generate a QR code for the information request
 @app.facts
-    .generate_qr([Selfid::FACT_DISPLAY_NAME])
+    .generate_qr([:display_name])
     .as_png(border: 0, size: 400)
     .save('/tmp/qr.png', :interlace => true)
 

@@ -12,7 +12,7 @@ module Selfid
       end
 
       def parse(fact)
-        @name = fact[:fact]
+        @name = Selfid::fact_name(fact[:fact])
         @operator = fact[:operator] || ""
         @expected_value = fact[:expected_value] || ""
         @attestations = []

@@ -44,7 +44,7 @@ module Selfid
             expected_value: @expected_value,
             operator: @operator,
         }
-        o[:aud] = @audience if not @audience.nil?
+        o[:aud] = @audience unless @audience.nil?
         o[@fact_name.to_sym] = @value
         @messaging.jwt.signed(o)
       end
