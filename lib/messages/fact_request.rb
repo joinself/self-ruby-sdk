@@ -17,7 +17,6 @@ module Selfid
         @to = selfid
         @facts = []
         facts.each do |fact|
-          fact[:operator] = Selfid::operator(fact[:operator]) if fact.key? :operator
           f = Selfid::Messages::Fact.new(@messaging)
           f.parse(fact)
           @facts << f.to_hash

@@ -30,18 +30,17 @@ module Selfid
       return types[s]
     end
 
-    def operator(s)
+    def operator(input)
       operators = { equals: '==',
                     different: '!=',
                     great_or_equal_than: '>=',
                     less_or_equal: '<=',
                     great_than: '>',
                     less_than: '<' }
-      raise "invalid operator" unless operators.key? s
-      return operators[s]
+      get(operators, input, "operator")
     end
 
-    def fact_name(s)
+    def fact_name(input)
       facts = { email_address: FACT_EMAIL,
                 phone_number: FACT_PHONE,
                 display_name: FACT_DISPLAY_NAME,
@@ -56,24 +55,23 @@ module Selfid
                 date_of_birth: FACT_DATE_OF_BIRTH,
                 date_of_issuance: FACT_DATE_OF_ISSUANCE,
                 date_of_expiration: FACT_DATE_OF_EXPIRATION }
-      if s.is_a? Symbol
-        raise "invalid fact name '#{s.to_s}'" unless facts.key? s
-        return facts[s]
-      end
-      raise "invalid fact name '#{s}'" unless facts.values.include? s
-      s
+      get(facts, input, "fact")
     end
 
-    def source(s)
+    def source(input)
       sources = { user_specified: SOURCE_USER_SPECIFIED,
                 passport: SOURCE_PASSPORT,
                 driving_license: SOURCE_DRIVING_LICENSE }
-      if s.is_a? Symbol
-        raise "invalid source '#{s.to_s}'" unless sources.key? s
-        return sources[s]
+      get(sources, input, "source")
+    end
+
+    def get(options, input, option_type)
+      if input.is_a? Symbol
+        raise "invalid #{option_type} '#{input.to_s}'" unless options.key? input
+        return options[input]
       end
-      raise "invalid source '#{s}'" unless sources.values.include? s
-      s
+      raise "invalid #{option_type} '#{input}'" unless options.values.include? input
+      input
     end
 
   end
