@@ -14,20 +14,24 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 # app on https://developer.selfid.net/
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
-# Subscribe to authentication messages
-@app.authentication.subscribe do |auth|
-  # The user has rejected the authentication
-  if not auth.accepted?
-    puts "Authentication request has been rejected"
+begin
+  # Subscribe to authentication messages
+  @app.authentication.subscribe do |auth|
+    # The user has rejected the authentication
+    if not auth.accepted?
+      puts "Authentication request has been rejected"
+      exit!
+    end
+
+    puts "User is now authenticated 🤘"
     exit!
   end
 
-  puts "User is now authenticated 🤘"
+  # Authenticate a user to your app.
+  puts "Sending an authentication request to your device..."
+  @app.authentication.request user, async: true
+rescue => e
+  puts "ERROR : #{e}"
   exit!
 end
-
-# Authenticate a user to your app.
-puts "Sending an authentication request to your device..."
-@app.authentication.request user, async: true
-
 sleep 100

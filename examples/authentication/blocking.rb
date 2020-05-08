@@ -16,12 +16,17 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 
 # Authenticate a user to your app.
 puts "Sending an authentication request to your device..."
-auth = @app.authentication.request user
-# The user has rejected the authentication
-if not auth.accepted?
-  puts "Authentication request has been rejected"
+begin
+  auth = @app.authentication.request user
+  # The user has rejected the authentication
+  if not auth.accepted?
+    puts "Authentication request has been rejected"
+    exit!
+  end
+
+  puts "User is now authenticated 🤘"
+  exit!
+rescue => e
+  puts "ERROR : #{e}"
   exit!
 end
-
-puts "User is now authenticated 🤘"
-exit!

@@ -14,14 +14,19 @@ opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messagi
 # app on https://developer.selfid.net/
 @app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
-# Request display_name and email_address to the specified user
-res = @app.facts.request(user, [Selfid::FACT_DISPLAY_NAME, Selfid::FACT_EMAIL])
+begin
+  # Request display_name and email_address to the specified user
+  res = @app.facts.request(user, [Selfid::FACT_DISPLAY_NAME, Selfid::FACT_EMAIL])
 
-# Information request has been rejected by the user
-if res.status == "rejected"
-  puts 'Information request rejected'
+  # Information request has been rejected by the user
+  if res.status == "rejected"
+    puts 'Information request rejected'
+    exit!
+  end
+
+  # Response comes in form of facts easy to access with facts method
+  puts "Hello #{res.fact(Selfid::FACT_DISPLAY_NAME).attestations.first.value}"
+rescue => e
+  puts "ERROR : #{e}"
   exit!
 end
-
-# Response comes in form of facts easy to access with facts method
-puts "Hello #{res.fact(Selfid::FACT_DISPLAY_NAME).attestations.first.value}"
