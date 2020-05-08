@@ -40,9 +40,13 @@ module Selfid
 
       def to_hash
         h = { fact: @name }
-        h[:sources] = @sources if @sources.length > 0
+        unless @sources.nil?
+          h[:sources] = @sources if @sources.length > 0
+        end
         h[:operator] = @operator unless @operator.empty?
-        h[:attestations] = @attestations if attestations.length > 0
+        unless @attestations.nil?
+          h[:attestations] = @attestations if @attestations.length > 0
+        end
         h[:expected_value] = @expected_value unless @expected_value.empty?
         h
       end
