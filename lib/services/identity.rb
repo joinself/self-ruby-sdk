@@ -31,6 +31,14 @@ module Selfid
       def public_keys(selfid)
         @client.public_keys(selfid)
       end
+
+      # Gets an app/identity details
+      #
+      # @param [String] selfid gets the identity details (app/user)
+      # @return [Hash] with identity details
+      def get(selfid)
+        @client.entity(selfid)
+      end
     end
   end
 end
