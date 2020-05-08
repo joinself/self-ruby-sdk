@@ -41,7 +41,6 @@ module Selfid
     # @option opts [String] :base_url The self provider url.
     # @option opts [String] :messaging_url The messaging self provider url.
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
-    # @option opts [String] :device_id The device id to be used by the app defaults to "1".
     # @option opts [Symbol] :env The environment to be used, defaults to ":production".
     def initialize(app_id, app_key, storage_key, opts = {})
       Selfid.logger.debug "syncing ntp times #{Selfid::Time.now}"

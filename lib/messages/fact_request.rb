@@ -11,16 +11,21 @@ module Selfid
 
       attr_accessor :facts
 
-      def populate(selfid, facts, opts)
-        @id = SecureRandom.uuid
-        @from = @client.jwt.id
-        @to = selfid
+      def parse_facts(facts)
         @facts = []
         facts.each do |fact|
           f = Selfid::Messages::Fact.new(@messaging)
           f.parse(fact)
           @facts << f.to_hash
         end
+        @facts
+      end
+
+      def populate(selfid, facts, opts)
+        @id = SecureRandom.uuid
+        @from = @client.jwt.id
+        @to = selfid
+        @facts = parse_facts(facts)
 
         @id = opts[:cid] if opts.include?(:cid)
         @description = opts.include?(:description) ? opts[:description] : nil
@@ -56,7 +61,7 @@ module Selfid
 
       def share_facts(facts)
         m = build_response
-        m.facts = facts
+        m.facts = parse_facts(facts)
         m.send_message
       end
 
