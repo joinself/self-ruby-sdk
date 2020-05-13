@@ -11,7 +11,7 @@ class SelfidTest < Minitest::Test
   describe "send" do
     let(:body) { '{"my":"payload"}' }
     let(:ws)   { double("ws") }
-    let(:jwt)  { Selfid::Jwt.new("o9mpng9m2jv", "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI"); }
+    let(:jwt)  { Selfid::JwtService.new("o9mpng9m2jv", "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI"); }
     let(:client) { double("client", jwt: jwt) }
 
     let(:messaging_client) do
