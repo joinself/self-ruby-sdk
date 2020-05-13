@@ -13,7 +13,7 @@ module Selfid
     def initialize(url, app_id, app_key)
       Selfid.logger.info "client setup with #{url}"
       @self_url = url
-      @jwt = Selfid::Jwt.new(app_id, app_key)
+      @jwt = Selfid::JwtService.new(app_id, app_key)
     end
 
     # Get identity details

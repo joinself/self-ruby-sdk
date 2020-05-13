@@ -4,7 +4,7 @@ require 'base64'
 require 'json'
 
 module Selfid
-  class Jwt
+  class JwtService
     attr_reader :id, :key
 
     # Jwt initializer

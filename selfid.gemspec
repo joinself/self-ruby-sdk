@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
     "lib/client.rb",
     "lib/messaging.rb",
     "lib/log.rb",
-    "lib/jwt.rb",
+    "lib/jwt_service.rb",
     "lib/ntptime.rb",
     "lib/authenticated.rb",
     "lib/acl.rb",
@@ -54,6 +54,7 @@ Gem::Specification.new do |s|
   s.add_dependency "logger"
   s.add_dependency "net-ntp"
   s.add_dependency "rqrcode"
+  s.add_dependency "jwt"
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"
