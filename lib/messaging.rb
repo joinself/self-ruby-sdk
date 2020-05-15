@@ -175,6 +175,22 @@ module Selfid
       false
     end
 
+    def clean_observers
+      live = {}
+      @uuid_observer.clone.each do |id, msg|
+        if msg[:timeout] < Selfid::Time.now
+          message = Selfid::Messages::Base.new(self)
+          message.status = "errored"
+
+          @uuid_observer[id][:block].call(message)
+          @uuid_observer.delete(id)
+        else
+          live[id] = msg
+        end
+      end
+      @uuid_observer = live
+    end
+
     # Notify the type observer for the given message
     def notify_observer(message)
       if @uuid_observer.include? message.id
@@ -195,8 +211,9 @@ module Selfid
       end
     end
 
-    def set_observer(original, &block)
-      @uuid_observer[original.id] = { original_message: original, block: block }
+    def set_observer(original, options = {}, &block)
+      request_timeout = options.fetch(:timeout, @timeout)
+      @uuid_observer[original.id] = { original_message: original, block: block, timeout: Selfid::Time.now + request_timeout }
     end
 
     def subscribe(type, &block)
@@ -235,6 +252,7 @@ module Selfid
 
     # Cleans expired messages
     def clean_timeouts
+      clean_observers
       clean_timeouts_for(@messages)
       clean_timeouts_for(@acks)
     end
@@ -286,7 +304,7 @@ module Selfid
 
     # Pings the websocket server to keep the connection alive.
     def ping
-      Selfid.logger.info "ping"
+      # Selfid.logger.info "ping"
       @ws&.ping
     end
 
