@@ -4,92 +4,78 @@ default:
 stages:
   - Test
   - Build
-  - Deploy
+  - Release
+  - Publish
+
+.test: &test |
+  bundle install
+  bundle exec rake test
+
+.build: &build |
+  version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
+  bundle install
+  gem build selfid.gemspec
+  gem install selfid-${version}.gem
+
+.setupGit: &setupGit |
+  git config --global user.name self-ci-bot
+  git config --global user.email ops@selfid.net
+  git config --global url."https://${GITHUB_TOKEN}:@github.com".insteadOf "https://github.com"
+
+.gitRelease: &gitRelease |
+  version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
+  currentGitTag=$(git ls-remote -q --tags https://github.com/${CI_PROJECT_PATH} | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
+
+  if [[ $version != $currentGitTag ]]; then
+    git remote set-url origin https://github.com/selfid-net/selfid-gem
+    git tag -a $version -m "$version"
+    git push origin $version
+  else
+    echo "Version hasn't changed. Nothing to do here."
+  fi
+
+.slackNotify: &slackNotify |
+  slack chat send "New release <https://github.com/selfid-net/selfid-gem|selfid-gem> <https://github.com/selfid-net/selfid-gem/commits/${version}|${version}>" '#ci'
+
+.setupRubyGems: &setupRubyGems |
+  mkdir ~/.gem  
+  echo $RUBYGEMS_API_KEY | base64 -d > ~/.gem/credentials
+  chmod 600 ~/.gem/credentials
+
+.publish: &publish |
+  version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
+  gem push selfid-${version}.gem
 
 test:
   stage: Test
   script:
-    - test
+    - *test
   only:
     - branches
 
 build:
   stage: Build
   script:
-    - build
+    - *build
   artifacts:
     paths:
       - ./*.gem
   only:
     - branches
 
-rubyGems:
-  stage: Deploy
+release:
+  stage: Release
   script:
-    - deploy
+    - *setupGit
+    - *gitRelease
+    - *slackNotify
   only:
     - master
 
-.functions: &functions |
-  set -x
-
-  function test() {
-    bundle install
-    bundle exec rake test
-  }
-
-  function build() {
-    local version=$(cat VERSION)
-    sed -i "s/VERSION = .*/VERSION = \"${version}\"/g" lib/version.rb
-    bundle install
-    gem build selfid.gemspec
-    gem install selfid-${version}.gem
-  }
-
-  function deploy() {
-    local version=$(cat VERSION)
-    local currentGitTag=$(currentGitTag)
-
-    if [[ $version != $currentGitTag ]]; then
-      sed -i "s/VERSION = .*/VERSION = \"${version}\"/g" lib/version.rb
-      bundle install
-
-      git remote set-url origin https://github.com/selfid-net/selfid-gem
-      git add .
-      git commit -m "$version"
-      git tag -a $version -m "$version"
-      git push origin $version
-
-      setupRubyGems
-      gem push selfid-${version}.gem
-      slackNotify $version
-    else
-      echo "Version hasn't changed. Nothing to do here."
-    fi
-  }
-
-  function slackNotify() {
-    local version=$1
-    slack chat send "New release <https://github.com/selfid-net/selfid-gem|selfid-gem> <https://github.com/selfid-net/selfid-gem/commits/${version}|${version}>" '#ci'
-  }
-
-  function currentGitTag() {
-    setupGit
-    local version=$(git ls-remote -q --tags https://github.com/${CI_PROJECT_PATH} | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
-    echo $version
-  }
-
-  function setupRubyGems() {
-    mkdir ~/.gem  
-    echo $RUBYGEMS_API_KEY | base64 -d > ~/.gem/credentials
-    chmod 600 ~/.gem/credentials
-  }
-
-  function setupGit() {
-    git config --global user.name self-ci-bot
-    git config --global user.email ops@selfid.net
-    git config --global url."https://${GITHUB_TOKEN}:@github.com".insteadOf "https://github.com"
-  }
-
-before_script:
-  - *functions
+rubyGems:
+  stage: Publish
+  script:
+    - *setupRubyGems
+    - *publish
+  only:
+    - master
