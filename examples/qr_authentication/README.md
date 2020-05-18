@@ -18,7 +18,7 @@ $ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb
 
 This diagram shows how does a QR based authentication request process works internally.
 
-![Diagram](diagram.png)
+![Diagram](https://storage.googleapis.com/static.selfid.net/images/authentication_qr_diagram.png)
 
 1. Generate Self authentication request QR code
 2. Share generated QR code with your user

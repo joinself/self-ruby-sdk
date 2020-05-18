@@ -18,7 +18,7 @@ $ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb <user_self_id>
 
 This diagram shows how does a QR based information request process works internally.
 
-![Diagram](diagram.png)
+![Diagram](https://storage.googleapis.com/static.selfid.net/images/fact_request_qr_diagram.png)
 
 
 1. Generate Self information request QR code
