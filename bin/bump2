@@ -1,0 +1,4 @@
+echo "bumping a new gem version"
+IN=`grep VERSION lib/version.rb | cut -d'"' -f 2`
+OUT="${IN%.*}.$((${IN##*.}+1))"
+sed -i '' "s/$IN/$OUT/g" lib/version.rb
