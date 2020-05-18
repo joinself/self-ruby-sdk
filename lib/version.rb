@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Selfid
-  VERSION = "0.0.115"
+  VERSION = "0.0.116"
 end
