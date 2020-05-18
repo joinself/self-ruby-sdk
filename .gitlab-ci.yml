@@ -24,7 +24,7 @@ stages:
 
 .gitRelease: &gitRelease |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
-  currentGitTag=$(git ls-remote -q --tags https://github.com/${CI_PROJECT_PATH} | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
+  currentGitTag=$(git ls-remote -q --tags https://github.com/selfid-net/selfid-gem | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
 
   if [[ $version != $currentGitTag ]]; then
     git remote set-url origin https://github.com/selfid-net/selfid-gem
@@ -44,7 +44,12 @@ stages:
 
 .publish: &publish |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
-  gem push selfid-${version}.gem
+
+  if ! gem search -a selfid | grep $version; then
+    gem push selfid-${version}.gem
+  else
+    echo "Gem version already exists. Nothing to do here."
+  fi
 
 test:
   stage: Test
