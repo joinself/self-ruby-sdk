@@ -28,6 +28,7 @@ namespace :bump do
   task :patch do
     new_version = current_version.increment!(:patch)
     bump_version(new_version)
+
   end
 end
 
