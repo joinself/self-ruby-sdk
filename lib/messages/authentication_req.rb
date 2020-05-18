@@ -8,6 +8,7 @@ module Selfid
   module Messages
     class AuthenticationReq < AuthenticationMessage
       MSG_TYPE = "authentication_req"
+      DEFAULT_EXP_TIMEOUT = 300
 
       def initialize(messaging)
         @typ = MSG_TYPE
@@ -21,6 +22,7 @@ module Selfid
 
         @id = opts[:cid] if opts.include?(:cid)
         @description = opts.include?(:description) ? opts[:description] : nil
+        @exp_timeout = opts.fetch(:exp_timeout, DEFAULT_EXP_TIMEOUT)
       end
 
       def body
@@ -29,7 +31,7 @@ module Selfid
           sub: @to,
           aud: @to,
           iat: Selfid::Time.now.strftime('%FT%TZ'),
-          exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+          exp: (Selfid::Time.now + @exp_timeout).strftime('%FT%TZ'),
           cid: @id,
           jti: SecureRandom.uuid }
       end
