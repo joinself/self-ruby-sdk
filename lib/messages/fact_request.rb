@@ -93,19 +93,20 @@ module Selfid
                   end
         @to_device = devices.first
 
-        recipient = if @intermediary.nil?
-                      "#{@to}:#{@to_device}"
-                    else
-                      "#{@intermediary}:#{@to_device}"
-                    end
+        if @intermediary.nil?
+          recipient = "#{@to}:#{@to_device}"
+          ciphertext = encrypt_message(@jwt.prepare(body), @to, @to_device)
+        else
+          recipient = "#{@intermediary}:#{@to_device}"
+          ciphertext = encrypt_message(@jwt.prepare(body), @intermediary, @to_device)
+        end
 
         Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
           id: @id,
           sender: "#{@jwt.id}:#{@messaging.device_id}",
           recipient: recipient,
-          ciphertext: @jwt.prepare(body),
-        )
+          ciphertext: ciphertext )
       end
     end
   end

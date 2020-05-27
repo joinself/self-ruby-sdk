@@ -52,6 +52,7 @@ module Selfid
       unless messaging_url.nil?
         @messaging_client = MessagingClient.new(messaging_url,
                                                 @client,
+                                                storage_key,
                                                 storage_dir: opts.fetch(:storage_dir, MessagingClient::DEFAULT_STORAGE_DIR),
                                                 auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
                                                 device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE))

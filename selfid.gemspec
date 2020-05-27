@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
     "lib/selfid.rb",
     "lib/client.rb",
     "lib/messaging.rb",
+    "lib/crypto.rb",
     "lib/log.rb",
     "lib/jwt_service.rb",
     "lib/ntptime.rb",

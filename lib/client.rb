@@ -64,6 +64,22 @@ module Selfid
       i[:public_keys]
     end
 
+    def post(endpoint, body)
+      HTTParty.post("#{@self_url}#{endpoint}",
+                    headers: {
+                        'Content-Type' => 'application/json',
+                        'Authorization' => "Bearer #{@jwt.auth_token}"
+                    },
+                    body: body)
+    end
+
+    def get(endpoint)
+      HTTParty.get("#{@self_url}#{endpoint}", headers: {
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{@jwt.auth_token}"
+      })
+    end
+
     private
 
     def get_identity(endpoint)
@@ -76,20 +92,6 @@ module Selfid
       body
     end
 
-    def get(endpoint)
-      HTTParty.get("#{@self_url}#{endpoint}", headers: {
-                     'Content-Type' => 'application/json',
-                     'Authorization' => "Bearer #{@jwt.auth_token}"
-                   })
-    end
 
-    def post(endpoint, body)
-      HTTParty.post("#{@self_url}#{endpoint}",
-                    headers: {
-                      'Content-Type' => 'application/json',
-                      'Authorization' => "Bearer #{@jwt.auth_token}"
-                    },
-                    body: body)
-    end
   end
 end

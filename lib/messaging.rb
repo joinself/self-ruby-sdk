@@ -4,6 +4,7 @@ require 'json'
 require 'monitor'
 require 'faye/websocket'
 require 'fileutils'
+require_relative 'crypto'
 require_relative 'messages/message'
 require_relative 'proto/auth_pb'
 require_relative 'proto/message_pb'
@@ -18,16 +19,18 @@ module Selfid
     DEFAULT_STORAGE_DIR="./.self_storage"
     ON_DEMAND_CLOSE_CODE=3999
 
-    attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer
+    attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer, :encryption_client
 
     # RestClient initializer
     #
     # @param url [string] self-messaging url
     # @params client [Object] Selfid::Client object
     # @option opts [string] :storage_dir  the folder where encryption sessions and settings will be stored
+    # @params storage_key [String] seed to encrypt messaging
+    # @params storage_folder [String] folder to perist messaging encryption
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
-    def initialize(url, client, options = {})
+    def initialize(url, client, storage_key, storage_folder, options = {})
       @mon = Monitor.new
       @url = url
       @messages = {}
@@ -45,6 +48,7 @@ module Selfid
       @offset = read_offset
 
       FileUtils.mkdir_p @storage_dir unless File.exists? @storage_dir
+      @encryption_client = Crypto.new(@client, @device_id, storage_folder, storage_key)
 
       if options.include? :ws
         @ws = options[:ws]
