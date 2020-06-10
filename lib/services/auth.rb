@@ -83,6 +83,8 @@ module Selfid
 
         if @client.env.empty?
           return "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app"
+        elsif @client.env == 'development'
+          return "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app.dev"
         end
         "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app.#{@client.env}"
       end
