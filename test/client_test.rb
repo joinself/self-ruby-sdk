@@ -15,7 +15,7 @@ class SelfidTest < Minitest::Test
       }
     }
 
-    subject{ Selfid::RestClient.new(url, id, key) }
+    subject{ Selfid::RestClient.new(url, id, key, "") }
 
     def setup
       ENV["RAKE_ENV"] = "test"

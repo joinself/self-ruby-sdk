@@ -44,8 +44,9 @@ module Selfid
     # @option opts [Symbol] :env The environment to be used, defaults to ":production".
     def initialize(app_id, app_key, storage_key, opts = {})
       Selfid.logger.debug "syncing ntp times #{Selfid::Time.now}"
+      env = opts.fetch(:env, "")
 
-      @client = RestClient.new(base_url(opts), app_id, app_key)
+      @client = RestClient.new(base_url(opts), app_id, app_key, env)
       messaging_url = messaging_url(opts)
       unless messaging_url.nil?
         @messaging_client = MessagingClient.new(messaging_url,

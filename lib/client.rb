@@ -4,15 +4,16 @@ require 'httparty'
 
 module Selfid
   class RestClient
-    attr_reader :self_url, :jwt
+    attr_reader :self_url, :jwt, :env
 
     # RestClient initializer
     #
     # @param url [string] self-messaging url
     # @param token [string] jwt token identifying the authenticated user
-    def initialize(url, app_id, app_key)
+    def initialize(url, app_id, app_key, env)
       Selfid.logger.info "client setup with #{url}"
       @self_url = url
+      @env = env
       @jwt = Selfid::JwtService.new(app_id, app_key)
     end
 

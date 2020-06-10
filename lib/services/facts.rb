@@ -82,6 +82,7 @@ module Selfid
 
       # Generates a QR code so users can send facts to your app.
       #
+      # @param facts [Array] a list of facts to be requested.
       # @option opts [String] :cid The unique identifier of the authentication request.
       #
       # @return [String, String] conversation id or encoded body.
@@ -90,6 +91,25 @@ module Selfid
         selfid = opts.fetch(:selfid, "-")
         req = request(selfid, facts, opts)
         ::RQRCode::QRCode.new(req, level: 'l')
+      end
+
+      # Generates a deep link to authenticate with self app.
+      #
+      # @param facts [Array] a list of facts to be requested.
+      # @param callback [String] the url you'll be redirected if the app is not installed.
+      # @option opts [String] :selfid the user selfid you want to authenticate.
+      # @option opts [String] :cid The unique identifier of the authentication request.
+      #
+      # @return [String, String] conversation id or encoded body.
+      def generate_deep_link(facts, callback, opts = {})
+        opts[:request] = false
+        selfid = opts.fetch(:selfid, "-")
+        body = @client.jwt.encode(request(selfid, facts, opts))
+
+        if @client.env.empty?
+          return "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app"
+        end
+        "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app.#{@client.env}"
       end
 
       private
