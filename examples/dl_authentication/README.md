@@ -1,8 +1,8 @@
-# QR based authentication request
+# Deep Link based authentication request
 
-A Self user will be authenticated on your platform by scanning a QR code and accepting the authentication request on his phone. 
+A Self user will be authenticated on your platform by clicking a link and accepting the authentication request on his phone. 
 
-As part of this process, you have to share the generated QR code with your users, and wait for a response
+As part of this process, you have to share the generated link with your users, and wait for a response
 
 ## Running this example
 
@@ -16,12 +16,12 @@ $ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb
 
 ## Process diagram
 
-This diagram shows how does a QR based authentication request process works internally.
+This diagram shows how does a deep link based authentication request process works internally.
 
-![Diagram](https://storage.googleapis.com/static.selfid.net/images/authentication_qr_diagram.png)
+![Diagram](https://storage.googleapis.com/static.selfid.net/images/dl_diagram.png)
 
-1. Generate Self authentication request QR code
-2. Share generated QR code with your user
+1. Generate Self authentication request Deep Link
+2. Share Deep Link with your user
 3. The user scans the Self authentication request QR code
 4. The user sends back a signed approved response
 5. Self SDK verifies the response has been signed by the user based on its public keys.

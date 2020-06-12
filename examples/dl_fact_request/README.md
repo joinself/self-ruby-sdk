@@ -1,8 +1,8 @@
-# QR based information request
+# Deep link based information request
 
-Your app can request certain bits of information to your connected users via QR code. To do this, you'll only need its _SelfID_ and the fields you want to request you can find a list of updated valid fields [here](https://github.com/selfid-net/selfid-gem/blob/master/lib/sources.rb).
+Your app can request certain bits of information to your connected users via Deep Link. To do this, you'll only need its _SelfID_ and the fields you want to request you can find a list of updated valid fields [here](https://github.com/selfid-net/selfid-gem/blob/master/lib/sources.rb).
 
-As part of this process, you have to share the generated QR code with your users, and wait for a response
+As part of this process, you have to share the generated deep link code with your users, and wait for a response
 
 ## Running this example
 
@@ -16,14 +16,14 @@ $ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb <user_self_id>
 
 ## Process diagram
 
-This diagram shows how does a QR based information request process works internally.
+This diagram shows how does a Deep link based information request process works internally.
 
-![Diagram](https://storage.googleapis.com/static.selfid.net/images/fact_request_qr_diagram.png)
+![Diagram](https://storage.googleapis.com/static.selfid.net/images/di_facts_diagram.png)
 
 
-1. Generate Self information request QR code
-2. Share generated QR code with your user
-3. The user scans the Self information request QR code
+1. Generate Self information request Deep Link
+2. Share generated Deep Link code with your user
+3. The user clicks the deep link
 4. The user will select the requested facts and accept sharing them with you.
 5. The user’s device will send back a signed response with specific facts
 6. Self SDK verifies the response has been signed by the user based on its public keys.
