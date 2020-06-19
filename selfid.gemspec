@@ -46,6 +46,7 @@ Gem::Specification.new do |s|
     "lib/services/messaging.rb"
   ]
   s.require_paths = ["lib", "lib/proto", "lib/messages", "lib/services"]
+  s.add_dependency "self_crypto"
   s.add_dependency "async"
   s.add_dependency "ed25519"
   s.add_dependency "eventmachine"
