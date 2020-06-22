@@ -65,7 +65,7 @@ module Selfid
     end
 
     def post(endpoint, body)
-      HTTParty.post("#{@self_url}#{endpoint}",
+      p HTTParty.post("#{@self_url}#{endpoint}",
                     headers: {
                         'Content-Type' => 'application/json',
                         'Authorization' => "Bearer #{@jwt.auth_token}"

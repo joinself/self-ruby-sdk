@@ -1,4 +1,3 @@
-require 'file'
 require 'self_crypto'
 
 module Selfid
@@ -11,19 +10,21 @@ module Selfid
 
       if File.exist?('account.pickle')
         # 1a) if alice's account file exists load the pickle from the file
-        @account = Account.from_pickle(File.read('account.pickle'), @storage_key)
+        @account = SelfCrypto::Account.from_pickle(File.read('account.pickle'), @storage_key)
       else
         # 1b-i) if create a new account for alice if one doesn't exist already
-        @account = Account.from_seed(@client.jwt.key)
+        @account = SelfCrypto::Account.from_seed(@client.jwt.key)
 
         # 1b-ii) generate some keys for alice and publish them
         @account.gen_otk(100)
 
         # 1b-iii) convert those keys to json
-        keys = @account.otk['curve25519'].map{|k,v| {id: k, type: v}}.to_json
+        keys = @account.otk['curve25519'].map{|k,v| {id: k, key: v}}.to_json
+
+        p keys
 
         # 1b-iv) post those keys to POST /v1/identities/<selfid>/devices/1/pre_keys/
-        @client.post("/v1/identities/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
+        @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
 
         # 1b-v) store the account to a file
         File.write('account.pickle', @account.to_pickle(storage_key))
@@ -54,7 +55,7 @@ module Selfid
       end
 
       # 3) create a group session and set the identity of the account youre using
-      ags = GroupSession.new("#{@client.jwt.id}:#{@device}")
+      ags = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
 
       # 4) add all recipients and their sessions
       ags.add_participant("#{recipient}:#{recipient_device}", session_with_bob)
@@ -68,12 +69,12 @@ module Selfid
 
       if File.exist?(session_file_name)
         # 7a) if carol's session file exists load the pickle from the file
-        session_with_issuer = Session.from_pickle(File.read(session_file_name), @storage_key)
+        session_with_issuer = SelfCrypto::Session.from_pickle(File.read(session_file_name), @storage_key)
       else
         # 7b-i) if you have not previously sent or received a message to/from bob,
         #       you should extract the initial message from the group message intended
         #       for your account id.
-        m = GroupMessage.new(message.to_s).get_message("#{@client.jwt.id}:#{@device}")
+        m = SelfCrypto::GroupMessage.new(message.to_s).get_message("#{@client.jwt.id}:#{@device}")
 
         # 7b-ii) use the initial message to create a session for carol
         session_with_issuer = @account.inbound_session(m)
