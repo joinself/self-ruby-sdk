@@ -17,30 +17,33 @@ stages:
   gem build selfid.gemspec
   gem install selfid-${version}.gem
 
-.setupGit: &setupGit |
-  git config --global user.name self-ci-bot
-  git config --global user.email ops@selfid.net
-  git config --global url."https://${GITHUB_TOKEN}:@github.com".insteadOf "https://github.com"
-
 .gitRelease: &gitRelease |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
   currentGitTag=$(git ls-remote -q --tags https://github.com/selfid-net/selfid-gem | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
+  subject=$(git log -n 1 --format=%s)
+  body=$(git log -n 1 --format=%b | grep -E '^\*|^-' | sed 's/^*/-/g') || true
 
-  if [[ $version != $currentGitTag ]]; then
-    git remote set-url origin https://github.com/selfid-net/selfid-gem
-    git tag -a $version -m "$version"
-    git push origin $version
+  if [[ -z ${body} ]]; then
+    release_notes="- ${subject}"
+  else
+    release_notes="${body}"
+  fi
+
+  if [[ "${version}" != "${currentGitTag}" ]]; then
+    git remote set-url origin https://github.com/selfid-net/${CI_PROJECT_NAME}
+    git tag -a ${version} -m "${version}"
+    git push origin ${version}
+    hub release create -m "${version}" -m "${release_notes}" ${version}
   else
     echo "Version hasn't changed. Nothing to do here."
   fi
 
 .slackNotify: &slackNotify |
-  slack chat send "New release <https://github.com/selfid-net/selfid-gem|selfid-gem> <https://github.com/selfid-net/selfid-gem/commits/${version}|${version}>" '#ci'
-
-.setupRubyGems: &setupRubyGems |
-  mkdir ~/.gem  
-  echo $RUBYGEMS_API_KEY | base64 -d > ~/.gem/credentials
-  chmod 600 ~/.gem/credentials
+  if [[ -z ${body} ]]; then
+    slack chat send "New release <https://github.com/selfid-net/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/selfid-net/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n- ${subject}" '#ci'
+  else
+    slack chat send "New release <https://github.com/selfid-net/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/selfid-net/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n${body}" '#ci'
+  fi
 
 .publish: &publish |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
@@ -50,6 +53,10 @@ stages:
   else
     echo "Gem version already exists. Nothing to do here."
   fi
+
+before_script:
+  - export SCRIPTS_DIR=$(mktemp -d)
+  - git clone -q --depth 1 "${SCRIPTS_REPO}" "${SCRIPTS_DIR}"
 
 test:
   stage: Test
@@ -70,8 +77,9 @@ build:
 
 release:
   stage: Release
+  image: aldgateventuresbot/deploy
   script:
-    - *setupGit
+    - ${SCRIPTS_DIR}/git-setup
     - *gitRelease
     - *slackNotify
   only:
@@ -80,7 +88,7 @@ release:
 rubyGems:
   stage: Publish
   script:
-    - *setupRubyGems
+    - ${SCRIPTS_DIR}/rubygems-setup
     - *publish
   only:
     - master
