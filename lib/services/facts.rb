@@ -84,7 +84,7 @@ module Selfid
       #
       # @param facts [Array] a list of facts to be requested.
       # @option opts [String] :cid The unique identifier of the authentication request.
-      # @option opts [String] :process_each_request In case you want this request to be used multiple times.
+      # @option opts [String] :process_all_requests In case you want this request to be used multiple times.
       #
       # @return [String, String] conversation id or encoded body.
       def generate_qr(facts, opts = {})
