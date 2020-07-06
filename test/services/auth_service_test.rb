@@ -19,7 +19,7 @@ class SelfidTest < Minitest::Test
       j = double("jwt")
       expect(j).to receive(:id).and_return(appid).at_least(2).times
       expect(j).to receive(:prepare) do |arg|
-        assert_equal arg[:typ], "authentication_req"
+        assert_equal arg[:typ], "identities.authenticate.req"
         assert_equal arg[:aud], selfid
         assert_equal arg[:iss], appid
         assert_equal arg[:sub], selfid

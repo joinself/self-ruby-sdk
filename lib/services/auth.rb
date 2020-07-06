@@ -129,7 +129,7 @@ module Selfid
       def prepare_payload(selfid, cid)
         # TODO should this be moved to its own message/auth_req.rb?
         body = {
-            typ: 'authentication_req',
+            typ: 'identities.authenticate.req',
             aud: @client.self_url,
             iss: @client.jwt.id,
             sub: selfid,

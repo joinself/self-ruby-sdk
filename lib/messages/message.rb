@@ -18,16 +18,16 @@ module Selfid
       payload = JSON.parse(messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
 
       case payload[:typ]
-      when "identity_info_req"
+      when "identities.facts.query.req"
         m = FactRequest.new(messaging)
         m.parse(body)
-      when "identity_info_resp"
+      when "identities.facts.query.resp"
         m = FactResponse.new(messaging)
         m.parse(body)
-      when "authentication_resp"
+      when "identities.authenticate.resp"
         m = AuthenticationResp.new(messaging)
         m.parse(body)
-      when "authentication_req"
+      when "identities.authenticate.req"
         m = AuthenticationReq.new(messaging)
         m.parse(body)
       else

@@ -6,7 +6,7 @@ require_relative '../ntptime'
 module Selfid
   module Messages
     class FactRequest < Base
-      MSG_TYPE = "identity_info_req"
+      MSG_TYPE = "identities.facts.query.req"
       DEFAULT_EXP_TIMEOUT = 900
 
       attr_accessor :facts, :options

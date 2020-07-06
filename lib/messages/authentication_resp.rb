@@ -7,7 +7,7 @@ require_relative 'authentication_message'
 module Selfid
   module Messages
     class AuthenticationResp < AuthenticationMessage
-      MSG_TYPE = "authentication_resp"
+      MSG_TYPE = "identities.authenticate.resp"
       def initialize(messaging)
         @typ = MSG_TYPE
         super
