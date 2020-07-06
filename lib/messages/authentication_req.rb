@@ -7,7 +7,7 @@ require_relative 'authentication_message'
 module Selfid
   module Messages
     class AuthenticationReq < AuthenticationMessage
-      MSG_TYPE = "authentication_req"
+      MSG_TYPE = "identities.authenticate.req"
       DEFAULT_EXP_TIMEOUT = 300
 
       def initialize(messaging)

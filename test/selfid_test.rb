@@ -54,7 +54,7 @@ class SelfidTest < Minitest::Test
       res = JSON.parse(app.authentication.request("xxxxxxxx", cid: "uuid", jti: "uuid", request: false))
       payload = JSON.parse(Base64.urlsafe_decode64(res['payload']))
       assert_equal "appid", payload['iss']
-      assert_equal "authentication_req", payload['typ']
+      assert_equal "identities.authenticate.req", payload['typ']
       assert_equal "xxxxxxxx", payload['sub']
       assert_equal "xxxxxxxx", payload['aud']
       assert_equal "uuid", payload['cid']

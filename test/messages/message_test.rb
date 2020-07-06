@@ -22,12 +22,12 @@ class SelfidTest < Minitest::Test
       end
     end
 
-    describe "identity_info_req" do
-      let(:input) { '{"payload":"identity_info_req"}' }
-      let(:typ) { "identity_info_req" }
+    describe "identities.facts.query.req" do
+      let(:input) { '{"payload":"identities.facts.query.req"}' }
+      let(:typ) { "identities.facts.query.req" }
       let(:client) { double("client") }
       def test_parse_identity_info_req
-        expect(jwt).to receive(:decode).with("identity_info_req").and_return('{"typ":"identity_info_req"}').twice
+        expect(jwt).to receive(:decode).with("identities.facts.query.req").and_return('{"typ":"identities.facts.query.req"}').twice
         expect(jwt).to receive(:verify).and_return(true)
         expect(messaging).to receive(:client).and_return(client)
         expect(messaging).to receive(:jwt).and_return(jwt)
@@ -38,13 +38,13 @@ class SelfidTest < Minitest::Test
       end
     end
 
-    describe "identity_info_resp" do
-      let(:input) { '{"payload":"identity_info_resp"}' }
-      let(:typ) { "identity_info_resp" }
+    describe "identities.facts.query.resp" do
+      let(:input) { '{"payload":"identities.facts.query.resp"}' }
+      let(:typ) { "identities.facts.query.resp" }
       let(:client) { double("client") }
-      let(:body) { '{"typ":"identity_info_resp","exp":"'+exp+'","iat":"'+iat+'"}' }
+      let(:body) { '{"typ":"identities.facts.query.resp","exp":"'+exp+'","iat":"'+iat+'"}' }
       def test_parse_identity_info_req
-        expect(jwt).to receive(:decode).with("identity_info_resp").and_return(body).twice
+        expect(jwt).to receive(:decode).with("identities.facts.query.resp").and_return(body).twice
         expect(jwt).to receive(:verify).and_return(true)
         expect(messaging).to receive(:client).and_return(client)
         expect(messaging).to receive(:jwt).and_return(jwt)
@@ -55,13 +55,13 @@ class SelfidTest < Minitest::Test
       end
     end
 
-    describe "authentication_resp" do
-      let(:input) { '{"payload":"authentication_resp"}' }
-      let(:typ) { "authentication_resp" }
+    describe "identities.authenticate.resp" do
+      let(:input) { '{"payload":"identities.authenticate.resp"}' }
+      let(:typ) { "identities.authenticate.resp" }
       let(:client) { double("client") }
-      let(:body) { '{"typ":"authentication_resp","exp":"'+exp+'","iat":"'+iat+'"}' }
+      let(:body) { '{"typ":"identities.authenticate.resp","exp":"'+exp+'","iat":"'+iat+'"}' }
       def test_parse_identity_info_req
-        expect(jwt).to receive(:decode).with("authentication_resp").and_return(body).twice
+        expect(jwt).to receive(:decode).with("identities.authenticate.resp").and_return(body).twice
         expect(jwt).to receive(:verify).and_return(true)
         expect(messaging).to receive(:client).and_return(client)
         expect(messaging).to receive(:jwt).and_return(jwt)
@@ -72,13 +72,13 @@ class SelfidTest < Minitest::Test
       end
     end
 
-    describe "identity_info_req ciphertext based" do
-      let(:input) { double("input", ciphertext: '{"payload":"identity_info_req"}') }
-      let(:typ) { "identity_info_req" }
+    describe "identities.facts.query.req ciphertext based" do
+      let(:input) { double("input", ciphertext: '{"payload":"identities.facts.query.req"}') }
+      let(:typ) { "identities.facts.query.req" }
       let(:client) { double("client") }
-      let(:body) { '{"typ":"identity_info_req","exp":"'+exp+'","iat":"'+iat+'"}' }
+      let(:body) { '{"typ":"identities.facts.query.req","exp":"'+exp+'","iat":"'+iat+'"}' }
       def test_parse_identity_info_req
-        expect(jwt).to receive(:decode).with("identity_info_req").and_return(body).twice
+        expect(jwt).to receive(:decode).with("identities.facts.query.req").and_return(body).twice
         expect(jwt).to receive(:verify).and_return(true)
         expect(messaging).to receive(:client).and_return(client)
         expect(messaging).to receive(:jwt).and_return(jwt)
