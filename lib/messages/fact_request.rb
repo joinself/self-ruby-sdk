@@ -78,7 +78,7 @@ module Selfid
           jti: SecureRandom.uuid,
           facts: @facts,
         }
-        b[:options] = @options unless @options.nil?
+        b[:options] = @options unless (@options.nil? || @options == false)
         b[:description] = @description unless (@description.nil? || @description.empty?)
         b
       end
