@@ -75,6 +75,22 @@ module Selfid
       )
     end
 
+    # Send custom mmessage
+    #
+    # @param recipient [string] selfID to be requested
+    # @param type [string] message type
+    # @param request [hash] original message requesing information
+    def send_custom(recipient, request_body)
+        @to_device = @client.devices(recipient).first
+        send_message msg = Msgproto::Message.new(
+          type: Msgproto::MsgType::MSG,
+          id: SecureRandom.uuid,
+          sender: "#{@jwt.id}:#{@device_id}",
+          recipient: "#{recipient}:#{@to_device}",
+          ciphertext: @jwt.prepare(request_body),
+        )
+    end
+
     # Allows incomming messages from the given identity
     #
     # @params payload [string] base64 encoded payload to be sent
