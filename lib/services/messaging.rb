@@ -83,6 +83,12 @@ module Selfid
         @client.send_custom(recipient, request)
       end
 
+      def notify(recipient, message)
+        send recipient, {
+            typ: 'identities.notify',
+            description: message
+          }
+      end
 
       private
 
