@@ -66,6 +66,30 @@ module Selfid
         @client.uuid_observer[cid]
       end
 
+
+      # Send custom mmessage
+      #
+      # @param recipient [string] recipient for the message
+      # @param type [string] message type
+      # @param request [hash] message to be sent
+      def send(recipient, request)
+        request[:jti] = SecureRandom.uuid
+        request[:iss] = @client.jwt.id
+        request[:sub] = recipient
+        request[:iat] = Selfid::Time.now.strftime('%FT%TZ'),
+        request[:exp] = (Selfid::Time.now + 300).strftime('%FT%TZ'),
+        request[:cid] = SecureRandom.uuid unless request.include? :cid
+
+        @client.send_custom(recipient, request)
+      end
+
+      def notify(recipient, message)
+        send recipient, {
+            typ: 'identities.notify',
+            description: message
+          }
+      end
+
       private
 
       def acl
