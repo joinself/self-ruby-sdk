@@ -13,9 +13,10 @@ class SelfidTest < Minitest::Test
     let(:ws)   { double("ws") }
     let(:jwt)  { Selfid::JwtService.new("o9mpng9m2jv", "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI"); }
     let(:client) { double("client", jwt: jwt) }
+    let(:storage_dir) { "/tmp/#{SecureRandom.uuid}" }
 
     let(:messaging_client) do
-      Selfid::MessagingClient.new("", client, ws: ws)
+      Selfid::MessagingClient.new("", client, 'app_id', storage_dir, ws: ws)
     end
 
     def test_share_information
