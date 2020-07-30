@@ -14,6 +14,7 @@ module Selfid
   class MessagingClient
     DEFAULT_DEVICE="1"
     DEFAULT_AUTO_RECONNECT=true
+    DEFAULT_STORAGE_DIR="./.self_storage"
     ON_DEMAND_CLOSE_CODE=3999
 
     attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer
@@ -41,6 +42,7 @@ module Selfid
       @app_id = app_id
       @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
       @auto_reconnect = options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT)
+      @storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
       @offset_file = "#{@storage_dir}/#{@app_id}:#{@device_id}.offset"
       @offset = read_offset
 
@@ -423,12 +425,11 @@ module Selfid
     end
 
     def read_offset
-      if File.exist? @offset_file
-        File.open(@offset_file, 'rb') do |f|
-          return f.read.unpack('q') 
-        end
-      end 
-      0
+      return 0 unless File.exist? @offset_file
+      
+      File.open(@offset_file, 'rb') do |f|
+        return f.read.unpack('q') 
+      end
     end
     
     def write_offset(offset)

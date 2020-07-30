@@ -3,8 +3,8 @@
 
 require 'google/protobuf'
 
-require 'msgtype_pb'
-require 'aclcommand_pb'
+require_relative 'msgtype_pb'
+require_relative 'aclcommand_pb'
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_message "msgproto.AccessControlList" do
     optional :type, :enum, 1, "msgproto.MsgType"

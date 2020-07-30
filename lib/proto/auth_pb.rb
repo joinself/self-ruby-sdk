@@ -3,7 +3,7 @@
 
 require 'google/protobuf'
 
-require 'msgtype_pb'
+require_relative 'msgtype_pb'
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_message "msgproto.Auth" do
     optional :type, :enum, 1, "msgproto.MsgType"
