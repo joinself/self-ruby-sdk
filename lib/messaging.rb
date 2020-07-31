@@ -24,10 +24,10 @@ module Selfid
     # @param url [string] self-messaging url
     # @params client [Object] Selfid::Client object
     # @param app_key [string] the app api key provided by developer portal.
-    # @param storage_dir [string] the folder where encryption sessions and settings will be stored
+    # @option opts [string] :storage_dir  the folder where encryption sessions and settings will be stored
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
-    def initialize(url, client, app_id, storage_dir, options = {})
+    def initialize(url, client, app_id, options = {})
       @mon = Monitor.new
       @url = url
       @messages = {}
@@ -36,7 +36,6 @@ module Selfid
       @uuid_observer = {}
       @jwt = client.jwt
       @client = client
-      @storage_dir = storage_dir
       @ack_timeout = 60 # seconds
       @timeout = 120 # seconds
       @app_id = app_id
@@ -426,12 +425,12 @@ module Selfid
 
     def read_offset
       return 0 unless File.exist? @offset_file
-      
+
       File.open(@offset_file, 'rb') do |f|
-        return f.read.unpack('q') 
+        return f.read.unpack('q')
       end
     end
-    
+
     def write_offset(offset)
       File.open(@offset_file, 'wb') do |f|
         f.write([offset].pack('q'))
