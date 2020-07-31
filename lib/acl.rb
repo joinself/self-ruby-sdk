@@ -24,15 +24,25 @@ module Selfid
     # Allows incomming messages from the given identity.
     def allow(id)
       Selfid.logger.info "Allowing connections from #{id}"
-      @messaging.add_acl_rule(@jwt.prepare(iss: @jwt.id,
+      @messaging.add_acl_rule(@jwt.prepare(jti: SecureRandom.uuid,
+                                           cid: SecureRandom.uuid,
+                                           typ: 'acl.permit',
+                                           iss: @jwt.id,
+                                           sub: @jwt.id,
                                            acl_source: id,
                                            acl_exp: (Selfid::Time.now + 360_000).to_datetime.rfc3339))
     end
 
     # Deny incomming messages from the given identity.
     def deny(id)
-      Selfid.logger.info "Allowing connections from #{id}"
-      @messaging.remove_acl_rule(@jwt.prepare(iss: @jwt.id, acl_source: id))
+      Selfid.logger.info "Denying connections from #{id}"
+      @messaging.remove_acl_rule(@jwt.prepare(jti: SecureRandom.uuid,
+                                               cid: SecureRandom.uuid,
+                                               typ: 'acl.revoke',
+                                               iss: @jwt.id,
+                                               sub: @jwt.id,
+                                               acl_source: id,
+                                               acl_exp: (Selfid::Time.now + 360_000).to_datetime.rfc3339))
     end
   end
 end

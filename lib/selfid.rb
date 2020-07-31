@@ -42,6 +42,7 @@ module Selfid
     # @option opts [String] :messaging_url The messaging self provider url.
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [Symbol] :env The environment to be used, defaults to ":production".
+    # @option opts [String] :storage_dir The folder where encryption sessions and settings will be stored
     def initialize(app_id, app_key, storage_key, opts = {})
       Selfid.logger.debug "syncing ntp times #{Selfid::Time.now}"
       env = opts.fetch(:env, "")
@@ -51,6 +52,7 @@ module Selfid
       unless messaging_url.nil?
         @messaging_client = MessagingClient.new(messaging_url,
                                                 @client,
+                                                storage_dir: opts.fetch(:storage_dir, MessagingClient::DEFAULT_STORAGE_DIR),
                                                 auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
                                                 device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE))
       end

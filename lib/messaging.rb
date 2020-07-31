@@ -14,6 +14,7 @@ module Selfid
   class MessagingClient
     DEFAULT_DEVICE="1"
     DEFAULT_AUTO_RECONNECT=true
+    DEFAULT_STORAGE_DIR="./.self_storage"
     ON_DEMAND_CLOSE_CODE=3999
 
     attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer
@@ -21,11 +22,12 @@ module Selfid
     # RestClient initializer
     #
     # @param url [string] self-messaging url
-    # @param jwt [Object] Selfid::Jwt object
     # @params client [Object] Selfid::Client object
+    # @param app_id [string] the app id provided by developer portal.
+    # @option opts [string] :storage_dir  the folder where encryption sessions and settings will be stored
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
-    def initialize(url, client, options = {})
+    def initialize(url, client, app_id, options = {})
       @mon = Monitor.new
       @url = url
       @messages = {}
@@ -36,8 +38,12 @@ module Selfid
       @client = client
       @ack_timeout = 60 # seconds
       @timeout = 120 # seconds
+      @app_id = app_id
       @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
       @auto_reconnect = options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT)
+      @storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
+      @offset_file = "#{@storage_dir}/#{@app_id}:#{@device_id}.offset"
+      @offset = read_offset
 
       if options.include? :ws
         @ws = options[:ws]
@@ -370,6 +376,9 @@ module Selfid
         message.validate! @uuid_observer[message.id][:original_message] if @uuid_observer.include? message.id
         notify_observer(message)
       end
+
+      @offset = message.offset
+      write_offset(@offset)
     rescue StandardError => e
       p "Error processing incoming message #{input.to_json}"
       Selfid.logger.info e
@@ -385,6 +394,7 @@ module Selfid
         id: "authentication",
         token: @jwt.auth_token,
         device: @device_id,
+        offset: @offset,
       )
     end
 
@@ -410,6 +420,20 @@ module Selfid
       @mon.synchronize do
         @acks[id][:waiting] = false
         @acks[id][:waiting_cond].broadcast
+      end
+    end
+
+    def read_offset
+      return 0 unless File.exist? @offset_file
+
+      File.open(@offset_file, 'rb') do |f|
+        return f.read.unpack('q')
+      end
+    end
+
+    def write_offset(offset)
+      File.open(@offset_file, 'wb') do |f|
+        f.write([offset].pack('q'))
       end
     end
   end
