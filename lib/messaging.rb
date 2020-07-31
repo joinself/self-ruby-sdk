@@ -23,7 +23,7 @@ module Selfid
     #
     # @param url [string] self-messaging url
     # @params client [Object] Selfid::Client object
-    # @param app_key [string] the app api key provided by developer portal.
+    # @param app_id [string] the app id provided by developer portal.
     # @option opts [string] :storage_dir  the folder where encryption sessions and settings will be stored
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
