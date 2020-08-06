@@ -377,7 +377,7 @@ module Selfid
         notify_observer(message)
       end
 
-      @offset = message.offset
+      @offset = input.offset
       write_offset(@offset)
     rescue StandardError => e
       p "Error processing incoming message #{input.to_json}"
