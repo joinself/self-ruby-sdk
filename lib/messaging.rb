@@ -43,7 +43,9 @@ module Selfid
       @auto_reconnect = options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT)
       @storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
       @offset_file = "#{@storage_dir}/#{@app_id}:#{@device_id}.offset"
-      @offset = read_offset
+      @offset = read_offset      
+
+      FileUtils.mkdir_p @storage_dir unless File.exists? @storage_dir
 
       if options.include? :ws
         @ws = options[:ws]
@@ -427,7 +429,7 @@ module Selfid
       return 0 unless File.exist? @offset_file
 
       File.open(@offset_file, 'rb') do |f|
-        return f.read.unpack('q')
+        return f.read.unpack('q')[0]
       end
     end
 
