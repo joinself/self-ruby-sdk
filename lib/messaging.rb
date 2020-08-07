@@ -3,6 +3,7 @@
 require 'json'
 require 'monitor'
 require 'faye/websocket'
+require 'fileutils'
 require_relative 'messages/message'
 require_relative 'proto/auth_pb'
 require_relative 'proto/message_pb'
@@ -23,11 +24,10 @@ module Selfid
     #
     # @param url [string] self-messaging url
     # @params client [Object] Selfid::Client object
-    # @param app_id [string] the app id provided by developer portal.
     # @option opts [string] :storage_dir  the folder where encryption sessions and settings will be stored
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
-    def initialize(url, client, app_id, options = {})
+    def initialize(url, client, options = {})
       @mon = Monitor.new
       @url = url
       @messages = {}
@@ -38,12 +38,11 @@ module Selfid
       @client = client
       @ack_timeout = 60 # seconds
       @timeout = 120 # seconds
-      @app_id = app_id
       @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
       @auto_reconnect = options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT)
       @storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
-      @offset_file = "#{@storage_dir}/#{@app_id}:#{@device_id}.offset"
-      @offset = read_offset      
+      @offset_file = "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
+      @offset = read_offset
 
       FileUtils.mkdir_p @storage_dir unless File.exists? @storage_dir
 
