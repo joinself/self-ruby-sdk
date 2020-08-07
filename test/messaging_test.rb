@@ -16,7 +16,7 @@ class SelfidTest < Minitest::Test
     let(:storage_dir) { "/tmp/#{SecureRandom.uuid}" }
 
     let(:messaging_client) do
-      Selfid::MessagingClient.new("", client, 'app_id', storage_dir: storage_dir, ws: ws)
+      Selfid::MessagingClient.new("", client, storage_dir: storage_dir, ws: ws)
     end
 
     def test_share_information
