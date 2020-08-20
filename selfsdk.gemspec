@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.name = 'selfsdk'
   s.version = SelfSDK::VERSION
   s.date = '2011-09-29'
-  s.summary = 'self id gem'
+  s.summary = 'joinself sdk'
   s.authors = ["Aldgate Ventures"]
   s.homepage = "https://www.joinself.com/"
   s.files = [
