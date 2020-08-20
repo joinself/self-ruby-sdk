@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfid (0.0.124)
+    selfsdk (0.0.124)
       async
       ed25519
       eventmachine
@@ -35,7 +35,7 @@ GEM
     faye-websocket (0.11.0)
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
-    google-protobuf (3.12.2)
+    google-protobuf (3.12.2-universal-darwin)
     hashdiff (1.0.0)
     httparty (0.18.1)
       mime-types (~> 3.0)
@@ -114,7 +114,7 @@ DEPENDENCIES
   rake (~> 12.3)
   rspec
   rubocop (~> 0.49)
-  selfid!
+  selfsdk!
   semantic
   simplecov
   timecop

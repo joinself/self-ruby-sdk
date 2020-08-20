@@ -13,8 +13,8 @@ task default: :test
 namespace :bump do
   require 'semantic'
   require_relative "lib/version"
-  current_version = Semantic::Version.new Selfid::VERSION
-    
+  current_version = Semantic::Version.new SelfSDK::VERSION
+
   task :major do
     new_version = current_version.increment!(:major)
     bump_version(current_version, new_version)

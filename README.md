@@ -34,7 +34,7 @@ You can instantiate an app with the command above.
 # Require SelfID gem
 require 'selfid'
 # setup client connection
-@client = Selfid::App.new(ENV['SELF_APP_ID'], ENV['SELF_APP_SECRET'], ENV['STORAGE_KEY'])
+@client = SelfSDK::App.new(ENV['SELF_APP_ID'], ENV['SELF_APP_SECRET'], ENV['STORAGE_KEY'])
 ```
 
 At this point your app will be able to interact with self network, find below some useful features.

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Selfid
+module SelfSDK
   module Messages
     class Attestation
       attr_accessor :verified, :origin, :source, :value, :operator, :expected_value, :fact_name, :to, :audience

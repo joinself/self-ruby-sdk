@@ -9,7 +9,7 @@ Metrics/BlockLength:
 
 AllCops:
   Exclude:
-    - 'selfid.gemspec'
+    - 'selfsdk.gemspec'
 
 AllCops:
   Include:

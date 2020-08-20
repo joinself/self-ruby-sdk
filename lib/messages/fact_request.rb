@@ -3,7 +3,7 @@
 require_relative 'base'
 require_relative '../ntptime'
 
-module Selfid
+module SelfSDK
   module Messages
     class FactRequest < Base
       MSG_TYPE = "identities.facts.query.req"
@@ -14,7 +14,7 @@ module Selfid
       def parse_facts(facts)
         @facts = []
         facts.each do |fact|
-          f = Selfid::Messages::Fact.new(@messaging)
+          f = SelfSDK::Messages::Fact.new(@messaging)
           f.parse(fact)
           @facts << f.to_hash
         end
@@ -51,7 +51,7 @@ module Selfid
       end
 
       def build_response
-        m = Selfid::Messages::FactResponse.new(@messaging)
+        m = SelfSDK::Messages::FactResponse.new(@messaging)
         m.id = @id
         m.from = @to
         m.to = @from
@@ -72,8 +72,8 @@ module Selfid
           typ: MSG_TYPE,
           iss: @jwt.id,
           sub: @to,
-          iat: Selfid::Time.now.strftime('%FT%TZ'),
-          exp: (Selfid::Time.now + @exp_timeout).strftime('%FT%TZ'),
+          iat: SelfSDK::Time.now.strftime('%FT%TZ'),
+          exp: (SelfSDK::Time.now + @exp_timeout).strftime('%FT%TZ'),
           cid: @id,
           jti: SecureRandom.uuid,
           facts: @facts,

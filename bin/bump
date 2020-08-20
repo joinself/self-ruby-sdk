@@ -13,8 +13,8 @@ git tag -a $OUT -m 'Bump version $OUT'
 git push origin master --tags
 
 echo "compiling and pushing gem"
-gem build selfid.gemspec
-gem install selfid-$OUT.gem
-gem push selfid-$OUT.gem
+gem build selfsdk.gemspec
+gem install selfsdk-$OUT.gem
+gem push selfsdk-$OUT.gem
 
 echo "process completed"

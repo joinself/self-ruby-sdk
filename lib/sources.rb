@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Selfid
+module SelfSDK
   FACT_EMAIL = "email_address"
   FACT_PHONE = "phone_number"
   FACT_DISPLAY_NAME = "display_name"
@@ -22,10 +22,10 @@ module Selfid
 
   class << self
     def message_type(s)
-      types = { authentication_request: Selfid::Messages::AuthenticationReq::MSG_TYPE,
-                authentication_response: Selfid::Messages::AuthenticationResp::MSG_TYPE,
-                fact_request: Selfid::Messages::FactRequest::MSG_TYPE,
-                fact_response: Selfid::Messages::FactResponse::MSG_TYPE }
+      types = { authentication_request: SelfSDK::Messages::AuthenticationReq::MSG_TYPE,
+                authentication_response: SelfSDK::Messages::AuthenticationResp::MSG_TYPE,
+                fact_request: SelfSDK::Messages::FactRequest::MSG_TYPE,
+                fact_response: SelfSDK::Messages::FactResponse::MSG_TYPE }
       raise "invalid message type" unless types.key? s
       return types[s]
     end

@@ -1,17 +1,17 @@
 require_relative '../test_helper'
 require 'rspec/mocks/minitest_integration'
-require 'selfid'
+require 'selfsdk'
 
 require 'webmock/minitest'
 
-class SelfidTest < Minitest::Test
-  describe 'Selfid::Messages::Attestation' do
+class SelfSDKTest < Minitest::Test
+  describe 'SelfSDK::Messages::Attestation' do
     let(:client) { double("client") }
     let(:jwt) { double("jwt") }
     let(:messaging) do
       double("messaging", jwt: jwt, client: client)
     end
-    subject{ Selfid::Messages::Attestation.new(messaging) }
+    subject{ SelfSDK::Messages::Attestation.new(messaging) }
 
     describe "parse" do
       let(:iss) { "issuer_id" }

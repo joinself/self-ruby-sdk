@@ -2,7 +2,7 @@
 
 require 'logger'
 
-module Selfid
+module SelfSDK
   class << self
     attr_writer :logger
 

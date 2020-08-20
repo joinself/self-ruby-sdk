@@ -5,7 +5,7 @@ require_relative "fact_response"
 require_relative "authentication_resp"
 require_relative "authentication_req"
 
-module Selfid
+module SelfSDK
   module Messages
     def self.parse(input, messaging, original=nil)
       body = if input.is_a? String

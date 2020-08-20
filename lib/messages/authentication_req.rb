@@ -4,7 +4,7 @@ require_relative 'base'
 require_relative '../ntptime'
 require_relative 'authentication_message'
 
-module Selfid
+module SelfSDK
   module Messages
     class AuthenticationReq < AuthenticationMessage
       MSG_TYPE = "identities.authenticate.req"
@@ -30,8 +30,8 @@ module Selfid
           iss: @jwt.id,
           sub: @to,
           aud: @to,
-          iat: Selfid::Time.now.strftime('%FT%TZ'),
-          exp: (Selfid::Time.now + @exp_timeout).strftime('%FT%TZ'),
+          iat: SelfSDK::Time.now.strftime('%FT%TZ'),
+          exp: (SelfSDK::Time.now + @exp_timeout).strftime('%FT%TZ'),
           cid: @id,
           jti: SecureRandom.uuid }
       end

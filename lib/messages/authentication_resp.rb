@@ -4,7 +4,7 @@ require_relative 'base'
 require_relative '../ntptime'
 require_relative 'authentication_message'
 
-module Selfid
+module SelfSDK
   module Messages
     class AuthenticationResp < AuthenticationMessage
       MSG_TYPE = "identities.authenticate.resp"
