@@ -24,7 +24,7 @@ class AuthExample < Sinatra::Base
   configure do
     # You can point to a different environment by passing optional values to the initializer in
     # case you need to
-    opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
+    opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 
     # Connect your app to Self network, get your connection details creating a new
     # app on https://developer.selfsdk.net/
