@@ -14,12 +14,12 @@ stages:
 .build: &build |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
   bundle install
-  gem build selfid.gemspec
-  gem install selfid-${version}.gem
+  gem build selfsdk.gemspec
+  gem install selfsdk-${version}.gem
 
 .gitRelease: &gitRelease |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
-  currentGitTag=$(git ls-remote -q --tags https://github.com/selfid-net/selfid-gem | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
+  currentGitTag=$(git ls-remote -q --tags https://github.com/joinself/self-ruby-sdk | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
   subject=$(git log -n 1 --format=%s)
   body=$(git log -n 1 --format=%b | grep -E '^\*|^-' | sed 's/^*/-/g') || true
 
@@ -30,7 +30,7 @@ stages:
   fi
 
   if [[ "${version}" != "${currentGitTag}" ]]; then
-    git remote set-url origin https://github.com/selfid-net/${CI_PROJECT_NAME}
+    git remote set-url origin https://github.com/joinself/${CI_PROJECT_NAME}
     git tag -a ${version} -m "${version}"
     git push origin ${version}
     hub release create -m "${version}" -m "${release_notes}" ${version}
@@ -40,16 +40,16 @@ stages:
 
 .slackNotify: &slackNotify |
   if [[ -z ${body} ]]; then
-    slack chat send "New release <https://github.com/selfid-net/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/selfid-net/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n- ${subject}" '#ci'
+    slack chat send "New release <https://github.com/joinself/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/joinself/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n- ${subject}" '#ci'
   else
-    slack chat send "New release <https://github.com/selfid-net/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/selfid-net/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n${body}" '#ci'
+    slack chat send "New release <https://github.com/joinself/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/joinself/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n${body}" '#ci'
   fi
 
 .publish: &publish |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
 
-  if ! gem search -a selfid | grep $version; then
-    gem push selfid-${version}.gem
+  if ! gem search -a selfsdk | grep $version; then
+    gem push selfsdk-${version}.gem
   else
     echo "Gem version already exists. Nothing to do here."
   fi
