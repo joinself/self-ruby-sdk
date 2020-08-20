@@ -4,13 +4,13 @@ require 'bundler/inline'
 gemfile(true) do
   source 'https://rubygems.org'
   gem 'sinatra', '~> 1.4'
-  gem 'selfid'
+  gem 'selfsdk'
 end
 
 require 'sinatra/base'
-require 'selfid'
+require 'selfsdk'
 
-Profile = Struct.new(:selfid, :name, :email)
+Profile = Struct.new(:selfsdk, :name, :email)
 USER = nil
 
 class AuthExample < Sinatra::Base
@@ -25,8 +25,8 @@ class AuthExample < Sinatra::Base
     opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
 
     # Connect your app to Self network, get your connection details creating a new
-    # app on https://developer.selfid.net/
-    set :client, Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
+    # app on https://developer.selfsdk.net/
+    set :client, SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
   end
 
   # This is the default app endpoint which will be redirecting non-logged in users to facts
@@ -38,8 +38,8 @@ class AuthExample < Sinatra::Base
   post '/facts' do
     date = Date.today
     dob = Date.civil(date.year-18, date.month, date.day)
-    res = settings.client.facts.request_via_intermediary(params['selfid'], [{ sources: [Selfid::SOURCE_PASSPORT],
-                                                       fact: Selfid::FACT_DATE_OF_BIRTH,
+    res = settings.client.facts.request_via_intermediary(params['selfsdk'], [{ sources: [SelfSDK::SOURCE_PASSPORT],
+                                                       fact: SelfSDK::FACT_DATE_OF_BIRTH,
                                                        operator: :great_than,
                                                        expected_value: dob.strftime('%FT%TZ')}])
 
@@ -47,13 +47,13 @@ class AuthExample < Sinatra::Base
       @error = "Request has timed out"
       erb :facts
     elsif res.accepted? # The user accepts the intermediary request
-      fact = res.fact(Selfid::FACT_DATE_OF_BIRTH)
+      fact = res.fact(SelfSDK::FACT_DATE_OF_BIRTH)
       if fact.nil?
         @error = "An error occured"
         erb :facts
       else
-        if res.fact(Selfid::FACT_DATE_OF_BIRTH).attestations.first.value
-          @profile =  Profile.new(params['selfid'])
+        if res.fact(SelfSDK::FACT_DATE_OF_BIRTH).attestations.first.value
+          @profile =  Profile.new(params['selfsdk'])
           erb :home
         else
           @error = "You're under 18 years old"
@@ -90,12 +90,12 @@ __END__
 @@ facts
     <!-- Login Form -->
     <form action="/facts" method="POST">
-      <input type="text" id="login" name="selfid" class="fadeIn first" placeholder="SelfID" />
+      <input type="text" id="login" name="selfsdk" class="fadeIn first" placeholder="selfsdk" />
       <input type="submit" class="fadeIn second" value="Request facts" />
     </form>
 
 @@ home
-  <p><strong>Hello, <%= @profile.selfid %></strong></p>
+  <p><strong>Hello, <%= @profile.selfsdk %></strong></p>
   <p>you are over 18 years old</p>
 
 @@ layout

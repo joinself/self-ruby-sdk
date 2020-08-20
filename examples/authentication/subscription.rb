@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-require 'selfid'
+require 'selfsdk'
 
 # Process input data
 abort("provide self_id to authenticate") if ARGV.length != 1
 user = ARGV.first
-Selfid.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
+SelfSDK.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
 
 # You can point to a different environment by passing optional values to the initializer
 opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
 
 # Connect your app to Self network, get your connection details creating a new
-# app on https://developer.selfid.net/
-@app = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
+# app on https://developer.selfsdk.net/
+@app = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
 begin
   # Subscribe to authentication messages

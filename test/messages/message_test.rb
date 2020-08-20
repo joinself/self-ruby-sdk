@@ -1,10 +1,10 @@
 require_relative '../test_helper'
 require 'rspec/mocks/minitest_integration'
-require 'selfid'
+require 'selfsdk'
 
 require 'webmock/minitest'
 
-class SelfidTest < Minitest::Test
+class SelfSDKTest < Minitest::Test
   describe 'parse string' do
     let(:exp) { (Time.now + 3600 * 24).to_s }
     let(:iat) { (Time.now - 3600 * 24).to_s }
@@ -18,7 +18,7 @@ class SelfidTest < Minitest::Test
       let(:typ) { "invalid" }
       def test_parse_invalid_message
         expect(jwt).to receive(:decode).with("test_invalid").and_return('{"typ":"invalid"}').once
-        _{ Selfid::Messages.parse(input, messaging) }.must_raise StandardError
+        _{ SelfSDK::Messages.parse(input, messaging) }.must_raise StandardError
       end
     end
 
@@ -33,8 +33,8 @@ class SelfidTest < Minitest::Test
         expect(messaging).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:public_keys).and_return([{key: "pk1"}])
-        res = Selfid::Messages.parse(input, messaging)
-        assert_equal res.class, Selfid::Messages::FactRequest
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::FactRequest
       end
     end
 
@@ -50,8 +50,8 @@ class SelfidTest < Minitest::Test
         expect(messaging).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:public_keys).and_return([{key: "pk1"}])
-        res = Selfid::Messages.parse(input, messaging)
-        assert_equal res.class, Selfid::Messages::FactResponse
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::FactResponse
       end
     end
 
@@ -67,8 +67,8 @@ class SelfidTest < Minitest::Test
         expect(messaging).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:public_keys).and_return([{key: "pk1"}])
-        res = Selfid::Messages.parse(input, messaging)
-        assert_equal res.class, Selfid::Messages::AuthenticationResp
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::AuthenticationResp
       end
     end
 
@@ -84,8 +84,8 @@ class SelfidTest < Minitest::Test
         expect(messaging).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:public_keys).and_return([{key: "pk1"}])
-        res = Selfid::Messages.parse(input, messaging)
-        assert_equal res.class, Selfid::Messages::FactRequest
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::FactRequest
       end
     end
   end

@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-# Namespace for classes and modules that handle Selfid gem
-module Selfid
-  # Namespace for classes and modules that handle selfid-gem public ui
+# Namespace for classes and modules that handle SelfSDK gem
+module SelfSDK
+  # Namespace for classes and modules that handle selfsdk-gem public ui
   module Services
     # Input class to request for identities and apps
     class Identity
       # Creates a new identity service.
       # Identity service allows you request information for your connected users / apps.
       #
-      # @param [Selfid::Client] client http client object.
+      # @param [SelfSDK::Client] client http client object.
       #
-      # @return [Selfid::Services::Identity] facts service.
+      # @return [SelfSDK::Services::Identity] facts service.
       def initialize(client)
         @client = client
       end

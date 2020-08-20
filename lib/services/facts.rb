@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Namespace for classes and modules that handle Selfid gem
-module Selfid
-  # Namespace for classes and modules that handle selfid-gem public ui
+# Namespace for classes and modules that handle SelfSDK gem
+module SelfSDK
+  # Namespace for classes and modules that handle selfsdk-gem public ui
   module Services
     # Self provides this self-hosted verified intermediary.
     DEFAULT_INTERMEDIARY = "self_intermediary"
@@ -12,10 +12,10 @@ module Selfid
       # Facts service mainly manages fact requests against self users wanting
       # to share their verified facts with your app.
       #
-      # @param messaging [Selfid::Messaging] messaging object.
-      # @param client [Selfid::Client] http client object.
+      # @param messaging [SelfSDK::Messaging] messaging object.
+      # @param client [SelfSDK::Client] http client object.
       #
-      # @return [Selfid::Services::Facts] facts service.
+      # @return [SelfSDK::Services::Facts] facts service.
       def initialize(messaging, client)
         @messaging = messaging
         @client = client
@@ -30,18 +30,18 @@ module Selfid
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :cid The unique identifier of the authentication request.
       #  @yield [request] Invokes the block with a street name for each result.
-      #  @return [Object] Selfid:::Messages::FactRequest
+      #  @return [Object] SelfSDK:::Messages::FactRequest
       #
       # @overload request(selfid, facts, opts = {})
       #  @param selfid [string] the receiver of the authentication request.
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :cid The unique identifier of the authentication request.
       #  @option opts [Integer] :exp_timeout timeout in seconds to expire the request.
-      #  @return [Object] Selfid:::Messages::FactRequest
+      #  @return [Object] SelfSDK:::Messages::FactRequest
       def request(selfid, facts, opts = {}, &block)
-        Selfid.logger.info "authenticating #{selfid}"
+        SelfSDK.logger.info "authenticating #{selfid}"
 
-        req = Selfid::Messages::FactRequest.new(@messaging)
+        req = SelfSDK::Messages::FactRequest.new(@messaging)
         req.populate(selfid, prepare_facts(facts), opts)
 
         body = @client.jwt.prepare(req.body)
@@ -66,7 +66,7 @@ module Selfid
       #  @param selfid [string] the receiver of the authentication request.
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] intermediary an intermediary identity to be used.
-      #  @return [Object] Selfid:::Messages::FactRequest
+      #  @return [Object] SelfSDK:::Messages::FactRequest
       def request_via_intermediary(selfid, facts, opts = {}, &block)
         opts[:intermediary] = opts.fetch(:intermediary, DEFAULT_INTERMEDIARY)
         request(selfid, facts, opts, &block)

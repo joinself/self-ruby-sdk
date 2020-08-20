@@ -2,11 +2,11 @@
 
 require_relative '../test_helper'
 require 'rspec/mocks/minitest_integration'
-require 'selfid'
+require 'selfsdk'
 
 require 'webmock/minitest'
 
-class SelfidTest < Minitest::Test
+class SelfSDKTest < Minitest::Test
   describe "authentication service" do
     let(:cid) {'cid'}
     let(:app_device_id) {'1'}
@@ -37,7 +37,7 @@ class SelfidTest < Minitest::Test
       expect(mm).to receive(:client).and_return(client)
       mm
     end
-    let(:service) { Selfid::Services::Authentication.new(messaging, client) }
+    let(:service) { SelfSDK::Services::Authentication.new(messaging, client) }
     let(:response_input) { 'input' }
     let(:response) { double("response", input: response_input) }
     let(:identity) { { public_keys: [ { key: "pk1"} ] } }

@@ -1,13 +1,13 @@
-module Selfid
+module SelfSDK
   class Authenticated
-    attr_accessor :payload, :uuid, :selfid, :status
+    attr_accessor :payload, :uuid, :selfsdk, :status
 
     def initialize(payload)
       return if payload.nil?
 
       @payload = payload
       @uuid = payload[:cid]
-      @selfid = payload[:sub]
+      @selfsdk = payload[:sub]
     end
 
     def accepted?
@@ -18,7 +18,7 @@ module Selfid
 
     def to_hash
       { uuid: @uuid,
-        selfid: @selfid,
+        selfsdk: @selfsdk,
         accepted: accepted? }
     end
 

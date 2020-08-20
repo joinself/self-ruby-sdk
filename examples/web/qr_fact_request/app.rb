@@ -4,15 +4,15 @@ require 'bundler/inline'
 gemfile(true) do
   source 'https://rubygems.org'
   gem 'sinatra', '~> 1.4'
-  gem 'selfid'
+  gem 'selfsdk'
   gem 'json'
 end
 
 require 'sinatra/base'
-require 'selfid'
+require 'selfsdk'
 require 'json'
 
-User = Struct.new(:cid, :selfid, :name, :email)
+User = Struct.new(:cid, :selfsdk, :name, :email)
 USERS = {}
 
 class AuthExample < Sinatra::Base
@@ -27,15 +27,15 @@ class AuthExample < Sinatra::Base
     opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
 
     # Connect your app to Self network, get your connection details creating a new
-    # app on https://developer.selfid.net/
-    client = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
+    # app on https://developer.selfsdk.net/
+    client = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
     # let's subscribe to all fact responses
     client.facts.subscribe do |res|
       if res.accepted?
-        # for each accepted response we will store the incoming selfid and will relate it with the cid we sent
-        name = res.fact(Selfid::FACT_DISPLAY_NAME).attestations.first.value
-        email = res.fact(Selfid::FACT_EMAIL).attestations.first.value
+        # for each accepted response we will store the incoming selfsdk and will relate it with the cid we sent
+        name = res.fact(SelfSDK::FACT_DISPLAY_NAME).attestations.first.value
+        email = res.fact(SelfSDK::FACT_EMAIL).attestations.first.value
         USERS[res.id] = User.new(res.id, res.from, name, email)
       end
     end
@@ -52,7 +52,7 @@ class AuthExample < Sinatra::Base
   get '/' do
     settings.client
         .facts
-        .generate_qr([Selfid::FACT_DISPLAY_NAME, Selfid::FACT_EMAIL], cid: session[:id])
+        .generate_qr([SelfSDK::FACT_DISPLAY_NAME, SelfSDK::FACT_EMAIL], cid: session[:id])
         .as_png(border: 0, size: 400)
         .save('public/qr.png', :interlace => true)
     erb :home
@@ -76,7 +76,7 @@ class AuthExample < Sinatra::Base
       user = USERS[session['id']]
       p user
       content_type :json
-      { selfid: user.selfid, name: user.name, email: user.email }.to_json
+      { selfsdk: user.selfsdk, name: user.name, email: user.email }.to_json
     else
       status 404
     end
@@ -104,8 +104,8 @@ __END__
 @@ dashboard
     <div class="fadeIn first row">
       <div class="col-md-1"></div>
-      <div class="col-md-3 text-left">SelfID</div>
-      <div class="col-md-7 form-control text-left"><%= current_user.selfid %></div>
+      <div class="col-md-3 text-left">selfsdk</div>
+      <div class="col-md-7 form-control text-left"><%= current_user.selfsdk %></div>
       <div class="col-md-1"></div>
     </div>
     <div class="fadeIn second row">

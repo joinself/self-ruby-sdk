@@ -3,7 +3,7 @@
 require 'base64'
 require 'json'
 
-module Selfid
+module SelfSDK
   class JwtService
     attr_reader :id, :key
 
@@ -74,8 +74,8 @@ module Selfid
         jti: SecureRandom.uuid,
         cid: SecureRandom.uuid,
         typ: 'auth.token',
-        iat: (Selfid::Time.now - 5).to_i,
-        exp: (Selfid::Time.now + 60).to_i,
+        iat: (SelfSDK::Time.now - 5).to_i,
+        exp: (SelfSDK::Time.now + 60).to_i,
         iss: @id,
         sub: @id}.to_json)
       signature = sign(payload)
