@@ -27,7 +27,7 @@ class AuthExample < Sinatra::Base
     opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 
     # Connect your app to Self network, get your connection details creating a new
-    # app on https://developer.selfid.net/
+    # app on https://developer.joinself.com/
     client = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
     # let's subscribe to all authentication responses

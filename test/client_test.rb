@@ -6,7 +6,7 @@ require 'webmock/minitest'
 
 class SelfSDKTest < Minitest::Test
   describe 'SelfSDK::RestClient' do
-    let(:url) {  "https://api.selfid.net" }
+    let(:url) {  "https://api.joinself.com" }
     let(:id) { "o9mpng9m2jv" }
     let(:key) { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:headers) {
