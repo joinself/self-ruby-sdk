@@ -5,7 +5,7 @@ require 'json'
 
 module SelfSDK
   class JwtService
-    attr_reader :id, :key
+    attr_reader :id, :key, :key_id
 
     # Jwt initializer
     #
@@ -13,7 +13,14 @@ module SelfSDK
     # @param app_key [string] the app api key provided by developer portal.
     def initialize(app_id, app_key)
       @id = app_id
-      @key = app_key
+      parts = app_key.split(':')
+      if parts.length > 1
+        @key_id = parts[0]
+        @key = parts[1]
+      else
+        @key_id = "1"
+        @key = app_key
+      end
     end
 
     # Prepares a jwt object based on an input
@@ -85,7 +92,7 @@ module SelfSDK
     private
 
     def header
-      encode({ alg: "EdDSA", typ: "JWT" }.to_json)
+      encode({ alg: "EdDSA", typ: "JWT", kid: "#{@key_id}" }.to_json)
     end
   end
 end
