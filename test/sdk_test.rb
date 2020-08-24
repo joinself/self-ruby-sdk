@@ -35,7 +35,7 @@ class SelfSDKTest < Minitest::Test
     end
 
     def test_init_with_defaults
-      assert_equal "https://api.selfid.net", app.client.self_url
+      assert_equal "https://api.joinself.com", app.client.self_url
       assert_equal app_id, app.app_id
       assert_equal seed, app.app_key
     end
@@ -64,7 +64,7 @@ class SelfSDKTest < Minitest::Test
       pk = "pk_111222333"
       id = "11122233344"
 
-      stub_request(:get, "https://api.selfid.net/v1/identities/#{id}").
+      stub_request(:get, "https://api.joinself.com/v1/identities/#{id}").
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
