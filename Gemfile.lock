@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.125)
+    selfsdk (0.0.126)
       async
       ed25519
       eventmachine
