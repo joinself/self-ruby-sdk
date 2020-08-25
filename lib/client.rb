@@ -64,6 +64,15 @@ module SelfSDK
       i[:public_keys]
     end
 
+    # Lists all public keys stored on self for the given ID
+    #
+    # @param id [string] identity id
+    def public_key(id, kid)
+      i = entity(id)
+      sg = SelfSDK::SignatureGraph.new(i[:history])
+      sg.key_by_id(kid)
+    end
+
     private
 
     def get_identity(endpoint)
