@@ -25,7 +25,7 @@ class SelfSDKTest < Minitest::Test
       let(:fact_name) {"display_name"}
       let(:payload) { { iss: iss, sub:sub, aud:aud, source:source, expected_value: expected_value, operator: operator, display_name: val }.to_json }
       let(:header) { '{"kid": "kid"}' }
-      let(:attestation) { { header: 'encrypted_header', payload: "encrypted_payload" } }
+      let(:attestation) { { protected: 'encrypted_header', payload: "encrypted_payload" } }
       let(:pk) do
         p = PK.new()
         p.raw_public_key = pkey

@@ -72,7 +72,7 @@ module SelfSDK
 
         jwt = JSON.parse(body, symbolize_names: true)
         payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
-        header = JSON.parse(@jwt.decode(jwt[:header]), symbolize_names: true)
+        header = JSON.parse(@jwt.decode(jwt[:protected]), symbolize_names: true)
         @from = payload[:iss]
         verify! jwt, header[:kid]
         payload

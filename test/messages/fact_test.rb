@@ -19,7 +19,7 @@ class SelfSDKTest < Minitest::Test
       let(:operator) { "pkey" }
       let(:payload) { { iss: iss, sub:"", aud:"", source:"", expected_value: "", operator: "" }.to_json }
       let(:header) { '{"kid": "kid"}' }
-      let(:attestation) { { header: "encrypted_header", payload: "encrypted_payload" } }
+      let(:attestation) { { protected: "encrypted_header", payload: "encrypted_payload" } }
       let(:fact) { { fact: "display_name", operator: :equals, attestations: [ attestation ], expected_value: "lol" } }
       let(:pk) do
         p = PK.new()

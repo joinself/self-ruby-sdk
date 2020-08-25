@@ -15,7 +15,7 @@ module SelfSDK
         @to = payload[:sub]
         @audience = payload[:aud]
         @source = payload[:source]
-        header = JSON.parse(@messaging.jwt.decode(attestation[:header]), symbolize_names: true)
+        header = JSON.parse(@messaging.jwt.decode(attestation[:protected]), symbolize_names: true)
         @verified = valid_signature?(attestation, header[:kid])
         @expected_value = payload[:expected_value]
         @operator = payload[:operator]

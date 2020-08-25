@@ -23,7 +23,7 @@ class SelfSDKTest < Minitest::Test
     end
 
     describe "identities.facts.query.req" do
-      let(:input) { '{"header": "header", "payload":"identities.facts.query.req"}' }
+      let(:input) { '{"protected": "header", "payload":"identities.facts.query.req"}' }
       let(:typ) { "identities.facts.query.req" }
       let(:client) { double("client") }
       def test_parse_identity_info_req
@@ -40,7 +40,7 @@ class SelfSDKTest < Minitest::Test
     end
 
     describe "identities.facts.query.resp" do
-      let(:input) { '{"header": "header", "payload":"identities.facts.query.resp"}' }
+      let(:input) { '{"protected": "header", "payload":"identities.facts.query.resp"}' }
       let(:typ) { "identities.facts.query.resp" }
       let(:client) { double("client") }
       let(:body) { '{"typ":"identities.facts.query.resp","exp":"'+exp+'","iat":"'+iat+'"}' }
@@ -58,7 +58,7 @@ class SelfSDKTest < Minitest::Test
     end
 
     describe "identities.authenticate.resp" do
-      let(:input) { '{"header": "header", "payload":"identities.authenticate.resp"}' }
+      let(:input) { '{"protected": "header", "payload":"identities.authenticate.resp"}' }
       let(:typ) { "identities.authenticate.resp" }
       let(:client) { double("client") }
       let(:body) { '{"typ":"identities.authenticate.resp","exp":"'+exp+'","iat":"'+iat+'"}' }
@@ -76,7 +76,7 @@ class SelfSDKTest < Minitest::Test
     end
 
     describe "identities.facts.query.req ciphertext based" do
-      let(:input) { double("input", ciphertext: '{"header": "header", "payload":"identities.facts.query.req"}') }
+      let(:input) { double("input", ciphertext: '{"protected": "header", "payload":"identities.facts.query.req"}') }
       let(:typ) { "identities.facts.query.req" }
       let(:client) { double("client") }
       let(:body) { '{"typ":"identities.facts.query.req","exp":"'+exp+'","iat":"'+iat+'"}' }
