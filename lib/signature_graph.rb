@@ -4,6 +4,11 @@ require 'base64'
 require 'json'
 
 module SelfSDK
+
+  ACTION_ADD = "key.add"
+  ACTION_REVOKE = "key.revoke"
+  KEY_TYPE_DEVICE = "device.key"
+  KEY_TYPE_RECOVERY = "recovery.key"
   
   class Operation
 
@@ -40,7 +45,9 @@ module SelfSDK
 
     def revokes(kid)
       @actions.each do |action|
-        return true if action[:kid] == kid && action[:action] = "key.revoke"
+        if action[:kid] == kid && action[:action] == ACTION_REVOKE
+          return true 
+        end
       end
       return false
     end
@@ -135,41 +142,12 @@ module SelfSDK
           raise "operation was signed by a key that was revoked at the time of signing"
         end
 
-        if sk.type == "recovery.key" && op.revokes(op.signing_key) != true
+        if sk.type == KEY_TYPE_RECOVERY && op.revokes(op.signing_key) != true
           raise "account recovery operation does not revoke the current active recovery key"
         end        
       end
 
-      op.actions.each do |action|
-        raise "operation action does not provide a key identifier" if action[:kid].nil?
-
-        if action[:type] != "device.key" && action[:type] != "recovery.key"
-          raise "operation action does not provide a valid type"
-        end
-
-        if action[:action] != "key.add" && action[:action] != "key.revoke"
-          raise "operation action does not provide a valid action"
-        end
-
-        if action[:action] == "key.add" && action[:key].nil?
-          raise "operation action does not provide a valid public key"
-        end
-
-        if action[:action] == "key.add" && action[:type] == "device.key" && action[:did].nil?
-          raise "operation action does not provide a valid device id"
-        end
-
-        raise "operation action does not provide a valid timestamp for the action to take effect from" if action[:from] < 0        
-        
-        case action[:action]
-        when "key.add"
-          action[:from] = op.timestamp
-          add(op, action)
-        when "key.revoke"
-          revoke(op, action)
-        end
-      end
-
+      execute_actions(op)
 
       sk = @keys[op.signing_key]
 
@@ -199,6 +177,40 @@ module SelfSDK
 
     private
 
+    def execute_actions(op)
+      op.actions.each do |action|
+        raise "operation action does not provide a key identifier" if action[:kid].nil?
+
+        if action[:type] != KEY_TYPE_DEVICE && action[:type] != KEY_TYPE_RECOVERY
+          raise "operation action does not provide a valid type"
+        end
+
+        if action[:action] != ACTION_ADD && action[:action] != ACTION_REVOKE
+          raise "operation action does not provide a valid action"
+        end
+
+        if action[:action] == ACTION_ADD && action[:key].nil?
+          raise "operation action does not provide a valid public key"
+        end
+
+        if action[:action] == ACTION_ADD && action[:type] == KEY_TYPE_DEVICE && action[:did].nil?
+          raise "operation action does not provide a valid device id"
+        end
+
+        if action[:from] < 0
+          raise "operation action does not provide a valid timestamp for the action to take effect from" 
+        end
+        
+        case action[:action]
+        when ACTION_ADD
+          action[:from] = op.timestamp
+          add(op, action)
+        when ACTION_REVOKE
+          revoke(op, action)
+        end
+      end
+    end
+
     def add(operation, action)
       if @keys[action[:kid]].nil? != true
         raise "operation contains a key with a duplicate identifier" 
@@ -207,13 +219,13 @@ module SelfSDK
       k = Key.new(action)
 
       case action[:type]
-      when "device.key"
+      when KEY_TYPE_DEVICE
         dk = @devices[action[:did]]
-        if dk.nil? != true
+        unless dk.nil?
           raise "operation contains more than one active key for a device" unless dk.revoked?
         end
-      when "recovery.key"
-        if @recovery_key.nil? != true
+      when KEY_TYPE_RECOVERY
+        unless @recovery_key.nil?
           raise "operation contains more than one active recovery key" unless @recovery_key.revoked? 
         end
 
@@ -250,7 +262,7 @@ module SelfSDK
       raise "operation specifies a signing key that does not exist" if k.nil?
 
       # if this is an account recovery, nuke all existing keys
-      if sk.type == "recovery.key"
+      if sk.type == KEY_TYPE_RECOVERY
         @root.revoke(action[:from])
 
         @root.child_keys.each do |ck|
