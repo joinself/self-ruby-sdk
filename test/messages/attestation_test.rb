@@ -24,11 +24,18 @@ class SelfSDKTest < Minitest::Test
       let(:val) { "val" }
       let(:fact_name) {"display_name"}
       let(:payload) { { iss: iss, sub:sub, aud:aud, source:source, expected_value: expected_value, operator: operator, display_name: val }.to_json }
-      let(:attestation) { { payload: "encrypted_payload" } }
+      let(:header) { '{"kid": "kid"}' }
+      let(:attestation) { { header: 'encrypted_header', payload: "encrypted_payload" } }
+      let(:pk) do
+        p = PK.new()
+        p.raw_public_key = pkey
+        p
+      end
       def test_parse
         expect(jwt).to receive(:decode).with('encrypted_payload').and_return(payload).once
+        expect(jwt).to receive(:decode).with('encrypted_header').and_return(header).once
         expect(jwt).to receive(:verify).with(attestation, pkey).and_return(true ).once
-        expect(client).to receive(:public_keys).with(iss).and_return([{key: pkey}]).once
+        expect(client).to receive(:public_key).with(iss, "kid").and_return(pk).once
 
         subject.parse(fact_name.to_sym, attestation)
 

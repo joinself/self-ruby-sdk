@@ -60,7 +60,7 @@ class SelfSDKTest < Minitest::Test
       assert_equal "uuid", payload['cid']
     end
 
-    def test_public_keys
+    def test_public_key
       pk = "pk_111222333"
       id = "11122233344"
 
@@ -68,8 +68,8 @@ class SelfSDKTest < Minitest::Test
         with(headers: headers).
         to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
 
-      pks = app.identity.public_keys(id)
-      assert_equal pk, pks.first[:key]
+      pks = app.identity.public_key(id, "kid")
+      assert_equal pk, pks
     end
 
   end
