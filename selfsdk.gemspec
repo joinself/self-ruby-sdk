@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
     "lib/jwt_service.rb",
     "lib/ntptime.rb",
     "lib/authenticated.rb",
+    "lib/signature_graph.rb",
     "lib/acl.rb",
     "lib/sources.rb",
     "lib/proto/",
