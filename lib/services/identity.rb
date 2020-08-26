@@ -27,9 +27,10 @@ module SelfSDK
       # Gets an identity public keys
       #
       # @param [String] selfid gets the identity details (app/user)
+      # @param [String] kid the public key id.
       # @return [Array] with the identity public keys
-      def public_keys(selfid)
-        @client.public_keys(selfid)
+      def public_key(selfid, kid)
+        @client.public_key(selfid, kid).public_key
       end
 
       # Gets an app/identity details

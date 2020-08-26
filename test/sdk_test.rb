@@ -60,17 +60,5 @@ class SelfSDKTest < Minitest::Test
       assert_equal "uuid", payload['cid']
     end
 
-    def test_public_keys
-      pk = "pk_111222333"
-      id = "11122233344"
-
-      stub_request(:get, "https://api.joinself.com/v1/identities/#{id}").
-        with(headers: headers).
-        to_return(status: 200, body: '{"public_keys":[{"id":"1","key":"' + pk + '"}]}', headers: {})
-
-      pks = app.identity.public_keys(id)
-      assert_equal pk, pks.first[:key]
-    end
-
   end
 end

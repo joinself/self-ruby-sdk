@@ -44,7 +44,7 @@ module SelfSDK
       @offset_file = "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
       @offset = read_offset
 
-      FileUtils.mkdir_p @storage_dir unless File.exists? @storage_dir
+      FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
 
       if options.include? :ws
         @ws = options[:ws]

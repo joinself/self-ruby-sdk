@@ -72,13 +72,14 @@ module SelfSDK
 
         jwt = JSON.parse(body, symbolize_names: true)
         payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
+        header = JSON.parse(@jwt.decode(jwt[:protected]), symbolize_names: true)
         @from = payload[:iss]
-        verify! jwt
+        verify! jwt, header[:kid]
         payload
       end
 
-      def verify!(jwt)
-        k = @client.public_keys(@from).first[:key]
+      def verify!(jwt, kid)
+        k = @client.public_key(@from, kid).raw_public_key
         return if @jwt.verify(jwt, k)
 
         SelfSDK.logger.info "skipping message, invalid signature"

@@ -59,6 +59,7 @@ module SelfSDK
     # Lists all public keys stored on self for the given ID
     #
     # @param id [string] identity id
+    # DEPRECATED
     def public_keys(id)
       i = entity(id)
       i[:public_keys]
