@@ -4,6 +4,10 @@ require 'selfsdk'
 
 require 'webmock/minitest'
 
+class PK
+    attr_accessor :public_key, :raw_public_key
+end
+
 class SelfSDKTest < Minitest::Test
   describe 'SelfSDK::Messages::Attestation' do
     let(:client) { double("client") }

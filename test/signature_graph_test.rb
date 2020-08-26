@@ -242,7 +242,7 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-      
+
       assert_equal('operation previous signature does not match', exception.message)
     end
 
@@ -251,16 +251,16 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-        
+
       assert_equal('operation contains a key with a duplicate identifier', exception.message)
     end
-    
+
     def test_invalid_no_active_keys
       history = history_fixture('invalid_no_active_keys')
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-          
+
       assert_equal('signature graph does not contain any active or valid keys', exception.message)
     end
 
@@ -269,7 +269,7 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-            
+
       assert_equal('signature graph does not contain a valid recovery key', exception.message)
     end
 
@@ -278,7 +278,7 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-              
+
       assert_equal('operation contains more than one active recovery key', exception.message)
     end
 
@@ -287,7 +287,7 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                
+
       assert_equal('operation contains more than one active key for a device', exception.message)
     end
 
@@ -296,7 +296,7 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                  
+
       assert_equal('operation was signed by a key that was revoked at the time of signing', exception.message)
     end
 
@@ -305,7 +305,7 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                    
+
       assert_equal('operation specifies a signing key that does not exist', exception.message)
     end
 
@@ -314,25 +314,25 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                      
+
       assert_equal('account recovery operation does not revoke the current active recovery key', exception.message)
     end
-    
+
     def test_invalid_empty_actions
       history = history_fixture('invalid_empty_actions')
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                        
+
       assert_equal('operation does not specify any actions', exception.message)
     end
-    
+
     def test_invalid_already_revoked_key
       history = history_fixture('invalid_already_revoked_key')
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                          
+
       assert_equal('operation tries to revoke a key that has already been revoked', exception.message)
     end
 
@@ -341,16 +341,16 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                            
+
       assert_equal('operation tries to revoke a key that does not exist', exception.message)
     end
-    
+
     def test_invalid_root_operation_key_revocation
       history = history_fixture('invalid_root_operation_key_revocation')
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                              
+
       assert_equal('root operation cannot revoke keys', exception.message)
     end
 
@@ -359,16 +359,16 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                                
+
       assert_equal('signature verification failed!', exception.message)
     end
-    
+
     def test_invalid_operation_signature_root
       history = history_fixture('invalid_operation_signature_root')
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                                  
+
       assert_equal('signature verification failed!', exception.message)
     end
 
@@ -377,16 +377,16 @@ class SelfSDKTest < Minitest::Test
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                                  
+
       assert_equal('operation was signed with a key that was revoked', exception.message)
     end
-    
+
     def test_invalid_operation_version
       history = history_fixture('invalid_revocation_before_root_operation_timestamp')
       exception = assert_raises StandardError do
         sg = SelfSDK::SignatureGraph.new(history)
       end
-                                    
+
       assert_equal('operation was signed with a key that was revoked', exception.message)
     end
 
