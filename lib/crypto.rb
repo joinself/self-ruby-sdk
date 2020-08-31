@@ -1,6 +1,6 @@
 require 'self_crypto'
 
-module Selfid
+module SelfSDK
   class Crypto
     def initialize(client, device, storage_folder, storage_key)
       @client = client
