@@ -12,7 +12,7 @@ require_relative 'proto/msgtype_pb'
 require_relative 'proto/acl_pb'
 require_relative 'proto/aclcommand_pb'
 
-module Selfid
+module SelfSDK
   class MessagingClient
     DEFAULT_DEVICE="1"
     DEFAULT_AUTO_RECONNECT=true
@@ -24,7 +24,7 @@ module Selfid
     # RestClient initializer
     #
     # @param url [string] self-messaging url
-    # @params client [Object] Selfid::Client object
+    # @params client [Object] SelfSDK::Client object
     # @option opts [string] :storage_dir  the folder where encryption sessions and settings will be stored
     # @params storage_key [String] seed to encrypt messaging
     # @params storage_folder [String] folder to perist messaging encryption
@@ -47,7 +47,7 @@ module Selfid
       @offset_file = "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
       @offset = read_offset
 
-      FileUtils.mkdir_p @storage_dir unless File.exists? @storage_dir
+      FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
       @encryption_client = Crypto.new(@client, @device_id, storage_folder, storage_key)
 
       if options.include? :ws
@@ -151,26 +151,26 @@ module Selfid
     #
     # @params uuid [string] unique identifier for a conversation
     def wait_for(uuid, msg = nil)
-      Selfid.logger.info "sending #{uuid}"
+      SelfSDK.logger.info "sending #{uuid}"
       @mon.synchronize do
         @messages[uuid] = {
           waiting_cond: @mon.new_cond,
           waiting: true,
-          timeout: Selfid::Time.now + @timeout,
+          timeout: SelfSDK::Time.now + @timeout,
           original_message: msg,
         }
       end
 
       yield
 
-      Selfid.logger.info "waiting for client to respond #{uuid}"
+      SelfSDK.logger.info "waiting for client to respond #{uuid}"
       @mon.synchronize do
         @messages[uuid][:waiting_cond].wait_while do
           @messages[uuid][:waiting]
         end
       end
 
-      Selfid.logger.info "response received for #{uuid}"
+      SelfSDK.logger.info "response received for #{uuid}"
       @messages[uuid][:response]
     ensure
       @messages.delete(uuid)
@@ -185,17 +185,17 @@ module Selfid
         @acks[uuid] = {
           waiting_cond: @mon.new_cond,
           waiting: true,
-          timeout: Selfid::Time.now + @ack_timeout,
+          timeout: SelfSDK::Time.now + @ack_timeout,
         }
       end
       send_raw(msg)
-      Selfid.logger.info "waiting for acknowledgement #{uuid}"
+      SelfSDK.logger.info "waiting for acknowledgement #{uuid}"
       @mon.synchronize do
         @acks[uuid][:waiting_cond].wait_while do
           @acks[uuid][:waiting]
         end
       end
-      Selfid.logger.info "acknowledged #{uuid}"
+      SelfSDK.logger.info "acknowledged #{uuid}"
       true
     ensure
       @acks.delete(uuid)
@@ -205,8 +205,8 @@ module Selfid
     def clean_observers
       live = {}
       @uuid_observer.clone.each do |id, msg|
-        if msg[:timeout] < Selfid::Time.now
-          message = Selfid::Messages::Base.new(self)
+        if msg[:timeout] < SelfSDK::Time.now
+          message = SelfSDK::Messages::Base.new(self)
           message.status = "errored"
 
           @uuid_observer[id][:block].call(message)
@@ -240,11 +240,11 @@ module Selfid
 
     def set_observer(original, options = {}, &block)
       request_timeout = options.fetch(:timeout, @timeout)
-      @uuid_observer[original.id] = { original_message: original, block: block, timeout: Selfid::Time.now + request_timeout }
+      @uuid_observer[original.id] = { original_message: original, block: block, timeout: SelfSDK::Time.now + request_timeout }
     end
 
     def subscribe(type, &block)
-      type = Selfid::message_type(type) if type.is_a? Symbol
+      type = SelfSDK::message_type(type) if type.is_a? Symbol
       @type_observer[type] = { block: block }
     end
 
@@ -252,11 +252,11 @@ module Selfid
 
     # Start sthe websocket listener
     def start
-      Selfid.logger.info "starting"
+      SelfSDK.logger.info "starting"
       @mon.synchronize do
         @acks["authentication"] = { waiting_cond: @mon.new_cond,
                                     waiting: true,
-                                    timeout: Selfid::Time.now + @ack_timeout }
+                                    timeout: SelfSDK::Time.now + @ack_timeout }
       end
 
       Thread.new do
@@ -286,10 +286,10 @@ module Selfid
 
     def clean_timeouts_for(list)
       list.clone.each do |uuid, _msg|
-        next unless list[uuid][:timeout] < Selfid::Time.now
+        next unless list[uuid][:timeout] < SelfSDK::Time.now
 
         @mon.synchronize do
-          Selfid.logger.info "message response timed out #{uuid}"
+          SelfSDK.logger.info "message response timed out #{uuid}"
           list[uuid][:waiting] = false
           list[uuid][:waiting_cond].broadcast
         end
@@ -298,12 +298,12 @@ module Selfid
 
     # Creates a websocket connection and sets up its callbacks.
     def start_connection
-      Selfid.logger.info "starting listener"
+      SelfSDK.logger.info "starting listener"
       @ws = Faye::WebSocket::Client.new(@url)
-      Selfid.logger.info "initialized"
+      SelfSDK.logger.info "initialized"
 
       @ws.on :open do |_event|
-        Selfid.logger.info "websocket connection established"
+        SelfSDK.logger.info "websocket connection established"
         authenticate
       end
 
@@ -319,9 +319,9 @@ module Selfid
             raise StandardError "websocket connection closed"
           end
           if !@reconnection_delay.nil?
-            Selfid.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
+            SelfSDK.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
             sleep @reconnection_delay
-            Selfid.logger.info "reconnecting..."
+            SelfSDK.logger.info "reconnecting..."
           end
           @reconnection_delay = 3
           start_connection
@@ -331,30 +331,30 @@ module Selfid
 
     # Pings the websocket server to keep the connection alive.
     def ping
-      # Selfid.logger.info "ping"
+      # SelfSDK.logger.info "ping"
       @ws&.ping
     end
 
     # Process an event when it arrives through the websocket connection.
     def on_message(event)
       input = Msgproto::Message.decode(event.data.pack('c*'))
-      Selfid.logger.info " - received #{input.id} (#{input.type})"
+      SelfSDK.logger.info " - received #{input.id} (#{input.type})"
       case input.type
       when :ERR
-        Selfid.logger.info "error #{input.sender} on #{input.id}"
+        SelfSDK.logger.info "error #{input.sender} on #{input.id}"
         mark_as_arrived(input.id)
       when :ACK
-        Selfid.logger.info "#{input.id} acknowledged"
+        SelfSDK.logger.info "#{input.id} acknowledged"
         mark_as_acknowledged input.id
       when :ACL
-        Selfid.logger.info "ACL received"
+        SelfSDK.logger.info "ACL received"
         process_incomming_acl input
       when :MSG
-        Selfid.logger.info "Message #{input.id} received"
+        SelfSDK.logger.info "Message #{input.id} received"
         process_incomming_message input
       end
     rescue TypeError
-      Selfid.logger.info "invalid array message"
+      SelfSDK.logger.info "invalid array message"
     end
 
     def process_incomming_acl(input)
@@ -364,20 +364,20 @@ module Selfid
       mark_as_arrived 'acl_list'
     rescue StandardError => e
       p "Error processing incoming ACL #{input.to_json}"
-      Selfid.logger.info e
-      Selfid.logger.info e.backtrace
+      SelfSDK.logger.info e
+      SelfSDK.logger.info e.backtrace
       nil
     end
 
     def process_incomming_message(input)
-      message = Selfid::Messages.parse(input, self)
+      message = SelfSDK::Messages.parse(input, self)
 
       if @messages.include? message.id
         message.validate! @messages[message.id][:original_message]
         @messages[message.id][:response] = message
         mark_as_arrived message.id
       else
-        Selfid.logger.info "Received async message #{input.id}"
+        SelfSDK.logger.info "Received async message #{input.id}"
         message.validate! @uuid_observer[message.id][:original_message] if @uuid_observer.include? message.id
         notify_observer(message)
       end
@@ -386,14 +386,14 @@ module Selfid
       write_offset(@offset)
     rescue StandardError => e
       p "Error processing incoming message #{input.to_json}"
-      Selfid.logger.info e
+      SelfSDK.logger.info e
       p e.backtrace
       nil
     end
 
     # Authenticates current client on the websocket server.
     def authenticate
-      Selfid.logger.info "authenticating"
+      SelfSDK.logger.info "authenticating"
       send_raw Msgproto::Auth.new(
         type: Msgproto::MsgType::AUTH,
         id: "authentication",

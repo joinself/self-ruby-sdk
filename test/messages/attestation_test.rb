@@ -1,17 +1,21 @@
 require_relative '../test_helper'
 require 'rspec/mocks/minitest_integration'
-require 'selfid'
+require 'selfsdk'
 
 require 'webmock/minitest'
 
-class SelfidTest < Minitest::Test
-  describe 'Selfid::Messages::Attestation' do
+class PK
+    attr_accessor :public_key, :raw_public_key
+end
+
+class SelfSDKTest < Minitest::Test
+  describe 'SelfSDK::Messages::Attestation' do
     let(:client) { double("client") }
     let(:jwt) { double("jwt") }
     let(:messaging) do
       double("messaging", jwt: jwt, client: client)
     end
-    subject{ Selfid::Messages::Attestation.new(messaging) }
+    subject{ SelfSDK::Messages::Attestation.new(messaging) }
 
     describe "parse" do
       let(:iss) { "issuer_id" }
@@ -24,11 +28,18 @@ class SelfidTest < Minitest::Test
       let(:val) { "val" }
       let(:fact_name) {"display_name"}
       let(:payload) { { iss: iss, sub:sub, aud:aud, source:source, expected_value: expected_value, operator: operator, display_name: val }.to_json }
-      let(:attestation) { { payload: "encrypted_payload" } }
+      let(:header) { '{"kid": "kid"}' }
+      let(:attestation) { { protected: 'encrypted_header', payload: "encrypted_payload" } }
+      let(:pk) do
+        p = PK.new()
+        p.raw_public_key = pkey
+        p
+      end
       def test_parse
         expect(jwt).to receive(:decode).with('encrypted_payload').and_return(payload).once
+        expect(jwt).to receive(:decode).with('encrypted_header').and_return(header).once
         expect(jwt).to receive(:verify).with(attestation, pkey).and_return(true ).once
-        expect(client).to receive(:public_keys).with(iss).and_return([{key: pkey}]).once
+        expect(client).to receive(:public_key).with(iss, "kid").and_return(pk).once
 
         subject.parse(fact_name.to_sym, attestation)
 

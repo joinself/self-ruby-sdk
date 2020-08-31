@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-module Selfid
-  VERSION = "0.0.124"
+module SelfSDK
+  VERSION = "0.0.129"
 end

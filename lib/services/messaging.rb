@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-# Namespace for classes and modules that handle Selfid gem
-module Selfid
-  # Namespace for classes and modules that handle selfid-gem public ui
+# Namespace for classes and modules that handle SelfSDK gem
+module SelfSDK
+  # Namespace for classes and modules that handle selfsdk-gem public ui
   module Services
     # Input class to interact with self network messaging.
     class Messaging
       # TODO : we should try to remove this accessor.
-      # @attr_accessor [Selfid::Messaging] internal messaging client.
+      # @attr_accessor [SelfSDK::Messaging] internal messaging client.
       attr_accessor :client
 
       # Creates a new messaging service.
       # Messaging service basically allows you to subscribe to certain types of messages,
       # and manage who can send you messages or not.
       #
-      # @param client [Selfid::Messaging] messaging object.
+      # @param client [SelfSDK::Messaging] messaging object.
       #
-      # @return [Selfid::Services::Messaging] authentication service.
+      # @return [SelfSDK::Services::Messaging] authentication service.
       def initialize(client)
         @client = client
       end
@@ -24,8 +24,8 @@ module Selfid
       # Subscribes to a specific message type and attaches the given observer
       # which will be executed when a meeting criteria message is received.
       #
-      # @param [String] type message type (ex: Selfid::Messages::AuthenticationResp.MSG_TYPE
-      # @yield [Selfid::Messages::Message] receives incoming message.
+      # @param [String] type message type (ex: SelfSDK::Messages::AuthenticationResp.MSG_TYPE
+      # @yield [SelfSDK::Messages::Message] receives incoming message.
       def subscribe(type, &block)
         @client.subscribe(type, &block)
       end
@@ -76,8 +76,8 @@ module Selfid
         request[:jti] = SecureRandom.uuid
         request[:iss] = @client.jwt.id
         request[:sub] = recipient
-        request[:iat] = Selfid::Time.now.strftime('%FT%TZ'),
-        request[:exp] = (Selfid::Time.now + 300).strftime('%FT%TZ'),
+        request[:iat] = SelfSDK::Time.now.strftime('%FT%TZ'),
+        request[:exp] = (SelfSDK::Time.now + 300).strftime('%FT%TZ'),
         request[:cid] = SecureRandom.uuid unless request.include? :cid
 
         @client.send_custom(recipient, request)

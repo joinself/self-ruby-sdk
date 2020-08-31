@@ -3,7 +3,7 @@
 require_relative 'base'
 require_relative '../ntptime'
 
-module Selfid
+module SelfSDK
   module Messages
     class AuthenticationMessage < Base
 

@@ -1,9 +1,9 @@
-![SelfID logo](https://media-exp1.licdn.com/dms/image/C4E0BAQHiKfIfzq6P0w/company-logo_200_200/0?e=2159024400&v=beta&t=JDd8UXJlMG7AKpLNAP5nDYd75gQZT8E8s98xSc0jRO0)
+![Self logo](https://media-exp1.licdn.com/dms/image/C4E0BAQHiKfIfzq6P0w/company-logo_200_200/0?e=2159024400&v=beta&t=JDd8UXJlMG7AKpLNAP5nDYd75gQZT8E8s98xSc0jRO0)
 
-By [Self ID](https://www.selfid.net/).
+By [Self ID](https://www.joinself.com/).
 
-[![Build Status](https://api.travis-ci.org/selfid-net/selfid-gem.svg?branch=master)](http://travis-ci.org/selfid-net/selfid-gem)
-[![Gem Version](https://badge.fury.io/rb/selfid.svg)](https://badge.fury.io/rb/selfid)
+[![Build Status](https://api.travis-ci.org/joinself/self-ruby-sdk.svg?branch=master)](http://travis-ci.org/joinself/self-ruby-sdk)
+[![Gem Version](https://badge.fury.io/rb/selfsdk.svg)](https://badge.fury.io/rb/selfsdk)
 
 This gem provides a toolset to interact with self network from your ruby code.
 
@@ -12,7 +12,7 @@ This gem provides a toolset to interact with self network from your ruby code.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'selfid'
+gem 'selfsdk'
 ```
 
 And then execute:
@@ -21,7 +21,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install selfid
+    $ gem install selfsdk
 
 ## Requirements
 
@@ -31,10 +31,10 @@ In order to use this gem you'll need to get your `app_id` and `app_api_key` from
 
 You can instantiate an app with the command above.
 ```ruby
-# Require SelfID gem
-require 'selfid'
+# Require selfsdk gem
+require 'selfsdk'
 # setup client connection
-@client = Selfid::App.new(ENV['SELF_APP_ID'], ENV['SELF_APP_SECRET'], ENV['STORAGE_KEY'])
+@client = SelfSDK::App.new(ENV['SELF_APP_ID'], ENV['SELF_APP_SECRET'], ENV['STORAGE_KEY'])
 ```
 
 At this point your app will be able to interact with self network, find below some useful features.
@@ -109,7 +109,7 @@ Even when your app is created you set its default permissions so `Everyone` or `
 
 ## Documentation
 
-You can find general documentation for Self on [self docs site](https://docs.selfid.net/) and specifically for this library on [rubydoc](https://www.rubydoc.info/gems/selfid/).
+You can find general documentation for Self on [self docs site](https://docs.joinself.com/) and specifically for this library on [rubydoc](https://www.rubydoc.info/gems/selfsdk/).
 
 ## Examples
 
@@ -129,7 +129,7 @@ This project uses semantic versioning https://semver.org/. To create a new versi
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/selfid-net/selfid-gem.
+Bug reports and pull requests are welcome on GitHub at https://github.com/joinself/self-ruby-sdk.
 
 
 ## License

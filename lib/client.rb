@@ -2,7 +2,7 @@
 
 require 'httparty'
 
-module Selfid
+module SelfSDK
   class RestClient
     attr_reader :self_url, :jwt, :env
 
@@ -11,10 +11,10 @@ module Selfid
     # @param url [string] self-messaging url
     # @param token [string] jwt token identifying the authenticated user
     def initialize(url, app_id, app_key, env)
-      Selfid.logger.info "client setup with #{url}"
+      SelfSDK.logger.info "client setup with #{url}"
       @self_url = url
       @env = env
-      @jwt = Selfid::JwtService.new(app_id, app_key)
+      @jwt = SelfSDK::JwtService.new(app_id, app_key)
     end
 
     # Get identity details
@@ -50,7 +50,7 @@ module Selfid
       res = get "/v1/identities/#{id}/devices"
       body = JSON.parse(res.body, symbolize_names: true)
       if res.code != 200
-        Selfid.logger.error "identity response : #{body[:message]}"
+        SelfSDK.logger.error "identity response : #{body[:message]}"
         raise "you need connection permissions"
       end
       body
@@ -59,6 +59,7 @@ module Selfid
     # Lists all public keys stored on self for the given ID
     #
     # @param id [string] identity id
+    # DEPRECATED
     def public_keys(id)
       i = entity(id)
       i[:public_keys]
@@ -80,13 +81,22 @@ module Selfid
       })
     end
 
+    # Lists all public keys stored on self for the given ID
+    #
+    # @param id [string] identity id
+    def public_key(id, kid)
+      i = entity(id)
+      sg = SelfSDK::SignatureGraph.new(i[:history])
+      sg.key_by_id(kid)
+    end
+
     private
 
     def get_identity(endpoint)
       res = get endpoint
       body = JSON.parse(res.body, symbolize_names: true)
       if res.code != 200
-        Selfid.logger.error "app response : #{body[:message]}"
+        SelfSDK.logger.error "app response : #{body[:message]}"
         raise body[:message]
       end
       body

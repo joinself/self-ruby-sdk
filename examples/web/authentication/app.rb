@@ -4,11 +4,11 @@ require 'bundler/inline'
 gemfile(true) do
   source 'https://rubygems.org'
   gem 'sinatra', '~> 1.4'
-  gem 'selfid'
+  gem 'selfsdk'
 end
 
 require 'sinatra/base'
-require 'selfid'
+require 'selfsdk'
 
 class AuthExample < Sinatra::Base
   enable :inline_templates
@@ -19,11 +19,11 @@ class AuthExample < Sinatra::Base
   configure do
     # You can point to a different environment by passing optional values to the initializer in
     # case you need to
-    opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
+    opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 
     # Connect your app to Self network, get your connection details creating a new
-    # app on https://developer.selfid.net/
-    set :client, Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
+    # app on https://developer.selfsdk.net/
+    set :client, SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
   end
 
   # This is the default app endpoint which will be redirecting non-logged in users to sign_in
@@ -35,17 +35,17 @@ class AuthExample < Sinatra::Base
     end
   end
 
-  # Display the form so your users can introduce their selfid
+  # Display the form so your users can introduce their selfsdk
   get '/sign_in' do
     erb :sign_in
   end
 
-  # Authenticate the input user using selfid
+  # Authenticate the input user using selfsdk
   post '/sign_in' do
-    auth = settings.client.authentication.request params[:selfid]
+    auth = settings.client.authentication.request params[:selfsdk]
     if auth.accepted? # The user accepts your authentication request
       session.clear
-      session[:user_id] = params[:selfid]
+      session[:user_id] = params[:selfsdk]
       redirect '/'
     else # The user rejected the authentication request
       @error = "Authentication request has been rejected"
@@ -80,7 +80,7 @@ __END__
     <p class="error"><%= @error %></p>
   <% end %>
   <form action="/sign_in" method="POST">
-    <input type="text" name="selfid" class="fadeIn first" placeholder="SelfID" />
+    <input type="text" name="selfsdk" class="fadeIn first" placeholder="selfsdk" />
     <input type="submit" class="fadeIn second" value="Sign In" />
   </form>
 
@@ -119,7 +119,7 @@ __END__
         <!-- Remind Passowrd -->
         <div id="formFooter">
           <h4>Self authentication demonstration</h4>
-          <p>Authentication by introducing a SelfID</p>
+          <p>Authentication by introducing a selfsdk</p>
         </div>
         </div>
       </div>

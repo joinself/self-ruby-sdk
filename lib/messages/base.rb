@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Selfid
+module SelfSDK
   module Messages
     class Base
       attr_accessor :from, :from_device, :to, :to_device, :expires, :id,
@@ -16,13 +16,13 @@ module Selfid
 
       def request
         res = @messaging.send_and_wait_for_response(proto, self)
-        Selfid.logger.info "synchronously messaging to #{@to}:#{@to_device}"
+        SelfSDK.logger.info "synchronously messaging to #{@to}:#{@to_device}"
         res
       end
 
       def send_message
         res = @messaging.send_message proto
-        Selfid.logger.info "asynchronously requested information to #{@to}:#{@to_device}"
+        SelfSDK.logger.info "asynchronously requested information to #{@to}:#{@to_device}"
         res
       end
 
@@ -55,8 +55,8 @@ module Selfid
             raise ::StandardError.new("bad issuer") if @from != original.intermediary
           end
         end
-        raise ::StandardError.new("expired message") if @expires < Selfid::Time.now
-        raise ::StandardError.new("issued too soon") if @issued > Selfid::Time.now
+        raise ::StandardError.new("expired message") if @expires < SelfSDK::Time.now
+        raise ::StandardError.new("issued too soon") if @issued > SelfSDK::Time.now
       end
 
       protected
@@ -76,16 +76,17 @@ module Selfid
 
         jwt = JSON.parse(body, symbolize_names: true)
         payload = JSON.parse(@jwt.decode(jwt[:payload]), symbolize_names: true)
+        header = JSON.parse(@jwt.decode(jwt[:protected]), symbolize_names: true)
         @from = payload[:iss]
-        verify! jwt
+        verify! jwt, header[:kid]
         payload
       end
 
-      def verify!(jwt)
-        k = @client.public_keys(@from).first[:key]
+      def verify!(jwt, kid)
+        k = @client.public_key(@from, kid).raw_public_key
         return if @jwt.verify(jwt, k)
 
-        Selfid.logger.info "skipping message, invalid signature"
+        SelfSDK.logger.info "skipping message, invalid signature"
         raise ::StandardError.new("invalid signature on incoming message")
       end
     end

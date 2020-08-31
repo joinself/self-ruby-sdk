@@ -4,12 +4,12 @@ require 'bundler/inline'
 gemfile(true) do
   source 'https://rubygems.org'
   gem 'sinatra', '~> 1.4'
-  gem 'selfid'
+  gem 'selfsdk'
   gem 'json'
 end
 
 require 'sinatra/base'
-require 'selfid'
+require 'selfsdk'
 require 'json'
 
 User = Struct.new(:cid, :selfid)
@@ -24,11 +24,11 @@ class AuthExample < Sinatra::Base
   configure do
     # You can point to a different environment by passing optional values to the initializer in
     # case you need to
-    opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
+    opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 
     # Connect your app to Self network, get your connection details creating a new
-    # app on https://developer.selfid.net/
-    client = Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
+    # app on https://developer.joinself.com/
+    client = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
     # let's subscribe to all authentication responses
     client.authentication.subscribe do |auth|

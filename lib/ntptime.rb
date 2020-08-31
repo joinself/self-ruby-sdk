@@ -3,7 +3,7 @@
 require 'time'
 require 'net/ntp'
 
-module Selfid
+module SelfSDK
   class Time
     @@last_check = nil
     @diff = nil

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Namespace for classes and modules that handle Selfid gem
-module Selfid
-  # Namespace for classes and modules that handle selfid-gem public ui
+# Namespace for classes and modules that handle SelfSDK gem
+module SelfSDK
+  # Namespace for classes and modules that handle selfsdk-gem public ui
   module Services
     # Input class to handle authentication requests on self network.
     class Authentication
@@ -10,10 +10,10 @@ module Selfid
       # Authentication service mainly manages authentication requests against self
       # users wanting to authenticate on your app.
       #
-      # @param messaging [Selfid::Messaging] messaging object.
-      # @param client [Selfid::Client] http client object.
+      # @param messaging [SelfSDK::Messaging] messaging object.
+      # @param client [SelfSDK::Client] http client object.
       #
-      # @return [Selfid::Services::Authentication] authentication service.
+      # @return [SelfSDK::Services::Authentication] authentication service.
       def initialize(messaging, client)
         @messaging = messaging
         @client = client
@@ -37,9 +37,9 @@ module Selfid
       #  @option opts [String] :cid The unique identifier of the authentication request.
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
-        Selfid.logger.info "authenticating #{selfid}"
+        SelfSDK.logger.info "authenticating #{selfid}"
 
-        req = Selfid::Messages::AuthenticationReq.new(@messaging)
+        req = SelfSDK::Messages::AuthenticationReq.new(@messaging)
         req.populate(selfid, opts)
 
         body = @client.jwt.prepare(req.body)
@@ -117,7 +117,7 @@ module Selfid
       rescue StandardError => e
         uuid = ""
         uuid = response[:cid] unless response.nil?
-        Selfid.logger.error "error checking authentication for #{uuid} : #{e.message}"
+        SelfSDK.logger.error "error checking authentication for #{uuid} : #{e.message}"
         p e.backtrace
         nil
       end
@@ -133,8 +133,8 @@ module Selfid
             aud: @client.self_url,
             iss: @client.jwt.id,
             sub: selfid,
-            iat: Selfid::Time.now.strftime('%FT%TZ'),
-            exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+            iat: SelfSDK::Time.now.strftime('%FT%TZ'),
+            exp: (SelfSDK::Time.now + 3600).strftime('%FT%TZ'),
             cid: cid,
             jti: SecureRandom.uuid,
             device_id: @messaging.device_id,

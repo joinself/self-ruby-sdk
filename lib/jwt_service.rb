@@ -3,9 +3,9 @@
 require 'base64'
 require 'json'
 
-module Selfid
+module SelfSDK
   class JwtService
-    attr_reader :id, :key
+    attr_reader :id, :key, :key_id
 
     # Jwt initializer
     #
@@ -13,7 +13,14 @@ module Selfid
     # @param app_key [string] the app api key provided by developer portal.
     def initialize(app_id, app_key)
       @id = app_id
-      @key = app_key
+      parts = app_key.split(':')
+      if parts.length > 1
+        @key_id = parts[0]
+        @key = parts[1]
+      else
+        @key_id = "1"
+        @key = app_key
+      end
     end
 
     # Prepares a jwt object based on an input
@@ -74,8 +81,8 @@ module Selfid
         jti: SecureRandom.uuid,
         cid: SecureRandom.uuid,
         typ: 'auth.token',
-        iat: (Selfid::Time.now - 5).to_i,
-        exp: (Selfid::Time.now + 60).to_i,
+        iat: (SelfSDK::Time.now - 5).to_i,
+        exp: (SelfSDK::Time.now + 60).to_i,
         iss: @id,
         sub: @id}.to_json)
       signature = sign(payload)
@@ -85,7 +92,7 @@ module Selfid
     private
 
     def header
-      encode({ alg: "EdDSA", typ: "JWT" }.to_json)
+      encode({ alg: "EdDSA", typ: "JWT", kid: "#{@key_id}" }.to_json)
     end
   end
 end

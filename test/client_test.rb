@@ -1,12 +1,12 @@
 require_relative 'test_helper'
 require 'rspec/mocks/minitest_integration'
-require 'selfid'
+require 'selfsdk'
 
 require 'webmock/minitest'
 
-class SelfidTest < Minitest::Test
-  describe 'Selfid::RestClient' do
-    let(:url) {  "https://api.selfid.net" }
+class SelfSDKTest < Minitest::Test
+  describe 'SelfSDK::RestClient' do
+    let(:url) {  "https://api.joinself.com" }
     let(:id) { "o9mpng9m2jv" }
     let(:key) { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:headers) {
@@ -15,7 +15,7 @@ class SelfidTest < Minitest::Test
       }
     }
 
-    subject{ Selfid::RestClient.new(url, id, key, "") }
+    subject{ SelfSDK::RestClient.new(url, id, key, "") }
 
     def setup
       ENV["RAKE_ENV"] = "test"

@@ -4,13 +4,13 @@ require 'bundler/inline'
 gemfile(true) do
   source 'https://rubygems.org'
   gem 'sinatra', '~> 1.4'
-  gem 'selfid'
+  gem 'selfsdk'
 end
 
 require 'sinatra/base'
-require 'selfid'
+require 'selfsdk'
 
-Profile = Struct.new(:selfid, :name, :email)
+Profile = Struct.new(:selfsdk, :name, :email)
 USER = nil
 
 class AuthExample < Sinatra::Base
@@ -22,11 +22,11 @@ class AuthExample < Sinatra::Base
   configure do
     # You can point to a different environment by passing optional values to the initializer in
     # case you need to
-    opts = ENV.has_key?('SELF_BASE_URL') ? { base_url: ENV["SELF_BASE_URL"], messaging_url: ENV["SELF_MESSAGING_URL"] } : {}
+    opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 
     # Connect your app to Self network, get your connection details creating a new
-    # app on https://developer.selfid.net/
-    set :client, Selfid::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
+    # app on https://developer.selfsdk.net/
+    set :client, SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
   end
 
   # This is the default app endpoint which will be redirecting non-logged in users to facts
@@ -36,14 +36,14 @@ class AuthExample < Sinatra::Base
 
   #
   post '/facts' do
-    res = settings.client.facts.request(params['selfid'], [Selfid::FACT_DISPLAY_NAME, Selfid::FACT_EMAIL])
+    res = settings.client.facts.request(params['selfsdk'], [SelfSDK::FACT_DISPLAY_NAME, SelfSDK::FACT_EMAIL])
     if res.status == "rejected" # The user has rejected your fact request
       @error = "Fact request has been rejected"
       erb :facts
     else # The user accepted your fact request
-      @profile =  Profile.new(params['selfid'],
-                              res.fact(Selfid::FACT_DISPLAY_NAME).attestations.first.value,
-                              res.fact(Selfid::FACT_EMAIL).attestations.first.value)
+      @profile =  Profile.new(params['selfsdk'],
+                              res.fact(SelfSDK::FACT_DISPLAY_NAME).attestations.first.value,
+                              res.fact(SelfSDK::FACT_EMAIL).attestations.first.value)
       erb :home
     end
   rescue => e # There was an error when you tried to reach the user (timeout, lack of permissions...)
@@ -66,15 +66,15 @@ __END__
 @@ facts
     <!-- Login Form -->
     <form action="/facts" method="POST">
-      <input type="text" id="login" name="selfid" class="fadeIn first" placeholder="SelfID" />
+      <input type="text" id="login" name="selfsdk" class="fadeIn first" placeholder="selfsdk" />
       <input type="submit" class="fadeIn second" value="Request facts" />
     </form>
 
 @@ home
     <div class="fadeIn first row">
       <div class="col-md-1"></div>
-      <div class="col-md-3 text-left">SelfID</div>
-      <div class="col-md-7 form-control text-left"><%= @profile.selfid %></div>
+      <div class="col-md-3 text-left">selfsdk</div>
+      <div class="col-md-7 form-control text-left"><%= @profile.selfsdk %></div>
       <div class="col-md-1"></div>
     </div>
     <div class="fadeIn second row">
@@ -120,7 +120,7 @@ __END__
         <!-- Remind Passowrd -->
         <div id="formFooter">
           <h4>Self fact request demonstration</h4>
-          <p>Request user's name and email by introducing its SelfID</p>
+          <p>Request user's name and email by introducing its selfsdk</p>
         </div>
         </div>
       </div>

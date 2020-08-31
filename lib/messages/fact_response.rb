@@ -4,7 +4,7 @@ require_relative 'base'
 require_relative 'fact'
 require_relative '../ntptime'
 
-module Selfid
+module SelfSDK
   module Messages
     class FactResponse < Base
       MSG_TYPE = "identities.facts.query.resp"
@@ -26,17 +26,17 @@ module Selfid
         payload[:facts] = [] if payload[:facts].nil?
         payload[:facts].each do |f|
           begin
-            fact = Selfid::Messages::Fact.new(@messaging)
+            fact = SelfSDK::Messages::Fact.new(@messaging)
             fact.parse(f)
             @facts.push(fact)
           rescue StandardError => e
-            Selfid.logger.info e.message
+            SelfSDK.logger.info e.message
           end
         end
       end
 
       def fact(name)
-        name = Selfid::fact_name(name)
+        name = SelfSDK::fact_name(name)
         @facts.select{|f| f.name == name}.first
       end
 
@@ -70,8 +70,8 @@ module Selfid
           iss: @jwt.id,
           sub: @sub || @to,
           aud: @audience,
-          iat: Selfid::Time.now.strftime('%FT%TZ'),
-          exp: (Selfid::Time.now + 3600).strftime('%FT%TZ'),
+          iat: SelfSDK::Time.now.strftime('%FT%TZ'),
+          exp: (SelfSDK::Time.now + 3600).strftime('%FT%TZ'),
           cid: @id,
           jti: SecureRandom.uuid,
           status: @status,

@@ -7,6 +7,7 @@ require 'net/http'
 require 'rqrcode'
 require_relative 'log'
 require_relative 'jwt_service'
+require_relative 'signature_graph'
 require_relative 'client'
 require_relative 'messaging'
 require_relative 'ntptime'
@@ -19,20 +20,20 @@ require_relative 'services/identity'
 require_relative 'services/messaging'
 
 # Namespace for classes and modules that handle Self interactions.
-module Selfid
+module SelfSDK
   # Abstract base class for CLI utilities. Provides some helper methods for
   # the option parser
   #
   # @attr_reader [Types] app_id the identifier of the current app.
   # @attr_reader [Types] app_key the api key for the current app.
   class App
-    BASE_URL = "https://api.selfid.net".freeze
-    MESSAGING_URL = "wss://messaging.selfid.net/v1/messaging".freeze
+    BASE_URL = "https://api.joinself.com".freeze
+    MESSAGING_URL = "wss://messaging.joinself.com/v1/messaging".freeze
 
     attr_reader :client
     attr_accessor :messaging_client
 
-    # Initializes a Selfid App
+    # Initializes a SelfSDK App
     #
     # @param app_id [string] the app id.
     # @param app_key [string] the app api key provided by developer portal.
@@ -44,7 +45,7 @@ module Selfid
     # @option opts [Symbol] :env The environment to be used, defaults to ":production".
     # @option opts [String] :storage_dir The folder where encryption sessions and settings will be stored
     def initialize(app_id, app_key, storage_key, opts = {})
-      Selfid.logger.debug "syncing ntp times #{Selfid::Time.now}"
+      SelfSDK.logger.debug "syncing ntp times #{SelfSDK::Time.now}"
       env = opts.fetch(:env, "")
 
       @client = RestClient.new(base_url(opts), app_id, app_key, env)
@@ -59,24 +60,24 @@ module Selfid
       end
     end
 
-    # Provides access to Selfid::Services::Facts service
+    # Provides access to SelfSDK::Services::Facts service
     def facts
-      @facts ||= Selfid::Services::Facts.new(@messaging_client, @client)
+      @facts ||= SelfSDK::Services::Facts.new(@messaging_client, @client)
     end
 
-    # Provides access to Selfid::Services::Authentication service
+    # Provides access to SelfSDK::Services::Authentication service
     def authentication
-      @authentication ||= Selfid::Services::Authentication.new(@messaging_client, @client)
+      @authentication ||= SelfSDK::Services::Authentication.new(@messaging_client, @client)
     end
 
-    # Provides access to Selfid::Services::Identity service
+    # Provides access to SelfSDK::Services::Identity service
     def identity
-      @identity ||= Selfid::Services::Identity.new(@client)
+      @identity ||= SelfSDK::Services::Identity.new(@client)
     end
 
-    # Provides access to Selfid::Services::Messaging service
+    # Provides access to SelfSDK::Services::Messaging service
     def messaging
-      @messaging ||= Selfid::Services::Messaging.new(@messaging_client)
+      @messaging ||= SelfSDK::Services::Messaging.new(@messaging_client)
     end
 
     def app_id
@@ -96,13 +97,13 @@ module Selfid
 
       def base_url(opts)
         return opts[:base_url] if opts.key? :base_url
-        return "https://api.#{opts[:env].to_s}.selfid.net" if opts.key? :env
+        return "https://api.#{opts[:env].to_s}.joinself.com" if opts.key? :env
         BASE_URL
       end
 
       def messaging_url(opts)
         return opts[:messaging_url] if opts.key? :messaging_url
-        return "wss://messaging.#{opts[:env].to_s}.selfid.net/v1/messaging" if opts.key? :env
+        return "wss://messaging.#{opts[:env].to_s}.joinself.com/v1/messaging" if opts.key? :env
         MESSAGING_URL
       end
 

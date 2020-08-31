@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Selfid
+module SelfSDK
   module Messages
     class Attestation
       attr_accessor :verified, :origin, :source, :value, :operator, :expected_value, :fact_name, :to, :audience
@@ -15,7 +15,8 @@ module Selfid
         @to = payload[:sub]
         @audience = payload[:aud]
         @source = payload[:source]
-        @verified = valid_signature?(attestation)
+        header = JSON.parse(@messaging.jwt.decode(attestation[:protected]), symbolize_names: true)
+        @verified = valid_signature?(attestation, header[:kid])
         @expected_value = payload[:expected_value]
         @operator = payload[:operator]
         @fact_name = name.to_s
@@ -24,8 +25,8 @@ module Selfid
         end
       end
 
-      def valid_signature?(body)
-        k = @messaging.client.public_keys(@origin).first[:key]
+      def valid_signature?(body, kid)
+        k = @messaging.client.public_key(@origin, kid).raw_public_key
         raise ::StandardError.new("invalid signature") unless @messaging.jwt.verify(body, k)
 
         true
