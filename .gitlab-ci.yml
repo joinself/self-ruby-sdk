@@ -17,6 +17,15 @@ stages:
   gem build selfsdk.gemspec
   gem install selfsdk-${version}.gem
 
+.setup: &setup |
+  apt-get update
+  apt-get -y install libsodium-dev
+  tmpdir=$(mktemp -d)
+  curl http://download.selfid.net/olm/libself-olm_0.1.14_amd64.deb -o ${tmpdir}/libself-olm_0.1.14_amd64.deb
+  curl http://download.selfid.net/omemo/libself-omemo_0.1.1_amd64.deb -o ${tmpdir}/libself-omemo_0.1.1_amd64.deb
+  apt-get -y install ${tmpdir}/libself-olm_0.1.14_amd64.deb
+  apt-get -y install ${tmpdir}/libself-omemo_0.1.1_amd64.deb
+
 .gitRelease: &gitRelease |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
   currentGitTag=$(git ls-remote -q --tags https://github.com/joinself/self-ruby-sdk | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
@@ -61,6 +70,7 @@ before_script:
 test:
   stage: Test
   script:
+    - *setup
     - *test
   only:
     - branches
@@ -68,6 +78,7 @@ test:
 build:
   stage: Build
   script:
+    - *setup
     - *build
   artifacts:
     paths:

@@ -1,7 +1,14 @@
+dist: bionic
 language: ruby
 rvm:
   - 2.6.3
 before_script:
+  - curl -O http://download.selfid.net/olm/libself-olm_0.1.14_amd64.deb
+  - curl -O http://download.selfid.net/omemo/libself-omemo_0.1.1_amd64.deb
+  - sudo apt update
+  - sudo apt install libsodium-dev
+  - sudo apt install ./libself-olm_0.1.14_amd64.deb
+  - sudo apt install ./libself-omemo_0.1.1_amd64.deb
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
