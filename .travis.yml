@@ -8,8 +8,8 @@ before_script:
   - ./cc-test-reporter before-build
 before_install:
   - export TZ=UTC
-  - curl -O http://download.selfid.net/olm/libself-olm_0.1.14_amd64.deb
-  - curl -O http://download.selfid.net/omemo/libself-omemo_0.1.1_amd64.deb
+  - curl -O https://download.joinself.com/olm/libself-olm_0.1.14_amd64.deb
+  - curl -O https://download.joinself.com/omemo/libself-omemo_0.1.1_amd64.deb
   - sudo apt update
   - sudo apt install libsodium-dev
   - sudo apt install ./libself-olm_0.1.14_amd64.deb
