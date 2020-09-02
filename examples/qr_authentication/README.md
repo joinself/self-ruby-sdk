@@ -1,6 +1,6 @@
 # QR based authentication request
 
-A Self user will be authenticated on your platform by scanning a QR code and accepting the authentication request on his phone. 
+A Self user will be authenticated on your platform by scanning a QR code and accepting the authentication request on his phone.
 
 As part of this process, you have to share the generated QR code with your users, and wait for a response
 
@@ -18,7 +18,7 @@ $ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb
 
 This diagram shows how does a QR based authentication request process works internally.
 
-![Diagram](https://storage.googleapis.com/static.selfid.net/images/authentication_qr_diagram.png)
+![Diagram](https://static.joinself.com/images/authentication_qr_diagram.png)
 
 1. Generate Self authentication request QR code
 2. Share generated QR code with your user

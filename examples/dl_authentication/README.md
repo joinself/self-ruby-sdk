@@ -1,6 +1,6 @@
 # Deep Link based authentication request
 
-A Self user will be authenticated on your platform by clicking a link and accepting the authentication request on his phone. 
+A Self user will be authenticated on your platform by clicking a link and accepting the authentication request on his phone.
 
 As part of this process, you have to share the generated link with your users, and wait for a response
 
@@ -18,7 +18,7 @@ $ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb
 
 This diagram shows how does a deep link based authentication request process works internally.
 
-![Diagram](https://storage.googleapis.com/static.selfid.net/images/dl_diagram.png)
+![Diagram](https://static.joinself.com/images/dl_diagram.png)
 
 1. Generate Self authentication request Deep Link
 2. Share Deep Link with your user
