@@ -48,7 +48,9 @@ module SelfSDK
       @offset = read_offset
 
       FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
-      @encryption_client = Crypto.new(@client, @device_id, storage_folder, storage_key)
+      unless options.include? :no_crypto
+        @encryption_client = Crypto.new(@client, @device_id, storage_folder, storage_key)
+      end
 
       if options.include? :ws
         @ws = options[:ws]
