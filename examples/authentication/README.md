@@ -1,6 +1,6 @@
 # SelfID based authentication request
 
-A Self user will be authenticated on your platform by only providing its _SelfID_ and accepting the authentication request on his phone. 
+A Self user will be authenticated on your platform by only providing its _SelfID_ and accepting the authentication request on his phone.
 
 As part of this process, you will provide users with a user interface so they can fill their _SelfID_.
 
@@ -27,7 +27,7 @@ Note you must provide a valid user self_id `your_self_id`, this exqample will se
 
 This diagram shows how does a SelfID authentication request process works internally.
 
-![Diagram](https://storage.googleapis.com/static.selfid.net/images/authentication_diagram.png)
+![Diagram](https://static.joinself.com/images/authentication_diagram.png)
 
 1. Request specific user authentication through self-sdk
 2. Self-SDK will send the authentication request to the specified user.

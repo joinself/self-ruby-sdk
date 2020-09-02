@@ -25,7 +25,7 @@ Note you must provide a valid user self_id `your_self_id`, this exaample will se
 
 This diagram shows how does a SelfID based information request process works internally.
 
-![Diagram](https://storage.googleapis.com/static.selfid.net/images/fact_request_diagram.png)
+![Diagram](https://static.joinself.com/images/fact_request_diagram.png)
 
 
 1. Request information through the self SDK
