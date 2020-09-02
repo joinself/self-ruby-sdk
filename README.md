@@ -9,6 +9,35 @@ This gem provides a toolset to interact with self network from your ruby code.
 
 ## Installation
 
+### Requirements
+
+- [libself_olm](github.com/joinself/olm)
+- [libself_omemo](github.com/joinself/omemo)
+- [go 1.13 or higher](golang.org)
+
+
+#### Debian/Ubuntu
+```sh
+$ curl -O http://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb
+$ curl -O http://download.joinself.com/omemo/libself-omemo_0.1.2_amd64.deb
+$ apt install libsodium-dev
+$ apt install ./libself-olm_0.1.17_amd64.deb ./libself-omemo_0.1.2_amd64.deb
+```
+
+#### Redhat/Centos
+```sh
+$ rpm -Uvh http://download.joinself.com/olm/libself-olm-0.1.14-1.x86_64.rpm
+$ rpm -Uvh http://download.joinself.com/omemo/libself-omemo-0.1.2-1.x86_64.rpm
+```
+
+#### Mac
+```sh
+$ brew tap joinself/crypto
+$ brew install libself_olm libself_omemo
+```
+
+## Usage
+
 Add this line to your application's Gemfile:
 
 ```ruby
