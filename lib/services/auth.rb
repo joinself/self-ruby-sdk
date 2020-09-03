@@ -113,7 +113,6 @@ module SelfSDK
       #
       # @param response [string] the response to an authentication request from self-api.
       def valid_payload(response)
-        SelfSDK.logger.info response
         parse_payload(response)
       rescue StandardError => e
         SelfSDK.logger.error e
@@ -155,10 +154,7 @@ module SelfSDK
         identity = @client.entity(payload[:sub])
         return if identity.nil?
 
-        identity[:public_keys].each do |key|
-          return payload if @client.jwt.verify(jws, key[:key])
-        end
-        nil
+        return payload
       end
     end
   end
