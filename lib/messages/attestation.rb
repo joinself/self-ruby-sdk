@@ -27,7 +27,7 @@ module SelfSDK
 
       def valid_signature?(body, kid)
         k = @messaging.client.public_key(@origin, kid).raw_public_key
-        raise ::StandardError.new("invalid signature") unless @messaging.jwt.verify(body, k)
+        raise ::StandardError.new("invalid signature") unless @messaging.jwt.verify(body, Base64.urlsafe_encode64(k, padding: false))
 
         true
       end
