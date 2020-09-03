@@ -113,8 +113,10 @@ module SelfSDK
       #
       # @param response [string] the response to an authentication request from self-api.
       def valid_payload(response)
+        SelfSDK.logger.info response
         parse_payload(response)
       rescue StandardError => e
+        SelfSDK.logger.error e
         uuid = ""
         uuid = response[:cid] unless response.nil?
         SelfSDK.logger.error "error checking authentication for #{uuid} : #{e.message}"
