@@ -26,6 +26,10 @@ module SelfSDK
         res
       end
 
+      def encrypt_message(message, recipient, recipient_device)
+        @messaging.encryption_client.encrypt(message, recipient, recipient_device)
+      end
+
       def unauthorized?
         status == "unauthorized"
       end
@@ -78,9 +82,11 @@ module SelfSDK
         payload
       end
 
-      def verify!(jwt, kid)
+      def verify!(input, kid)
+        SelfSDK.logger.info "getting public key for #{from} kid: #{kid}"
         k = @client.public_key(@from, kid).raw_public_key
-        return if @jwt.verify(jwt, k)
+        SelfSDK.logger.info "verifying message against #{k}"
+        return if @jwt.verify(input, k)
 
         SelfSDK.logger.info "skipping message, invalid signature"
         raise ::StandardError.new("invalid signature on incoming message")
