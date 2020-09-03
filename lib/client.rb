@@ -70,6 +70,7 @@ module SelfSDK
     # @param id [string] identity id
     def public_key(id, kid)
       i = entity(id)
+      p i
       sg = SelfSDK::SignatureGraph.new(i[:history])
       sg.key_by_id(kid)
     end
