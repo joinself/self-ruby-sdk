@@ -85,8 +85,8 @@ module SelfSDK
       def verify!(input, kid)
         SelfSDK.logger.info "getting public key for #{from} kid: #{kid}"
         k = @client.public_key(@from, kid).raw_public_key
-        SelfSDK.logger.info "verifying message against #{k}"
-        return if @jwt.verify(input, k)
+        SelfSDK.logger.info "verifying message against #{k.to_s}"
+        return if @jwt.verify(input, Base64.urlsafe_encode64(k, padding: false))
 
         SelfSDK.logger.info "skipping message, invalid signature"
         raise ::StandardError.new("invalid signature on incoming message")
