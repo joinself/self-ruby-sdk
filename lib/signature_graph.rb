@@ -9,7 +9,7 @@ module SelfSDK
   ACTION_REVOKE = "key.revoke"
   KEY_TYPE_DEVICE = "device.key"
   KEY_TYPE_RECOVERY = "recovery.key"
-  
+
   class Operation
 
     attr_reader :sequence, :previous, :timestamp, :actions, :signing_key, :jws
@@ -46,7 +46,7 @@ module SelfSDK
     def revokes(kid)
       @actions.each do |action|
         if action[:kid] == kid && action[:action] == ACTION_REVOKE
-          return true 
+          return true
         end
       end
       return false
@@ -64,8 +64,8 @@ module SelfSDK
       @created = action[:from]
       @revoked = 0
 
-      @raw_public_key = Base64.urlsafe_decode64(action[:key])
-      @public_key = Ed25519::VerifyKey.new(@raw_public_key)
+      @raw_public_key = action[:key]
+      @public_key = Ed25519::VerifyKey.new(Base64.urlsafe_decode64(@raw_public_key))
 
       @incoming = Array.new
       @outgoing = Array.new
@@ -104,7 +104,7 @@ module SelfSDK
       @recovery_key = nil
 
       history.each do |operation|
-        execute(operation)        
+        execute(operation)
       end
     end
 
@@ -124,10 +124,10 @@ module SelfSDK
       op = Operation.new(operation)
 
       raise "operation sequence is out of order" if op.sequence != @operations.length
-        
-      if op.sequence > 0 
+
+      if op.sequence > 0
         if @signatures[op.previous] != op.sequence - 1
-          raise "operation previous signature does not match" 
+          raise "operation previous signature does not match"
         end
 
         if @operations[op.sequence - 1].timestamp >= op.timestamp
@@ -135,7 +135,7 @@ module SelfSDK
         end
 
         sk = @keys[op.signing_key]
- 
+
         raise "operation specifies a signing key that does not exist" if sk.nil?
 
         if sk.revoked? && op.timestamp > sk.revoked
@@ -144,7 +144,7 @@ module SelfSDK
 
         if sk.type == KEY_TYPE_RECOVERY && op.revokes(op.signing_key) != true
           raise "account recovery operation does not revoke the current active recovery key"
-        end        
+        end
       end
 
       execute_actions(op)
@@ -154,7 +154,7 @@ module SelfSDK
       raise "operation specifies a signing key that does not exist" if sk.nil?
 
       if op.timestamp < sk.created || sk.revoked? && op.timestamp > sk.revoked
-        raise "operation was signed with a key that was revoked"  
+        raise "operation was signed with a key that was revoked"
       end
 
       sig = Base64.urlsafe_decode64(op.jws[:signature])
@@ -198,9 +198,9 @@ module SelfSDK
         end
 
         if action[:from] < 0
-          raise "operation action does not provide a valid timestamp for the action to take effect from" 
+          raise "operation action does not provide a valid timestamp for the action to take effect from"
         end
-        
+
         case action[:action]
         when ACTION_ADD
           action[:from] = op.timestamp
@@ -213,7 +213,7 @@ module SelfSDK
 
     def add(operation, action)
       if @keys[action[:kid]].nil? != true
-        raise "operation contains a key with a duplicate identifier" 
+        raise "operation contains a key with a duplicate identifier"
       end
 
       k = Key.new(action)
@@ -226,7 +226,7 @@ module SelfSDK
         end
       when KEY_TYPE_RECOVERY
         unless @recovery_key.nil?
-          raise "operation contains more than one active recovery key" unless @recovery_key.revoked? 
+          raise "operation contains more than one active recovery key" unless @recovery_key.revoked?
         end
 
         @recovery_key = k
@@ -239,7 +239,7 @@ module SelfSDK
         @root = k
         return
       end
-      
+
       parent = @keys[operation.signing_key]
 
       raise "operation specifies a signing key that does not exist" if parent.nil?
@@ -271,7 +271,7 @@ module SelfSDK
 
         return
       end
-      
+
       k.child_keys.each do |ck|
         ck.revoke(action[:from]) unless ck.created < action[:from]
       end
