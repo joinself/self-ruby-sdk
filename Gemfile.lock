@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.129)
+    selfsdk (0.0.130)
       async
       ed25519
       eventmachine
@@ -94,7 +94,7 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
     timecop (0.9.1)
-    timers (4.3.0)
+    timers (4.3.1)
     unicode-display_width (1.6.0)
     webmock (3.7.6)
       addressable (>= 2.3.6)
