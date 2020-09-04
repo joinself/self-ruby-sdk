@@ -71,7 +71,9 @@ module SelfSDK
       if verify_key.verify(decode(payload[:signature]), "#{payload[:protected]}.#{payload[:payload]}")
         return true
       end
-    rescue StandardError
+      false
+    rescue StandardError => e
+      SelfSDK.logger.info e
       false
     end
 

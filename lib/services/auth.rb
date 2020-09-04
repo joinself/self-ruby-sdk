@@ -115,6 +115,7 @@ module SelfSDK
       def valid_payload(response)
         parse_payload(response)
       rescue StandardError => e
+        SelfSDK.logger.error e
         uuid = ""
         uuid = response[:cid] unless response.nil?
         SelfSDK.logger.error "error checking authentication for #{uuid} : #{e.message}"
@@ -153,10 +154,7 @@ module SelfSDK
         identity = @client.entity(payload[:sub])
         return if identity.nil?
 
-        identity[:public_keys].each do |key|
-          return payload if @client.jwt.verify(jws, key[:key])
-        end
-        nil
+        return payload
       end
     end
   end
