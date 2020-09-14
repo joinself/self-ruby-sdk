@@ -14,7 +14,8 @@ stages:
 .license-check: &license-check |
   git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
   source ~/.profile
-  gem install bundler:1.17.3
+  bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1)
+  gem install bundler:${bundler_version}
   bundle install
   license_finder --decisions_file ./license-finder/dependency_decisions.yml
 
@@ -30,7 +31,7 @@ stages:
 
 .git-release: &git-release |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
-  currentGitTag=$(git ls-remote -q --tags https://github.com/joinself/self-ruby-sdk | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
+  current_git_tag=$(git ls-remote -q --tags https://github.com/joinself/self-ruby-sdk | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
   subject=$(git log -n 1 --format=%s)
   body=$(git log -n 1 --format=%b | grep -E '^\*|^-' | sed 's/^*/-/g') || true
 
@@ -40,7 +41,7 @@ stages:
     release_notes="${body}"
   fi
 
-  if [[ "${version}" != "${currentGitTag}" ]]; then
+  if [[ "${version}" != "${current_git_tag}" ]]; then
     git remote set-url origin https://github.com/joinself/${CI_PROJECT_NAME}
     git tag -a ${version} -m "${version}"
     git push origin ${version}
