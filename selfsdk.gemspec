@@ -6,6 +6,7 @@ require_relative "lib/version"
 Gem::Specification.new do |s|
   s.name = 'selfsdk'
   s.version = SelfSDK::VERSION
+  s.license = 'MIT'
   s.date = '2011-09-29'
   s.summary = 'joinself sdk'
   s.authors = ["Aldgate Ventures"]
