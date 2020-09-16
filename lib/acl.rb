@@ -14,11 +14,7 @@ module SelfSDK
     # Lists allowed connections.
     def list
       SelfSDK.logger.info "Listing allowed connections"
-      rules = {}
-      @messaging.list_acl_rules.each do |c|
-        rules[c['acl_source']] = DateTime.parse(c['acl_exp'])
-      end
-      rules
+      @messaging.list_acl_rules
     end
 
     # Allows incomming messages from the given identity.
