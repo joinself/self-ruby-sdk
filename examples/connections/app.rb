@@ -19,7 +19,7 @@ puts "permitting connection from #{user}"
 @app.messaging.permit_connection(user)
 connections = @app.messaging.allowed_connections
 puts "your app allowed connections are:"
-connections.keys.each do |k|
+connections.each do |k|
   puts " - #{k}"
 end
 puts ""
@@ -29,7 +29,7 @@ puts "revoking connection from #{user}"
 @app.messaging.revoke_connection(user)
 connections = @app.messaging.allowed_connections
 puts "your app allowed connections are:"
-connections.keys.each do |k|
+connections.each do |k|
   puts " - #{k}"
 end
 puts ""
@@ -39,7 +39,7 @@ puts "permitting connection from #{user}"
 @app.messaging.permit_connection(user)
 connections = @app.messaging.allowed_connections
 puts "your app allowed connections are:"
-connections.keys.each do |k|
+connections.each do |k|
   puts " - #{k}"
 end
 puts ""
