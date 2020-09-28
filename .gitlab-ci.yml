@@ -1,5 +1,5 @@
 default:
-  image: aldgateventuresbot/ruby-build
+  image: ruby:2.6.6-buster
 
 stages:
   - pre-build
@@ -95,7 +95,7 @@ build:
 
 release:
   stage: release
-  image: aldgateventuresbot/deploy
+  image: eu.gcr.io/principal-oxide-204416/deploy
   script:
     - ${SCRIPTS_DIR}/git-setup
     - *git-release
