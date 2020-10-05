@@ -18,6 +18,11 @@ opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 puts "Sending an authentication request to your device..."
 begin
   auth = @app.authentication.request user
+  if auth.nil?
+    puts "Authentication timed out"
+    exit!
+  end
+
   # The user has rejected the authentication
   if not auth.accepted?
     puts "Authentication request has been rejected"
