@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.133)
+    selfsdk (0.0.134)
       async
       ed25519
       eventmachine
@@ -51,7 +51,7 @@ GEM
     minitest (5.12.2)
     multi_xml (0.6.0)
     net-ntp (2.1.3)
-    nio4r (2.5.2)
+    nio4r (2.5.4)
     parallel (1.17.0)
     parser (2.6.4.1)
       ast (~> 2.4.0)
