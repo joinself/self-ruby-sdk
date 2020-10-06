@@ -86,7 +86,7 @@ module SelfSDK
         elsif @client.env == 'development'
           return "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
         end
-        "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{@client.env}"
+        "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{@client.env}"
       end
 
       # Adds an observer for an authentication response
