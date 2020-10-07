@@ -4,3 +4,4 @@ test.rb
 .idea
 coverage/*
 .bundle
+.self_storage
