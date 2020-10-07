@@ -29,7 +29,7 @@ end
 
 # Generate a DL code to authenticate
 url = @app.facts.generate_deep_link([:display_name], "https://my.test.com")
-p "Authenticate with selfsdk through #{url}"
+p "Request display name through #{url}"
 
 # Wait for some time
 sleep 100

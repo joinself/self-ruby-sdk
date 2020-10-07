@@ -44,6 +44,15 @@ module SelfSDK
         acl.list
       end
 
+      # Checks if you're permitting messages from a specific self identifier
+      # @return [Boolean] yes|no
+      def is_permitted?(id)
+        conns = allowed_connections
+        return true if conns.include? "*"
+        return true if conns.include? id
+        return false
+      end
+
       # Revokes incoming messages from the given identity.
       #
       # @param [String] selfid to be denied
