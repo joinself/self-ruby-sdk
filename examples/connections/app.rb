@@ -5,7 +5,7 @@ require 'selfsdk'
 # Process input data
 abort("provide self_id to authenticate") if ARGV.length != 1
 user = ARGV.first
-SelfSDK.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
+SelfSDK.logger = Logger.new('/dev/null')
 
 # You can point to a different environment by passing optional values to the initializer
 opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
@@ -15,32 +15,36 @@ opts[:storage_dir] = "#{File.expand_path("..", File.dirname(__FILE__))}/.self_st
 # app on https://developer.selfsdk.net/
 @app = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
 
-# Allow connections from user
-puts "permitting connection from #{user}"
+puts "CONNECTIONS EXAMPLE"
+# Remove all existing connections
+connections = @app.messaging.allowed_connections
+puts "List existing connections"
+puts " - connections : #{connections.join(",")}"
+
+# Block connections from *
+puts "Block all connections"
+@app.messaging.revoke_connection("*")
+
+# List should be empty
+connections = @app.messaging.allowed_connections
+puts " - connections : #{connections.join(",")}"
+
+# Allow connections from 1112223334
+puts "Permit connections from a specific ID"
 @app.messaging.permit_connection(user)
 connections = @app.messaging.allowed_connections
-puts "your app allowed connections are:"
-connections.each do |k|
-  puts " - #{k}"
-end
-puts ""
+puts " - connections : #{connections.join(",")}"
 
-# Block connections from user
-puts "revoking connection from #{user}"
-@app.messaging.revoke_connection(user)
+# Allow connections from *
+puts "Permit all connections (replaces all other entries with a wildcard entry)"
+@app.messaging.permit_connection("*")
 connections = @app.messaging.allowed_connections
-puts "your app allowed connections are:"
-connections.each do |k|
-  puts " - #{k}"
-end
+puts " - connections : #{connections.join(",")}"
 puts ""
 
-# Allow connections from user
-puts "permitting connection from #{user}"
+# Allow connections from 1112223334
+puts "Permit connection from a specific ID (no change as the list already contains a wildcard entry)"
 @app.messaging.permit_connection(user)
 connections = @app.messaging.allowed_connections
-puts "your app allowed connections are:"
-connections.each do |k|
-  puts " - #{k}"
-end
+puts " - connections : #{connections.join(",")}"
 puts ""
