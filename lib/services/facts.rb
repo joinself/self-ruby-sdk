@@ -17,7 +17,8 @@ module SelfSDK
       #
       # @return [SelfSDK::Services::Facts] facts service.
       def initialize(messaging, client)
-        @messaging = messaging
+        @messaging = messaging.client
+        @messaging_service = messaging
         @client = client
       end
 
@@ -40,6 +41,7 @@ module SelfSDK
       #  @return [Object] SelfSDK:::Messages::FactRequest
       def request(selfid, facts, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"
+        raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
 
         req = SelfSDK::Messages::FactRequest.new(@messaging)
         req.populate(selfid, prepare_facts(facts), opts)
