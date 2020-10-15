@@ -25,6 +25,15 @@ stages:
   gem build selfsdk.gemspec
   gem install selfsdk-${version}.gem
 
+.setup: &setup |
+  apt-get update
+  apt-get -y install libsodium-dev
+  tmpdir=$(mktemp -d)
+  curl https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb -o ${tmpdir}/libself-olm_0.1.17_amd64.deb
+  curl https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb -o ${tmpdir}/libself-omemo_0.1.3_amd64.deb
+  apt-get -y install ${tmpdir}/libself-olm_0.1.17_amd64.deb
+  apt-get -y install ${tmpdir}/libself-omemo_0.1.3_amd64.deb
+
 .git-release: &git-release |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
   current_git_tag=$(git ls-remote -q --tags https://github.com/joinself/self-ruby-sdk | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
@@ -79,6 +88,7 @@ license-check:
 unit-test:
   stage: pre-build
   script:
+    - *setup
     - *unit-test
   only:
     - branches
@@ -86,6 +96,7 @@ unit-test:
 build:
   stage: build
   script:
+    - *setup
     - *build
   artifacts:
     paths:

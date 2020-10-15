@@ -65,6 +65,22 @@ module SelfSDK
       i[:public_keys]
     end
 
+    def post(endpoint, body)
+      p HTTParty.post("#{@self_url}#{endpoint}",
+                    headers: {
+                        'Content-Type' => 'application/json',
+                        'Authorization' => "Bearer #{@jwt.auth_token}"
+                    },
+                    body: body)
+    end
+
+    def get(endpoint)
+      HTTParty.get("#{@self_url}#{endpoint}", headers: {
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{@jwt.auth_token}"
+      })
+    end
+
     # Lists all public keys stored on self for the given ID
     #
     # @param id [string] identity id
@@ -86,20 +102,6 @@ module SelfSDK
       body
     end
 
-    def get(endpoint)
-      HTTParty.get("#{@self_url}#{endpoint}", headers: {
-                     'Content-Type' => 'application/json',
-                     'Authorization' => "Bearer #{@jwt.auth_token}"
-                   })
-    end
 
-    def post(endpoint, body)
-      HTTParty.post("#{@self_url}#{endpoint}",
-                    headers: {
-                      'Content-Type' => 'application/json',
-                      'Authorization' => "Bearer #{@jwt.auth_token}"
-                    },
-                    body: body)
-    end
   end
 end

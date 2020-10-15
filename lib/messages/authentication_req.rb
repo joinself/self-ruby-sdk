@@ -44,7 +44,7 @@ module SelfSDK
                               sender: "#{@jwt.id}:#{@messaging.device_id}",
                               id: @id,
                               recipient: "#{@to}:#{@to_device}",
-                              ciphertext: @jwt.prepare(body))
+                              ciphertext: encrypt_message(@jwt.prepare(body), @to, @to_device))
       end
 
     end

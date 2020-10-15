@@ -28,6 +28,7 @@ class SelfSDKTest < Minitest::Test
       end.and_return(json_body)
       j
     end
+    let(:encryption_client) { double("encryption_client") }
     let(:client) do
       mm = double("client")
       expect(mm).to receive(:jwt).and_return(jwt).at_least(:once)
@@ -57,6 +58,8 @@ class SelfSDKTest < Minitest::Test
     def test_non_blocking_request
       expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:device_id).and_return("1").once
+      expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
+      expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
       expect(client).to receive(:devices).and_return(devices)
       expect(messaging).to receive(:send_message) do |arg|
         assert_equal arg.type, :MSG
@@ -75,6 +78,8 @@ class SelfSDKTest < Minitest::Test
     def test_blocking_request
       expect(messaging).to receive(:device_id).once.and_return("1")
       expect(messaging).to receive(:send_and_wait_for_response).once.and_return("response")
+      expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
+      expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
       expect(client).to receive(:devices).and_return(devices)
 
       res = service.request selfid, ["email_address", "display_name"], cid: cid
@@ -89,6 +94,8 @@ class SelfSDKTest < Minitest::Test
     def test_intermediary_request
       expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:device_id).and_return("1").once
+      expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
+      expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
       expect(client).to receive(:devices).and_return(devices)
       expect(messaging).to receive(:send_message) do |arg|
         assert_equal arg.type, :MSG

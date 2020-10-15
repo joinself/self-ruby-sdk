@@ -16,7 +16,7 @@ class SelfSDKTest < Minitest::Test
     let(:storage_dir) { "/tmp/#{SecureRandom.uuid}" }
 
     let(:messaging_client) do
-      SelfSDK::MessagingClient.new("", client, storage_dir: storage_dir, ws: ws)
+      SelfSDK::MessagingClient.new("", client, "", "", storage_dir: storage_dir, ws: ws, no_crypto: true)
     end
 
     def test_share_information
@@ -30,7 +30,6 @@ class SelfSDKTest < Minitest::Test
 
       messaging_client.share_information("john", "john_device", body)
     end
-
 
     def test_notify_observer_type
       messaging_client.type_observer[SelfSDK::Messages::AuthenticationResp::MSG_TYPE] = {block: Proc.new do |res|

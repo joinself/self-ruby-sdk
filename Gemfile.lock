@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.136)
+    selfsdk (0.0.137)
       async
       ed25519
       eventmachine
@@ -12,6 +12,7 @@ PATH
       logger
       net-ntp
       rqrcode
+      self_crypto
 
 GEM
   remote: https://rubygems.org/
@@ -35,7 +36,7 @@ GEM
     faye-websocket (0.11.0)
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
-    google-protobuf (3.13.0-universal-darwin)
+    google-protobuf (3.13.0-x86_64-linux)
     hashdiff (1.0.0)
     httparty (0.18.1)
       mime-types (~> 3.0)
@@ -87,6 +88,7 @@ GEM
       unicode-display_width (>= 1.4.0, < 1.7)
     ruby-progressbar (1.10.1)
     safe_yaml (1.0.5)
+    self_crypto (0.0.5)
     semantic (1.6.1)
     simplecov (0.16.1)
       docile (~> 1.1)

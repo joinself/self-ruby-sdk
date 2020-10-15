@@ -11,7 +11,8 @@ module SelfSDK
       body = if input.is_a? String
                input
              else
-               input.ciphertext
+               issuer = input.recipient.split(":")
+               messaging.encryption_client.decrypt(input.ciphertext, issuer.first, issuer.last)
              end
 
       jwt = JSON.parse(body, symbolize_names: true)

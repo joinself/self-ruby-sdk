@@ -26,6 +26,10 @@ module SelfSDK
         res
       end
 
+      def encrypt_message(message, recipient, recipient_device)
+        @messaging.encryption_client.encrypt(message, recipient, recipient_device)
+      end
+
       def unauthorized?
         status == "unauthorized"
       end
