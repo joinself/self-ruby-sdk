@@ -1,13 +1,21 @@
 default:
-  image: aldgateventuresbot/ruby-build
+  image: ruby:2.6.6-buster
 
 stages:
-  - Test
-  - Build
-  - Release
-  - Publish
+  - pre-build
+  - build
+  - release
+  - publish
 
-.test: &test |
+.license-check: &license-check |
+  git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
+  source ~/.profile
+  bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
+  gem install bundler:${bundler_version}
+  bundle install
+  license_finder --decisions_file ./license-finder/dependency_decisions.yml
+
+.unit-test: &unit-test |
   bundle install
   bundle exec rake test
 
@@ -26,9 +34,9 @@ stages:
   apt-get -y install ${tmpdir}/libself-olm_0.1.17_amd64.deb
   apt-get -y install ${tmpdir}/libself-omemo_0.1.3_amd64.deb
 
-.gitRelease: &gitRelease |
+.git-release: &git-release |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
-  currentGitTag=$(git ls-remote -q --tags https://github.com/joinself/self-ruby-sdk | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
+  current_git_tag=$(git ls-remote -q --tags https://github.com/joinself/self-ruby-sdk | sort -t / -k 3 -V | grep -v '{}' | tail -n 1 | awk -F / '{print $3}')
   subject=$(git log -n 1 --format=%s)
   body=$(git log -n 1 --format=%b | grep -E '^\*|^-' | sed 's/^*/-/g') || true
 
@@ -38,7 +46,7 @@ stages:
     release_notes="${body}"
   fi
 
-  if [[ "${version}" != "${currentGitTag}" ]]; then
+  if [[ "${version}" != "${current_git_tag}" ]]; then
     git remote set-url origin https://github.com/joinself/${CI_PROJECT_NAME}
     git tag -a ${version} -m "${version}"
     git push origin ${version}
@@ -47,7 +55,7 @@ stages:
     echo "Version hasn't changed. Nothing to do here."
   fi
 
-.slackNotify: &slackNotify |
+.slack-notify: &slack-notify |
   if [[ -z ${body} ]]; then
     slack chat send "New release <https://github.com/joinself/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/joinself/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n- ${subject}" '#ci'
   else
@@ -67,16 +75,26 @@ before_script:
   - export SCRIPTS_DIR=$(mktemp -d)
   - git clone -q --depth 1 "${SCRIPTS_REPO}" "${SCRIPTS_DIR}"
 
-test:
-  stage: Test
+license-check:
+  stage: pre-build
+  image: licensefinder/license_finder
+  script:
+    - ${SCRIPTS_DIR}/git-setup
+    - *license-check
+  allow_failure: true
+  only:
+    - branches
+
+unit-test:
+  stage: pre-build
   script:
     - *setup
-    - *test
+    - *unit-test
   only:
     - branches
 
 build:
-  stage: Build
+  stage: build
   script:
     - *setup
     - *build
@@ -87,17 +105,17 @@ build:
     - branches
 
 release:
-  stage: Release
-  image: aldgateventuresbot/deploy
+  stage: release
+  image: eu.gcr.io/principal-oxide-204416/deploy
   script:
     - ${SCRIPTS_DIR}/git-setup
-    - *gitRelease
-    - *slackNotify
+    - *git-release
+    - *slack-notify
   only:
     - master
 
 rubyGems:
-  stage: Publish
+  stage: publish
   script:
     - ${SCRIPTS_DIR}/rubygems-setup
     - *publish

@@ -6,3 +6,5 @@ coverage/*
 *.pickle
 vendor/*
 .bundle/
+.bundle
+.self_storage

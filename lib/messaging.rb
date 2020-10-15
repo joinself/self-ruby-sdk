@@ -373,6 +373,8 @@ module SelfSDK
 
     def process_incomming_message(input)
       message = SelfSDK::Messages.parse(input, self)
+      @offset = input.offset
+      write_offset(@offset)
 
       if @messages.include? message.id
         message.validate! @messages[message.id][:original_message]
@@ -384,8 +386,6 @@ module SelfSDK
         notify_observer(message)
       end
 
-      @offset = input.offset
-      write_offset(@offset)
     rescue StandardError => e
       p "Error processing incoming message #{input.to_json}"
       SelfSDK.logger.info e
@@ -440,6 +440,7 @@ module SelfSDK
 
     def write_offset(offset)
       File.open(@offset_file, 'wb') do |f|
+        f.flock(File::LOCK_EX)
         f.write([offset].pack('q'))
       end
     end

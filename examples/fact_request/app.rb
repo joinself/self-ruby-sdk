@@ -9,6 +9,7 @@ SelfSDK.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
 
 # You can point to a different environment by passing optional values to the initializer
 opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
+opts[:storage_dir] = "#{File.expand_path("..", File.dirname(__FILE__))}/.self_storage"
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfsdk.net/

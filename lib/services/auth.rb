@@ -15,7 +15,8 @@ module SelfSDK
       #
       # @return [SelfSDK::Services::Authentication] authentication service.
       def initialize(messaging, client)
-        @messaging = messaging
+        @messaging = messaging.client
+        @messaging_service = messaging
         @client = client
       end
 
@@ -38,6 +39,7 @@ module SelfSDK
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"
+        raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
 
         req = SelfSDK::Messages::AuthenticationReq.new(@messaging)
         req.populate(selfid, opts)
@@ -82,11 +84,11 @@ module SelfSDK
         body = @client.jwt.encode(request(selfid, opts))
 
         if @client.env.empty?
-          return "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app"
+          return "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app"
         elsif @client.env == 'development'
-          return "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app.dev"
+          return "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
         end
-        "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app.#{@client.env}"
+        "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{@client.env}"
       end
 
       # Adds an observer for an authentication response
@@ -115,6 +117,7 @@ module SelfSDK
       def valid_payload(response)
         parse_payload(response)
       rescue StandardError => e
+        SelfSDK.logger.error e
         uuid = ""
         uuid = response[:cid] unless response.nil?
         SelfSDK.logger.error "error checking authentication for #{uuid} : #{e.message}"
@@ -153,10 +156,7 @@ module SelfSDK
         identity = @client.entity(payload[:sub])
         return if identity.nil?
 
-        identity[:public_keys].each do |key|
-          return payload if @client.jwt.verify(jws, key[:key])
-        end
-        nil
+        return payload
       end
     end
   end

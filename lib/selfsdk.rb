@@ -62,12 +62,12 @@ module SelfSDK
 
     # Provides access to SelfSDK::Services::Facts service
     def facts
-      @facts ||= SelfSDK::Services::Facts.new(@messaging_client, @client)
+      @facts ||= SelfSDK::Services::Facts.new(messaging, @client)
     end
 
     # Provides access to SelfSDK::Services::Authentication service
     def authentication
-      @authentication ||= SelfSDK::Services::Authentication.new(@messaging_client, @client)
+      @authentication ||= SelfSDK::Services::Authentication.new(messaging, @client)
     end
 
     # Provides access to SelfSDK::Services::Identity service

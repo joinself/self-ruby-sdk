@@ -17,7 +17,8 @@ module SelfSDK
       #
       # @return [SelfSDK::Services::Facts] facts service.
       def initialize(messaging, client)
-        @messaging = messaging
+        @messaging = messaging.client
+        @messaging_service = messaging
         @client = client
       end
 
@@ -40,6 +41,7 @@ module SelfSDK
       #  @return [Object] SelfSDK:::Messages::FactRequest
       def request(selfid, facts, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"
+        raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
 
         req = SelfSDK::Messages::FactRequest.new(@messaging)
         req.populate(selfid, prepare_facts(facts), opts)
@@ -108,11 +110,11 @@ module SelfSDK
         body = @client.jwt.encode(request(selfid, facts, opts))
 
         if @client.env.empty?
-          return "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app"
+          return "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app"
         elsif @client.env == 'development'
-          return "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app.dev"
+          return "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
         end
-        "https://selfid.page.link/?link=#{callback}%3Fqr=#{body}&apn=net.selfid.app.#{@client.env}"
+        "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{@client.env}"
       end
 
       private
