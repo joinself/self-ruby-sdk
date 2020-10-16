@@ -66,19 +66,31 @@ module SelfSDK
     end
 
     def post(endpoint, body)
-      p HTTParty.post("#{@self_url}#{endpoint}",
-                    headers: {
-                        'Content-Type' => 'application/json',
-                        'Authorization' => "Bearer #{@jwt.auth_token}"
-                    },
-                    body: body)
+      res = nil
+      loop do
+        res = HTTParty.post("#{@self_url}#{endpoint}",
+                      headers: {
+                          'Content-Type' => 'application/json',
+                          'Authorization' => "Bearer #{@jwt.auth_token}"
+                      },
+                      body: body)
+        break if res.code != 503
+        sleep 2
+      end
+      return res
     end
 
     def get(endpoint)
-      HTTParty.get("#{@self_url}#{endpoint}", headers: {
+      res = nil
+      loop do
+        res = HTTParty.get("#{@self_url}#{endpoint}", headers: {
           'Content-Type' => 'application/json',
           'Authorization' => "Bearer #{@jwt.auth_token}"
-      })
+        })
+        break if res.code != 503
+        sleep 2
+      end
+      return res
     end
 
     # Lists all public keys stored on self for the given ID
