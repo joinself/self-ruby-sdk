@@ -38,7 +38,7 @@ module SelfSDK
       else
         # 2b-i) if you have not previously sent or recevied a message to/from bob,
         #       you must get his identity key from GET /v1/identities/bob/
-        ed25519_identity_key = @client.public_keys(recipient).first[:key]
+        ed25519_identity_key = @client.device_public_key(recipient, recipient_device)
 
         # 2b-ii) get a one time key for bob
         res = @client.get("/v1/identities/#{recipient}/devices/#{recipient_device}/pre_keys")
@@ -51,7 +51,7 @@ module SelfSDK
         one_time_key = JSON.parse(res.body)["key"]
 
         # 2b-iii) convert bobs ed25519 identity key to a curve25519 key
-        curve25519_identity_key = SelfCrypto::Util.ed25519_pk_to_curve25519(ed25519_identity_key)
+        curve25519_identity_key = SelfCrypto::Util.ed25519_pk_to_curve25519(ed25519_identity_key.raw_public_key)
 
         # 2b-iv) create the session with bob
         session_with_bob = @account.outbound_session(curve25519_identity_key, one_time_key)

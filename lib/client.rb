@@ -90,6 +90,15 @@ module SelfSDK
       sg.key_by_id(kid)
     end
 
+    # Get the active public key for a device
+    #
+    # @param id [string] identity id
+    def device_public_key(id, did)
+      i = entity(id)
+      sg = SelfSDK::SignatureGraph.new(i[:history])
+      sg.key_by_device(did)
+    end
+
     private
 
     def get_identity(endpoint)
