@@ -16,7 +16,7 @@ class SelfSDKTest < Minitest::Test
     let(:storage_dir) { "/tmp/#{SecureRandom.uuid}" }
 
     let(:messaging_client) do
-      SelfSDK::MessagingClient.new("", client, "", "", storage_dir: storage_dir, ws: ws, no_crypto: true)
+      SelfSDK::MessagingClient.new("", client, "", storage_dir: storage_dir, ws: ws, no_crypto: true)
     end
 
     def test_share_information
