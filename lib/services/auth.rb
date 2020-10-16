@@ -39,7 +39,9 @@ module SelfSDK
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"
-        raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
+        if opts.fetch(:request, false)
+          raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
+        end
 
         req = SelfSDK::Messages::AuthenticationReq.new(@messaging)
         req.populate(selfid, opts)
