@@ -41,7 +41,8 @@ module SelfSDK
       #  @return [Object] SelfSDK:::Messages::FactRequest
       def request(selfid, facts, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"
-        if opts.fetch(:request, false)
+        rq = opts.fetch(:request, true)
+        if rq
           raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
         end
 
@@ -49,7 +50,7 @@ module SelfSDK
         req.populate(selfid, prepare_facts(facts), opts)
 
         body = @client.jwt.prepare(req.body)
-        return body unless opts.fetch(:request, true)
+        return body unless rq
 
         # when a block is given the request will always be asynchronous.
         if block_given?
