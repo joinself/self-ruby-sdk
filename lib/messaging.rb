@@ -30,7 +30,7 @@ module SelfSDK
     # @params storage_folder [String] folder to perist messaging encryption
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
-    def initialize(url, client, storage_key, storage_folder, options = {})
+    def initialize(url, client, storage_key, options = {})
       @mon = Monitor.new
       @url = url
       @messages = {}
@@ -49,7 +49,7 @@ module SelfSDK
 
       FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
       unless options.include? :no_crypto
-        @encryption_client = Crypto.new(@client, @device_id, storage_folder, storage_key)
+        @encryption_client = Crypto.new(@client, @device_id, @storage_dir, storage_key)
       end
 
       if options.include? :ws

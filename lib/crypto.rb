@@ -8,9 +8,9 @@ module SelfSDK
       @storage_key = storage_key
       @storage_folder = storage_folder
 
-      if File.exist?('account.pickle')
+      if File.exist?(account_path)
         # 1a) if alice's account file exists load the pickle from the file
-        @account = SelfCrypto::Account.from_pickle(File.read('account.pickle'), @storage_key)
+        @account = SelfCrypto::Account.from_pickle(File.read(account_path), @storage_key)
       else
         # 1b-i) if create a new account for alice if one doesn't exist already
         @account = SelfCrypto::Account.from_seed(@client.jwt.key)
@@ -25,12 +25,12 @@ module SelfSDK
         @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
 
         # 1b-v) store the account to a file
-        File.write('account.pickle', @account.to_pickle(storage_key))
+        File.write(account_path, @account.to_pickle(storage_key))
       end
     end
 
     def encrypt(message, recipient, recipient_device)
-      session_file_name = "#{recipient}:#{recipient_device}-session.pickle"
+      session_file_name = session_path(recipient, recipient_device)
 
       if File.exist?(session_file_name)
         # 2a) if bob's session file exists load the pickle from the file
@@ -71,7 +71,7 @@ module SelfSDK
     end
 
     def decrypt(message, sender, sender_device)
-      session_file_name = "#{sender}:#{sender_device}-session.pickle"
+      session_file_name = session_path(sender, sender_device)
 
       if File.exist?(session_file_name)
         # 7a) if carol's session file exists load the pickle from the file
@@ -97,6 +97,16 @@ module SelfSDK
 
       # 10) decrypt the message ciphertext
       gs.decrypt("#{sender}:#{sender_device}", message).to_s
+    end
+
+    private
+
+    def account_path
+      "#{@storage_folder}/account.pickle"
+    end
+
+    def session_path(selfid, device)
+      "#{@storage_folder}/#{selfid}:#{device}-session.pickle"
     end
   end
 end
