@@ -41,7 +41,9 @@ module SelfSDK
       #  @return [Object] SelfSDK:::Messages::FactRequest
       def request(selfid, facts, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"
-        raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
+        if opts.fetch(:request, false)
+          raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
+        end
 
         req = SelfSDK::Messages::FactRequest.new(@messaging)
         req.populate(selfid, prepare_facts(facts), opts)
