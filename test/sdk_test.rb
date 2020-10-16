@@ -47,19 +47,5 @@ class SelfSDKTest < Minitest::Test
       assert_equal seed, custom_app.app_key
     end
 
-    def test_authenticate
-      jwt = double("jwt", id: "appid")
-      client = double("client", jwt: jwt)
-      expect(app.messaging_client).to receive(:client).and_return(client)
-      expect(app.messaging_client).to receive(:jwt).and_return(jwt)
-      res = JSON.parse(app.authentication.request("xxxxxxxx", cid: "uuid", jti: "uuid", request: false))
-      payload = JSON.parse(Base64.urlsafe_decode64(res['payload']))
-      assert_equal "appid", payload['iss']
-      assert_equal "identities.authenticate.req", payload['typ']
-      assert_equal "xxxxxxxx", payload['sub']
-      assert_equal "xxxxxxxx", payload['aud']
-      assert_equal "uuid", payload['cid']
-    end
-
   end
 end

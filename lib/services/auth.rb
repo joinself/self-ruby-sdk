@@ -39,7 +39,8 @@ module SelfSDK
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"
-        if opts.fetch(:request, false)
+        rq = opts.fetch(:request, true)
+        if rq
           raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
         end
 
@@ -47,7 +48,7 @@ module SelfSDK
         req.populate(selfid, opts)
 
         body = @client.jwt.prepare(req.body)
-        return body unless opts.fetch(:request, true)
+        return body unless rq
         return req.send_message if opts.fetch(:async, false)
 
         # when a block is given the request will always be asynchronous.
