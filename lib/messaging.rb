@@ -182,6 +182,8 @@ module SelfSDK
     #
     # @params msg [Msgproto::Message] message object to be sent
     def send_message(msg)
+      SelfSDK.logger.info "sending #{msg.ciphertext}"
+
       uuid = msg.id
       @mon.synchronize do
         @acks[uuid] = {
