@@ -32,6 +32,8 @@ module SelfSDK
     def encrypt(message, recipient, recipient_device)
       session_file_name = session_path(recipient, recipient_device)
       
+      SelfSDK.logger.info "setting up group session with #{recipient}:#{recipient_device}"
+
       if File.exist?(session_file_name)
         # 2a) if bob's session file exists load the pickle from the file
         session_with_bob = SelfCrypto::Session.from_pickle(File.read(session_file_name), @storage_key)
@@ -63,11 +65,17 @@ module SelfSDK
       # 4) add all recipients and their sessions
       gs.add_participant("#{recipient}:#{recipient_device}", session_with_bob)
 
+      SelfSDK.logger.info "encrypting"
+
       # 5) encrypt a message
       ct = gs.encrypt(message).to_s
 
+      SelfSDK.logger.info "encrypted #{ct}"
+
       # 6) store the session to a file
       File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
+
+      SelfSDK.logger.info "writing session"
 
       ct
     end
