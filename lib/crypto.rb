@@ -32,10 +32,14 @@ module SelfSDK
     def encrypt(message, recipient, recipient_device)
       session_file_name = session_path(recipient, recipient_device)
 
+      SelfSDK.logger.info "session file name #{session_file_name}"
+      
       if File.exist?(session_file_name)
+        SelfSDK.logger.info "session exists!"
         # 2a) if bob's session file exists load the pickle from the file
         session_with_bob = SelfCrypto::Session.from_pickle(File.read(session_file_name), @storage_key)
       else
+        SelfSDK.logger.info "session does not exists!"
         # 2b-i) if you have not previously sent or recevied a message to/from bob,
         #       you must get his identity key from GET /v1/identities/bob/
         ed25519_identity_key = @client.device_public_key(recipient, recipient_device)
@@ -61,6 +65,7 @@ module SelfSDK
       end
 
       # 3) create a group session and set the identity of the account youre using
+      SelfSDK.logger.info "creating group session with #{recipient}:#{recipient_device}"
       gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
 
       # 4) add all recipients and their sessions
