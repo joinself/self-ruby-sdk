@@ -64,10 +64,12 @@ module SelfSDK
       gs.add_participant("#{recipient}:#{recipient_device}", session_with_bob)
 
       # 5) encrypt a message
-      gs.encrypt(message).to_s
+      ct = gs.encrypt(message).to_s
 
       # 6) store the session to a file
       File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
+
+      ct
     end
 
     def decrypt(message, sender, sender_device)
@@ -93,10 +95,12 @@ module SelfSDK
       gs.add_participant("#{sender}:#{sender_device}", session_with_bob)
 
       # 10) decrypt the message ciphertext
-      gs.decrypt("#{sender}:#{sender_device}", message).to_s
+      pt = gs.decrypt("#{sender}:#{sender_device}", message).to_s
 
       # 11) store the session to a file
       File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
+
+      pt
     end
 
     private
