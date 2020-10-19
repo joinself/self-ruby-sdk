@@ -11,7 +11,7 @@ module SelfSDK
       body = if input.is_a? String
                input
              else
-               issuer = input.recipient.split(":")
+               issuer = input.sender.split(":")
                messaging.encryption_client.decrypt(input.ciphertext, issuer.first, issuer.last)
              end
 

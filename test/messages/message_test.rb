@@ -79,7 +79,7 @@ class SelfSDKTest < Minitest::Test
       let(:encryption_client) { double("encryption_client") }
       let(:input) { double("input",
         ciphertext: '{"protected": "header", "payload":"identities.facts.query.req"}',
-        recipient: "1112223334") }
+        sender: "1112223334") }
       let(:typ) { "identities.facts.query.req" }
       let(:client) { double("client") }
       let(:body) { '{"typ":"identities.facts.query.req","exp":"'+exp+'","iat":"'+iat+'"}' }
