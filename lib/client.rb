@@ -74,6 +74,15 @@ module SelfSDK
                           'Authorization' => "Bearer #{@jwt.auth_token}"
                       },
                       body: body)
+        p "-----"
+        p "-----"
+        p "-----"
+        p res.code
+        p res.body
+        p "-----"
+        p "-----"
+        p "-----"
+
         break if res.code != 503
         sleep 2
       end
