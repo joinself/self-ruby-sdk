@@ -59,9 +59,6 @@ module SelfSDK
 
         # 2b-iv) create the session with bob
         session_with_bob = @account.outbound_session(curve25519_identity_key, one_time_key)
-
-        # 2b-v) store the session to a file
-        File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
       end
 
       # 3) create a group session and set the identity of the account youre using
@@ -73,6 +70,9 @@ module SelfSDK
 
       # 5) encrypt a message
       gs.encrypt(message).to_s
+
+      # 6) store the session to a file
+      File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
     end
 
     def decrypt(message, sender, sender_device)
@@ -89,9 +89,6 @@ module SelfSDK
 
         # 7b-ii) use the initial message to create a session for bob or carol
         session_with_bob = @account.inbound_session(m)
-
-        # 7b-iii) store the session to a file
-        File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
       end
 
       # 8) create a group session and set the identity of the account you're using
@@ -102,6 +99,9 @@ module SelfSDK
 
       # 10) decrypt the message ciphertext
       gs.decrypt("#{sender}:#{sender_device}", message).to_s
+
+      # 11) store the session to a file
+      File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
     end
 
     private
