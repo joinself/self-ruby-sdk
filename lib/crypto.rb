@@ -28,6 +28,7 @@ module SelfSDK
         File.write(account_path, @account.to_pickle(storage_key))
       end
 
+      SelfSDK.logger.info "ID KEYS #{@account.identity_keys}"
       SelfSDK.logger.info "PREKEYS #{@account.one_time_keys}"
     end
 
