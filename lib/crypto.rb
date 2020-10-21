@@ -10,7 +10,7 @@ module SelfSDK
 
       if File.exist?(account_path)
         # 1a) if alice's account file exists load the pickle from the file
-        @account = load_account
+        @account = SelfCrypto::Account.from_pickle(File.read(account_path), @storage_key)
       else
         # 1b-i) if create a new account for alice if one doesn't exist already
         @account = SelfCrypto::Account.from_seed(@client.jwt.key)
@@ -25,7 +25,7 @@ module SelfSDK
         @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
 
         # 1b-v) store the account to a file
-        store_account
+        File.write(account_path, @account.to_pickle(storage_key))
       end
 
       SelfSDK.logger.info "ID KEYS #{@account.identity_keys}"
@@ -107,22 +107,6 @@ module SelfSDK
     end
 
     private
-
-    def load_account
-      File.open(account_path, 'rb') do |f|
-        f.flock(File::LOCK_EX)
-        pickle = f.read.to_s
-        puts pickle
-        return SelfCrypto::Account.from_pickle(pickle, @storage_key)
-      end
-    end
-
-    def store_account
-      File.open(account_path, 'wb') do |f|
-        f.flock(File::LOCK_EX)
-        f.write(@account.to_pickle(@storage_key))
-      end
-    end
 
     def account_path
       "#{@storage_folder}/account.pickle"
