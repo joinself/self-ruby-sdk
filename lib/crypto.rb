@@ -27,9 +27,6 @@ module SelfSDK
         # 1b-v) store the account to a file
         File.write(account_path, @account.to_pickle(storage_key))
       end
-
-      SelfSDK.logger.info "ID KEYS #{@account.identity_keys}"
-      SelfSDK.logger.info "PREKEYS #{@account.one_time_keys}"
     end
 
     def encrypt(message, recipient, recipient_device)
