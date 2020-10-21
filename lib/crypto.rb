@@ -109,7 +109,7 @@ module SelfSDK
     private
 
     def load_account
-      File.open(account_path, 'wb') do |f|
+      File.open(account_path, 'rb') do |f|
         f.flock(File::LOCK_EX)
         return SelfCrypto::Account.from_pickle(f.read, @storage_key)
       end
