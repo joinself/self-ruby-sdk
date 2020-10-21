@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.142)
+    selfsdk (0.0.143)
       async
       ed25519
       eventmachine
@@ -88,7 +88,7 @@ GEM
       unicode-display_width (>= 1.4.0, < 1.7)
     ruby-progressbar (1.10.1)
     safe_yaml (1.0.5)
-    self_crypto (0.0.6)
+    self_crypto (0.0.7)
     semantic (1.6.1)
     simplecov (0.16.1)
       docile (~> 1.1)
