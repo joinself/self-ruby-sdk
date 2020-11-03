@@ -15,6 +15,7 @@ class SelfSDKTest < Minitest::Test
     let(:url) { 'https://my.app.com' }
     let(:json_body) { '{}' }
     let(:devices) { ["1", "2"]}
+    let(:app) { { paid_actions: true } }
     let(:jwt) do
       j = double("jwt")
       expect(j).to receive(:id).and_return(appid).at_least(:twice)
@@ -68,6 +69,7 @@ class SelfSDKTest < Minitest::Test
         assert_equal arg.recipient, "#{selfid}:#{devices.first}"
         assert_equal arg.ciphertext, '{}'
       end.and_return(json_body)
+      expect(client).to receive(:app).and_return(app)
 
       res = service.request selfid, ["email_address", "display_name"], cid: cid do
         assert_true true
@@ -82,6 +84,7 @@ class SelfSDKTest < Minitest::Test
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
       expect(client).to receive(:devices).and_return(devices)
+      expect(client).to receive(:app).and_return(app)
 
       res = service.request selfid, ["email_address", "display_name"], cid: cid
       assert_equal "response", res
@@ -106,6 +109,7 @@ class SelfSDKTest < Minitest::Test
         assert_equal arg.recipient, "#{selfid}:#{devices.first}"
         assert_equal arg.ciphertext, '{}'
       end.and_return(json_body)
+      expect(client).to receive(:app).and_return(app)
 
       res = service.request selfid, ["email_address", "display_name"], cid: cid do
         assert_true true

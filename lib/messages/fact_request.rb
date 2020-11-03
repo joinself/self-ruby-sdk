@@ -86,6 +86,9 @@ module SelfSDK
       protected
 
       def proto
+        app = @client.app(@jwt.id)
+        raise "Your credits have expired, please log in to the developer portal and top up your account." if app[:paid_actions] == false
+
         devices = if @intermediary.nil?
                     @client.devices(@to)
                   else
