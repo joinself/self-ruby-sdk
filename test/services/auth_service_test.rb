@@ -47,6 +47,8 @@ class SelfSDKTest < Minitest::Test
     let(:response_input) { 'input' }
     let(:response) { double("response", input: response_input) }
     let(:identity) { { public_keys: [ { key: "pk1"} ] } }
+    let(:app) { { paid_actions: true } }
+    let(:blocked_app) { { paid_actions: false } }
 
     def test_get_request_body
       req = service.request(selfid, cid: cid, request: false)
@@ -61,6 +63,8 @@ class SelfSDKTest < Minitest::Test
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
       expect(client).to receive(:devices).and_return([app_device_id])
+      expect(client).to receive(:app).and_return(app)
+
       res = service.request selfid, cid: cid do
         assert_true true
       end
@@ -74,6 +78,7 @@ class SelfSDKTest < Minitest::Test
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
       expect(client).to receive(:devices).and_return([app_device_id])
+      expect(client).to receive(:app).and_return(app)
 
       res = service.request selfid, cid: cid
       assert_equal "cid", res
