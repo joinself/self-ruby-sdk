@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../../lib/selfsdk.rb'
+require 'selfsdk'
 
 # Process input data
 abort("provide self_id to request information to") if ARGV.length != 1
@@ -8,7 +8,7 @@ user = ARGV.first
 SelfSDK.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
 
 # You can point to a different environment by passing optional values to the initializer
-opts = { env: "review"}
+opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 opts[:storage_dir] = "#{File.expand_path("..", File.dirname(__FILE__))}/.self_storage"
 
 # Connect your app to Self network, get your connection details creating a new
