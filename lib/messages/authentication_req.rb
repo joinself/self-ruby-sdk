@@ -38,16 +38,12 @@ module SelfSDK
 
       protected
 
-      def proto
-        app = @client.app(@jwt.id)
-        raise "Your credits have expired, please log in to the developer portal and top up your account." if app[:paid_actions] == false
-
-        @to_device = @client.devices(@to).first
+      def proto(to_device)
         Msgproto::Message.new(type: Msgproto::MsgType::MSG,
                               sender: "#{@jwt.id}:#{@messaging.device_id}",
                               id: @id,
-                              recipient: "#{@to}:#{@to_device}",
-                              ciphertext: encrypt_message(@jwt.prepare(body), @to, @to_device))
+                              recipient: "#{@to}:#{to_device}",
+                              ciphertext: encrypt_message(@jwt.prepare(body), @to, to_device))
       end
 
     end
