@@ -94,6 +94,7 @@ module SelfSDK
     # @param type [string] message type
     # @param request [hash] original message requesing information
     def send_custom(recipient, request_body)
+      # TODO (adriacidre) this is sending the message to the first device only
         @to_device = @client.devices(recipient).first
         send_message msg = Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
@@ -142,9 +143,11 @@ module SelfSDK
     # Sends a message and waits for the response
     #
     # @params msg [Msgproto::Message] message object to be sent
-    def send_and_wait_for_response(msg, original)
-      wait_for msg.id, original do
-        send_message msg
+    def send_and_wait_for_response(msgs, original)
+      wait_for msg.first.id, original do
+        msgs.each do |msg|
+          send_message msg
+        end
       end
     end
 

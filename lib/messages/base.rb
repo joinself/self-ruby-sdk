@@ -15,15 +15,24 @@ module SelfSDK
       end
 
       def request
-        res = @messaging.send_and_wait_for_response(proto, self)
-        SelfSDK.logger.info "synchronously messaging to #{@to}:#{@to_device}"
+        check_credits!
+        msgs = []
+        devices.each do |d|
+          msgs << proto(d)
+        end
+        res = @messaging.send_and_wait_for_response(msgs, self)
+        SelfSDK.logger.info "synchronously messaging to #{@to}:#{@d}"
         res
       end
 
       def send_message
-        res = @messaging.send_message proto
-        SelfSDK.logger.info "asynchronously requested information to #{@to}:#{@to_device}"
-        res
+        check_credits!
+        res = []
+        devices.each do |d|
+          res << @messaging.send_message(proto(d))
+          SelfSDK.logger.info "asynchronously requested information to #{@to}:#{@d}"
+        end
+        res.first
       end
 
       def encrypt_message(message, recipient, recipient_device)
@@ -63,6 +72,17 @@ module SelfSDK
 
       def proto
         raise ::StandardError.new("must define this method")
+      end
+
+      def devices
+        return @client.devices(@to) if @intermediary.nil?
+                  
+        @client.devices(@intermediary)
+      end
+
+      def check_credits!
+        app = @client.app(@jwt.id)
+        raise "Your credits have expired, please log in to the developer portal and top up your account." if app[:paid_actions] == false
       end
 
       private

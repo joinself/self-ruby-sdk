@@ -14,7 +14,7 @@ class SelfSDKTest < Minitest::Test
     let(:appid) { 'app_self_id' }
     let(:url) { 'https://my.app.com' }
     let(:json_body) { '{}' }
-    let(:devices) { ["1", "2"]}
+    let(:devices) { ["1"]}
     let(:app) { { paid_actions: true } }
     let(:jwt) do
       j = double("jwt")
