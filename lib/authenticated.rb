@@ -1,3 +1,5 @@
+# Copyright 2020 Self Group Ltd. All Rights Reserved.
+
 module SelfSDK
   class Authenticated
     attr_accessor :payload, :uuid, :selfsdk, :status

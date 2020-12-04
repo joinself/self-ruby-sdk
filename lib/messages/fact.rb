@@ -1,3 +1,5 @@
+# Copyright 2020 Self Group Ltd. All Rights Reserved.
+
 # frozen_string_literal: true
 
 require_relative 'attestation'

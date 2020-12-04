@@ -1,3 +1,5 @@
+# Copyright 2020 Self Group Ltd. All Rights Reserved.
+
 require 'self_crypto'
 
 module SelfSDK
