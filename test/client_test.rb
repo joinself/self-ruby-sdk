@@ -1,3 +1,5 @@
+# Copyright 2020 Self Group Ltd. All Rights Reserved.
+
 require_relative 'test_helper'
 require 'rspec/mocks/minitest_integration'
 require 'selfsdk'

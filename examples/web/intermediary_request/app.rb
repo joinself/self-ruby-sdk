@@ -1,5 +1,7 @@
 #!/user/bin/env ruby
 
+# Copyright 2020 Self Group Ltd. All Rights Reserved.
+
 require 'bundler/inline'
 gemfile(true) do
   source 'https://rubygems.org'

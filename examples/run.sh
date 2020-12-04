@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Copyright 2020 Self Group Ltd. All Rights Reserved.
+
 echo "This script will execute all examples be sure to have in place necessary environment variables SELF_APP_ID and SELF_APP_SECRET"
 echo ""
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
