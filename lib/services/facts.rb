@@ -132,13 +132,58 @@ module SelfSDK
       def prepare_facts(facts)
         fs = []
         facts.each do |f|
-          fs << if f.is_a?(Hash)
+          fact if f.is_a?(Hash)
                   f
                 else
                   { fact: f }
                 end
-        end
+          validate_fact!(fact)
+          fs << fact
+        end      
         fs
+      end
+
+      def validate_fact!(f)
+        errInvalidFactToSource = 'provided source does not support given fact'
+        errInvalidSource = 'provided fact does not specify a valid source'
+
+        raise 'provided fact does not specify a name' if f[:fact].empty?
+
+        valid_sources = [SOURCE_USER_SPECIFIED, SOURCE_PASSPORT, SOURCE_DRIVING_LICENSE, SOURCE_ID_CARD]
+        f[:sources].each do |s|
+          raise errInvalidSource unless valid_sources.include? s
+
+          if s == SOURCE_PASSPORT || s == SOURCE_ID_CARD
+            raise errInvalidFactToSource unless [ FACT_DOCUMENT_NUMBER, 
+              FACT_SURNAME, 
+              FACT_GIVEN_NAMES,
+              FACT_DATE_OF_BIRTH,
+              FACT_DATE_OF_EXPIRATION, 
+              FACT_SEX, 
+              FACT_NATIONALITY,
+              FACT_COUNTRY_OF_ISSUANCE ].include? f[:fact]
+          end
+
+          if s == SOURCE_DRIVING_LICENSE
+            raise errInvalidFactToSource unless[ FACT_DOCUMENT_NUMBER,
+              FACT_SURNAME,
+              FACT_GIVEN_NAMES,
+              FACT_DATE_OF_BIRTH,
+              FACT_DATEOF_ISSUANCE,
+              FACT_DATE_OF_EXPIRATION,
+              FACT_ADDRESS, 
+              FACT_ISSUING_AUTHORITY,
+              FACT_PLACE_OF_BIRTH, 
+              FACT_COUNTRY_OF_ISSUANCE ].include? f[:fact]
+          end
+
+          if s == SOURCE_USER_SPECIFIED
+            raise errInvalidFactToSource unless[ FACT_DOCUMENT_NUMBER,
+              FACT_DISPLAY_NAME,
+              FACT_EMAIL,
+              FACT_PHONE ].include? f[:fact]
+          end
+        end
       end
     end
   end
