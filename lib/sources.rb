@@ -17,10 +17,16 @@ module SelfSDK
   FACT_DATE_OF_BIRTH = "date_of_birth"
   FACT_DATE_OF_ISSUANCE = "date_of_issuance"
   FACT_DATE_OF_EXPIRATION = "date_of_expiration"
+  FACT_VALID_FROM = "valid_from"
+  FACT_VALID_TO = "valid_to"
+  FACT_CATEGORIES = "categories"
+  FACT_SORT_CODE = "sort_code"
+  FACT_COUNTRY_OF_ISSUANCE = "country_of_issuance"
 
   SOURCE_USER_SPECIFIED = "user_specified"
   SOURCE_PASSPORT = "passport"
   SOURCE_DRIVING_LICENSE = "driving_license"
+  SOURCE_ID_CARD = "identity_card"
 
   class << self
     def message_type(s)
@@ -63,7 +69,8 @@ module SelfSDK
     def source(input)
       sources = { user_specified: SOURCE_USER_SPECIFIED,
                 passport: SOURCE_PASSPORT,
-                driving_license: SOURCE_DRIVING_LICENSE }
+                driving_license: SOURCE_DRIVING_LICENSE,
+                id_card: SOURCE_ID_CARD }
       get(sources, input, "source")
     end
 
