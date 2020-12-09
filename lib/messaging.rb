@@ -146,7 +146,7 @@ module SelfSDK
     #
     # @params msg [Msgproto::Message] message object to be sent
     def send_and_wait_for_response(msgs, original)
-      wait_for msg.first.id, original do
+      wait_for msgs.first.id, original do
         msgs.each do |msg|
           send_message msg
         end
