@@ -46,7 +46,8 @@ module SelfSDK
         res = @client.get("/v1/identities/#{recipient}/devices/#{recipient_device}/pre_keys")
 
         if res.code != 200
-          Selfid.logger.error "identity response : #{res.body[:message]}"
+          b = JSON.parse(res.body)
+          ::SelfSDK.logger.error "identity response : #{b['message']}"
           raise "could not get identity pre_keys"
         end
 
