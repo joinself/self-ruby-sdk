@@ -132,7 +132,7 @@ module SelfSDK
       def prepare_facts(facts)
         fs = []
         facts.each do |f|
-          fact if f.is_a?(Hash)
+          fact = if f.is_a?(Hash)
                   f
                 else
                   { fact: f }
@@ -148,40 +148,47 @@ module SelfSDK
         errInvalidSource = 'provided fact does not specify a valid source'
 
         raise 'provided fact does not specify a name' if f[:fact].empty?
+        return unless f.has_key? :sources
 
         valid_sources = [SOURCE_USER_SPECIFIED, SOURCE_PASSPORT, SOURCE_DRIVING_LICENSE, SOURCE_ID_CARD]
+        factsForPassport = [ FACT_DOCUMENT_NUMBER, 
+          FACT_SURNAME, 
+          FACT_GIVEN_NAMES,
+          FACT_DATE_OF_BIRTH,
+          FACT_DATE_OF_EXPIRATION, 
+          FACT_SEX, 
+          FACT_NATIONALITY,
+          FACT_COUNTRY_OF_ISSUANCE ]
+
+        factsForDL = [ FACT_DOCUMENT_NUMBER,
+          FACT_SURNAME,
+          FACT_GIVEN_NAMES,
+          FACT_DATE_OF_BIRTH,
+          FACT_DATEOF_ISSUANCE,
+          FACT_DATE_OF_EXPIRATION,
+          FACT_ADDRESS, 
+          FACT_ISSUING_AUTHORITY,
+          FACT_PLACE_OF_BIRTH, 
+          FACT_COUNTRY_OF_ISSUANCE ]
+
+        factsForUser = [ FACT_DOCUMENT_NUMBER,
+          FACT_DISPLAY_NAME,
+          FACT_EMAIL,
+          FACT_PHONE ]
+          
         f[:sources].each do |s|
           raise errInvalidSource unless valid_sources.include? s
 
           if s == SOURCE_PASSPORT || s == SOURCE_ID_CARD
-            raise errInvalidFactToSource unless [ FACT_DOCUMENT_NUMBER, 
-              FACT_SURNAME, 
-              FACT_GIVEN_NAMES,
-              FACT_DATE_OF_BIRTH,
-              FACT_DATE_OF_EXPIRATION, 
-              FACT_SEX, 
-              FACT_NATIONALITY,
-              FACT_COUNTRY_OF_ISSUANCE ].include? f[:fact]
+            raise errInvalidFactToSource unless factsForPassport.include? f[:fact]
           end
 
           if s == SOURCE_DRIVING_LICENSE
-            raise errInvalidFactToSource unless[ FACT_DOCUMENT_NUMBER,
-              FACT_SURNAME,
-              FACT_GIVEN_NAMES,
-              FACT_DATE_OF_BIRTH,
-              FACT_DATEOF_ISSUANCE,
-              FACT_DATE_OF_EXPIRATION,
-              FACT_ADDRESS, 
-              FACT_ISSUING_AUTHORITY,
-              FACT_PLACE_OF_BIRTH, 
-              FACT_COUNTRY_OF_ISSUANCE ].include? f[:fact]
+            raise errInvalidFactToSource unless factsForDL.include? f[:fact]
           end
 
           if s == SOURCE_USER_SPECIFIED
-            raise errInvalidFactToSource unless[ FACT_DOCUMENT_NUMBER,
-              FACT_DISPLAY_NAME,
-              FACT_EMAIL,
-              FACT_PHONE ].include? f[:fact]
+            raise errInvalidFactToSource unless factsForUser.include? f[:fact]
           end
         end
       end
