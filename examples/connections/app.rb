@@ -7,8 +7,10 @@ require 'selfsdk'
 # Process input data
 abort("provide self_id to authenticate") if ARGV.length != 1
 user = ARGV.first
-SelfSDK.logger = Logger.new('/dev/null')
-
+SelfSDK.logger = ::Logger.new($stdout).tap do |log|
+    log.progname = "SelfSDK examples"
+  end if ENV.has_key?'LOGS'
+  
 # You can point to a different environment by passing optional values to the initializer
 opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 opts[:storage_dir] = "#{File.expand_path("..", File.dirname(__FILE__))}/.self_storage"

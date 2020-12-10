@@ -7,10 +7,11 @@ require 'selfsdk'
 # Process input data
 abort("provide self_id to authenticate") if ARGV.length != 1
 user = ARGV.first
-SelfSDK.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
+SelfSDK.logger = ::Logger.new($stdout).tap do |log|
+  log.progname = "SelfSDK examples"
+end if ENV.has_key?'LOGS'
 
 # You can point to a different environment by passing optional values to the initializer
-#opts = { base_url: "http://localhost:8080", messaging_url: "ws://localhost:8086/v1/messaging"}
 opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
 opts[:storage_dir] = "#{File.expand_path("..", File.dirname(__FILE__))}/.self_storage"
 
