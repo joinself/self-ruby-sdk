@@ -4,8 +4,10 @@
 
 require 'selfsdk'
 
-# Disable the debug logs
-SelfSDK.logger = Logger.new('/dev/null') if ENV.has_key?'NO_LOGS'
+# Enable the debug logs
+SelfSDK.logger = ::Logger.new($stdout).tap do |log|
+  log.progname = "SelfSDK examples"
+end if ENV.has_key?'LOGS'
 
 # You can point to a different environment by passing optional values to the initializer
 opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
