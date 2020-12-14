@@ -26,7 +26,7 @@ module SelfSDK
   SOURCE_USER_SPECIFIED = "user_specified"
   SOURCE_PASSPORT = "passport"
   SOURCE_DRIVING_LICENSE = "driving_license"
-  SOURCE_ID_CARD = "identity_card"
+  SOURCE_IDENTITY_CARD = "identity_card"
 
   class << self
     def message_type(s)
@@ -75,7 +75,7 @@ module SelfSDK
       sources = { user_specified: SOURCE_USER_SPECIFIED,
                 passport: SOURCE_PASSPORT,
                 driving_license: SOURCE_DRIVING_LICENSE,
-                identity_card: SOURCE_ID_CARD }
+                identity_card: SOURCE_IDENTITY_CARD }
       get(sources, input, "source")
     end
 
