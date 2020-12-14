@@ -11,10 +11,8 @@ This gem provides a toolset to interact with self network from your ruby code.
 
 ### Requirements
 
-- [libself_olm](github.com/joinself/olm)
-- [libself_omemo](github.com/joinself/omemo)
-- [go 1.13 or higher](golang.org)
-
+- [libself-olm](http://download.selfid.net/olm/libself-olm_0.1.17_amd64.deb)
+- [libself-omemo](http://download.selfid.net/omemo/libself-omemo_0.1.2_amd64.deb)
 
 #### Debian/Ubuntu
 ```sh
