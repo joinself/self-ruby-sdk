@@ -137,7 +137,7 @@ module SelfSDK
                 else
                   { fact: f }
                 end
-          validate_fact!(fact)
+          # validate_fact!(fact)
           fs << fact
         end      
         fs
@@ -177,18 +177,18 @@ module SelfSDK
           FACT_PHONE ]
           
         f[:sources].each do |s|
-          raise errInvalidSource unless valid_sources.include? s
+          raise errInvalidSource unless valid_sources.include? s.to_s
 
-          if s == SOURCE_PASSPORT || s == SOURCE_ID_CARD
+          if s.to_s == SOURCE_PASSPORT || s.to_s == SOURCE_ID_CARD
             raise errInvalidFactToSource unless factsForPassport.include? f[:fact]
           end
 
-          if s == SOURCE_DRIVING_LICENSE
+          if s.to_s == SOURCE_DRIVING_LICENSE
             raise errInvalidFactToSource unless factsForDL.include? f[:fact]
           end
 
-          if s == SOURCE_USER_SPECIFIED
-            raise errInvalidFactToSource unless factsForUser.include? f[:fact]
+          if s.to_s == SOURCE_USER_SPECIFIED
+            raise errInvalidFactToSource unless factsForUser.include? f[:fact].to_s
           end
         end
       end
