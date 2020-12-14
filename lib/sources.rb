@@ -75,7 +75,7 @@ module SelfSDK
       sources = { user_specified: SOURCE_USER_SPECIFIED,
                 passport: SOURCE_PASSPORT,
                 driving_license: SOURCE_DRIVING_LICENSE,
-                id_card: SOURCE_ID_CARD }
+                identity_card: SOURCE_ID_CARD }
       get(sources, input, "source")
     end
 
