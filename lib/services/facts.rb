@@ -164,7 +164,7 @@ module SelfSDK
           FACT_SURNAME,
           FACT_GIVEN_NAMES,
           FACT_DATE_OF_BIRTH,
-          FACT_DATEOF_ISSUANCE,
+          FACT_DATE_OF_ISSUANCE,
           FACT_DATE_OF_EXPIRATION,
           FACT_ADDRESS, 
           FACT_ISSUING_AUTHORITY,
