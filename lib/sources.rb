@@ -62,7 +62,12 @@ module SelfSDK
                 place_of_birth: FACT_PLACE_OF_BIRTH,
                 date_of_birth: FACT_DATE_OF_BIRTH,
                 date_of_issuance: FACT_DATE_OF_ISSUANCE,
-                date_of_expiration: FACT_DATE_OF_EXPIRATION }
+                date_of_expiration: FACT_DATE_OF_EXPIRATION,
+                valid_from: FACT_VALID_FROM,
+                valid_to: FACT_VALID_TO,
+                categories: FACT_CATEGORIES,
+                sort_code: FACT_SORT_CODE,
+                country_of_issuance: FACT_COUNTRY_OF_ISSUANCE }
       get(facts, input, "fact")
     end
 
