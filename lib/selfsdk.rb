@@ -40,13 +40,13 @@ module SelfSDK
     # @param app_id [string] the app id.
     # @param app_key [string] the app api key provided by developer portal.
     # @param storage_key [string] the key to be used to encrypt persisted data.
+    # @param storage_dir [String] The folder where encryption sessions and settings will be stored
     # @param [Hash] opts the options to authenticate.
     # @option opts [String] :base_url The self provider url.
     # @option opts [String] :messaging_url The messaging self provider url.
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [Symbol] :env The environment to be used, defaults to ":production".
-    # @option opts [String] :storage_dir The folder where encryption sessions and settings will be stored
-    def initialize(app_id, app_key, storage_key, opts = {})
+    def initialize(app_id, app_key, storage_key, storage_dir, opts = {})
       SelfSDK.logger.debug "syncing ntp times #{SelfSDK::Time.now}"
       env = opts.fetch(:env, "")
 
@@ -56,7 +56,7 @@ module SelfSDK
         @messaging_client = MessagingClient.new(messaging_url,
                                                 @client,
                                                 storage_key,
-                                                storage_dir: opts.fetch(:storage_dir, MessagingClient::DEFAULT_STORAGE_DIR),
+                                                storage_dir: storage_dir,
                                                 auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
                                                 device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE))
       end
