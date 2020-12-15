@@ -27,11 +27,11 @@ class AuthExample < Sinatra::Base
     # You can point to a different environment by passing optional values to the initializer in
     # case you need to
     opts = ENV.has_key?('SELF_ENV') ? { env: ENV["SELF_ENV"] } : {}
-    opts[:storage_dir] = "#{File.expand_path("..", "..", File.dirname(__FILE__))}/.self_storage"
+    storage_dir = "#{File.expand_path("..", File.dirname(__FILE__))}/self_storage"
 
     # Connect your app to Self network, get your connection details creating a new
     # app on https://developer.joinself.com/
-    client = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], opts)
+    client = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], storage_dir, opts)
 
     # let's subscribe to all authentication responses
     client.authentication.subscribe do |auth|

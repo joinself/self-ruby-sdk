@@ -21,9 +21,9 @@ module SelfSDK
         msgs = []
         devices.each do |d|
           msgs << proto(d)
+          SelfSDK.logger.info "synchronously messaging to #{@to}:#{d}"
         end
         res = @messaging.send_and_wait_for_response(msgs, self)
-        SelfSDK.logger.info "synchronously messaging to #{@to}:#{@d}"
         res
       end
 
@@ -32,7 +32,7 @@ module SelfSDK
         res = []
         devices.each do |d|
           res << @messaging.send_message(proto(d))
-          SelfSDK.logger.info "asynchronously requested information to #{@to}:#{@d}"
+          SelfSDK.logger.info "asynchronously requested information to #{@to}:#{d}"
         end
         res.first
       end
