@@ -62,7 +62,7 @@ module SelfSDK
 
       protected
 
-      def proto
+      def proto(to_device)
         encoded_facts = []
         @facts.each do |fact|
           encoded_facts.push(fact.to_hash)

@@ -17,7 +17,7 @@ module SelfSDK
 
       protected
 
-      def proto
+      def proto(to_device)
         nil
       end
     end

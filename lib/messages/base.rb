@@ -72,7 +72,7 @@ module SelfSDK
 
       protected
 
-      def proto
+      def proto(to_device)
         raise ::StandardError.new("must define this method")
       end
 
