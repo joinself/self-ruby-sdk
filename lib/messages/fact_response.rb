@@ -85,7 +85,7 @@ module SelfSDK
           id: SecureRandom.uuid,
           sender: "#{@jwt.id}:#{@messaging.device_id}",
           recipient: "#{@to}:#{@to_device}",
-          ciphertext: body,
+          ciphertext: encrypt_message(body, @to, @to_device)
         )
       end
     end
