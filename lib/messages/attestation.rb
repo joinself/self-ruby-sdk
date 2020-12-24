@@ -2,6 +2,8 @@
 
 # frozen_string_literal: true
 
+require_relative '../ntptime'
+
 module SelfSDK
   module Messages
     class Attestation
@@ -42,6 +44,7 @@ module SelfSDK
         o = {
             sub: @to,
             iss: @origin,
+            iat: SelfSDK::Time.now.strftime('%FT%TZ'),
             source: @source,
             fact: @fact_name,
             expected_value: @expected_value,
