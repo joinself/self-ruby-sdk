@@ -8,7 +8,7 @@ module SelfSDK
       @client = client
       @device = device
       @storage_key = storage_key
-      @storage_folder = storage_folder
+      @storage_folder = "#{storage_folder}/#{@client.jwt.key_id}"
 
       if File.exist?(account_path)
         # 1a) if alice's account file exists load the pickle from the file
