@@ -45,13 +45,17 @@ module SelfSDK
       @timeout = 120 # seconds
       @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
       @auto_reconnect = options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT)
-      @storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
+      @raw_storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
+      @storage_dir = "#{@raw_storage_dir}/apps/#{@jwt.id}/devices/#{@device_id}"
+      FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
       @offset_file = "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
       @offset = read_offset
+      migrate_old_storage_format
 
-      FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
       unless options.include? :no_crypto
-        @encryption_client = Crypto.new(@client, @device_id, @storage_dir, storage_key)
+        crypto_path = "#{@storage_dir}/keys"
+        FileUtils.mkdir_p crypto_path unless File.exist? crypto_path
+        @encryption_client = Crypto.new(@client, @device_id, crypto_path, storage_key)
       end
 
       if options.include? :ws
@@ -439,15 +443,36 @@ module SelfSDK
       return 0 unless File.exist? @offset_file
 
       File.open(@offset_file, 'rb') do |f|
-        return f.read.unpack('q')[0]
+        return f.read.to_i
       end
     end
 
     def write_offset(offset)
       File.open(@offset_file, 'wb') do |f|
         f.flock(File::LOCK_EX)
-        f.write([offset].pack('q'))
+        f.write([offset.to_s.rjust(19, "0")])
       end
+    end
+
+    def migrate_old_storage_format
+      # Move the offset file
+      old_offset_file = "#{@raw_storage_dir}/#{@jwt.id}:#{@device_id}.offset"
+      if File.file?(old_offset_file)
+        File.open(old_offset_file, 'rb') do |f|
+          offset = f.read.unpack('q')[0]
+          write_offset(offset)
+        end
+        File.delete(old_offset_file)
+      end
+      
+      # Move all pickle files
+      crypto_path = "#{@storage_dir}/keys/#{@jwt.key_id}"
+      FileUtils.mkdir_p crypto_path unless File.exist? crypto_path
+      Dir[File.join(@raw_storage_dir, "*.pickle")].each do |file|
+        filename = File.basename(file, ".pickle")
+        File.rename file, "#{crypto_path}/#{filename}.pickle"
+      end
+        
     end
   end
 end
