@@ -112,7 +112,7 @@ module SelfSDK
       "#{@storage_folder}/account.pickle"
     end
 
-    def session_path(selfid, device)
+    def session_path(selfid, device)      
       "#{@storage_folder}/#{selfid}:#{device}-session.pickle"
     end
   end
