@@ -450,7 +450,7 @@ module SelfSDK
     def write_offset(offset)
       File.open(@offset_file, 'wb') do |f|
         f.flock(File::LOCK_EX)
-        f.write([offset.to_s.rjust(19, "0")])
+        f.write(offset.to_s.rjust(19, "0"))
       end
     end
 
