@@ -57,6 +57,7 @@ module SelfSDK
         m.id = @id
         m.from = @to
         m.to = @from
+        m.sub = @to
         m.audience = @from
         m.to_device = @messaging.device_id
         m.from_device = @to_device

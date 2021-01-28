@@ -60,15 +60,13 @@ module SelfSDK
         end
       end
 
-      protected
-
-      def proto(to_device)
+      def body
         encoded_facts = []
         @facts.each do |fact|
           encoded_facts.push(fact.to_hash)
         end
-        body = @jwt.prepare(
-          typ: MSG_TYPE,
+        
+        { typ: MSG_TYPE,
           iss: @jwt.id,
           sub: @sub || @to,
           aud: @audience,
@@ -77,15 +75,20 @@ module SelfSDK
           cid: @id,
           jti: SecureRandom.uuid,
           status: @status,
-          facts: encoded_facts,
-        )
+          facts: encoded_facts }        
+      end
+
+      protected
+
+      def proto(to_device)
+
 
         Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
           id: SecureRandom.uuid,
           sender: "#{@jwt.id}:#{@messaging.device_id}",
           recipient: "#{@to}:#{@to_device}",
-          ciphertext: encrypt_message(body, @to, @to_device)
+          ciphertext: encrypt_message(@jwt.prepare(body), @to, @to_device)
         )
       end
     end
