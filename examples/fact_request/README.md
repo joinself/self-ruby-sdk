@@ -8,14 +8,14 @@ Due of its nature the information request is an asynchronous process, where your
 
 In order to run this example, you must have a valid app keypair. Self-keypairs are issued by [Self Developer portal](https://developer.selfid.net/) when you create a new app.
 
-Once you have your valid `SELF_APP_ID` and `SELF_APP_SECRET` you can run this example with:
+Once you have your valid `SELF_APP_ID` and `SELF_APP_DEVICE_SECRET` you can run this example with:
 
 ```bash
-$ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb <your_self_id>
+$ SELF_APP_ID=XXXXX SELF_APP_DEVICE_SECRET=XXXXXXXX ruby app.rb <your_self_id>
 ```
 or you can try a blocking approach:
 ```bash
-$ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby blocking.rb <your_self_id>
+$ SELF_APP_ID=XXXXX SELF_APP_DEVICE_SECRET=XXXXXXXX ruby blocking.rb <your_self_id>
 ```
 
 Note you must provide a valid user self_id `your_self_id`, this exaample will send an information request to this self_id, so keep an eye on the user's device to look for an information request.

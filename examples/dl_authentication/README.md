@@ -8,10 +8,10 @@ As part of this process, you have to share the generated link with your users, a
 
 In order to run this example, you must have a valid app keypair. Self-keypairs are issued by [Self Developer portal](https://developer.selfid.net/) when you create a new app.
 
-Once you have your valid `SELF_APP_ID` and `SELF_APP_SECRET` you can run this example with:
+Once you have your valid `SELF_APP_ID` and `SELF_APP_DEVICE_SECRET` you can run this example with:
 
 ```bash
-$ SELF_APP_ID=XXXXX SELF_APP_SECRET=XXXXXXXX ruby app.rb
+$ SELF_APP_ID=XXXXX SELF_APP_DEVICE_SECRET=XXXXXXXX ruby app.rb
 ```
 
 ## Process diagram

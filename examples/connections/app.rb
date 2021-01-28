@@ -17,7 +17,7 @@ storage_dir = "#{File.expand_path("..", File.dirname(__FILE__))}/self_storage"
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfsdk.net/
-@app = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_SECRET"], ENV["STORAGE_KEY"], storage_dir, opts)
+@app = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_DEVICE_SECRET"], ENV["STORAGE_KEY"], storage_dir, opts)
 
 puts "CONNECTIONS EXAMPLE"
 # Remove all existing connections
