@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.160)
+    selfsdk (0.0.161)
       async
       ed25519
       eventmachine
@@ -20,7 +20,7 @@ GEM
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
     ast (2.4.0)
-    async (1.28.3)
+    async (1.28.5)
       console (~> 1.10)
       nio4r (~> 2.3)
       timers (~> 4.1)
