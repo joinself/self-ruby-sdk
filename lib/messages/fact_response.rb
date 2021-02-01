@@ -81,8 +81,7 @@ module SelfSDK
       protected
 
       def proto(to_device)
-
-
+        @to_device = to_device
         Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
           id: SecureRandom.uuid,
