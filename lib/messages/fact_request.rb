@@ -39,7 +39,7 @@ module SelfSDK
                         end
       end
 
-      def parse(input)
+      def parse(input, envelope=nil)
         @input = input
         @typ = MSG_TYPE
         @payload = get_payload input
@@ -51,6 +51,11 @@ module SelfSDK
         @description = @payload.include?(:description) ? @payload[:description] : nil
         @facts = @payload[:facts]
         @options = @payload[:options]
+
+        if envelope
+          issuer = envelope.sender.split(":")
+          @from_device = issuer.last
+        end
       end
 
       def build_response
