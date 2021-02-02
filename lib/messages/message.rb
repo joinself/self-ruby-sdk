@@ -10,11 +10,13 @@ require_relative "authentication_req"
 module SelfSDK
   module Messages
     def self.parse(input, messaging, original=nil)
+      envelope = nil
       body = if input.is_a? String
-               input
+                input
              else
-               issuer = input.sender.split(":")
-               messaging.encryption_client.decrypt(input.ciphertext, issuer.first, issuer.last)
+                envelope = input
+                issuer = input.sender.split(":")
+                messaging.encryption_client.decrypt(input.ciphertext, issuer.first, issuer.last)
              end
 
       jwt = JSON.parse(body, symbolize_names: true)
@@ -23,16 +25,16 @@ module SelfSDK
       case payload[:typ]
       when "identities.facts.query.req"
         m = FactRequest.new(messaging)
-        m.parse(body)
+        m.parse(body, envelope)
       when "identities.facts.query.resp"
         m = FactResponse.new(messaging)
-        m.parse(body)
+        m.parse(body, envelope)
       when "identities.authenticate.resp"
         m = AuthenticationResp.new(messaging)
-        m.parse(body)
+        m.parse(body, envelope)
       when "identities.authenticate.req"
         m = AuthenticationReq.new(messaging)
-        m.parse(body)
+        m.parse(body, envelope)
       else
         raise StandardError.new("Invalid message type.")
       end

@@ -27,10 +27,12 @@ module SelfSDK
         res
       end
 
-      def send_message
+      def send_message(device_id = nil)
         check_credits!
+        dds = devices
+        dds = [device_id] if device_id
         res = []
-        devices.each do |d|
+        dds.each do |d|
           res << @messaging.send_message(proto(d))
           SelfSDK.logger.info "asynchronously requested information to #{@to}:#{d}"
         end

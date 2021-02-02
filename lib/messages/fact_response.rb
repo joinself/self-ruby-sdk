@@ -13,7 +13,7 @@ module SelfSDK
 
       attr_accessor :facts, :audience
 
-      def parse(input)
+      def parse(input, envelope=nil)
         @input = input
         @typ = MSG_TYPE
         @payload = get_payload input
@@ -34,6 +34,10 @@ module SelfSDK
           rescue StandardError => e
             SelfSDK.logger.info e.message
           end
+        end
+        if envelope
+          issuer = envelope.sender.split(":")
+          @from_device = issuer.last
         end
       end
 

@@ -9,7 +9,7 @@ module SelfSDK
   module Messages
     class AuthenticationMessage < Base
 
-      def parse(input, original=nil)
+      def parse(input, envelope=nil)
         @input = input
         @typ = @typ
         @payload = get_payload input
@@ -21,6 +21,10 @@ module SelfSDK
         @expires = ::Time.parse(payload[:exp])
         @issued = ::Time.parse(payload[:iat])
         @status = payload[:status]
+        if envelope
+          issuer = envelope.sender.split(":")
+          @from_device = issuer.last
+        end
       end
     end
   end
