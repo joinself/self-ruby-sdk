@@ -404,14 +404,22 @@ module SelfSDK
 
     # Authenticates current client on the websocket server.
     def authenticate
-      SelfSDK.logger.info "authenticating"
-      send_raw Msgproto::Auth.new(
-        type: Msgproto::MsgType::AUTH,
-        id: "authentication",
-        token: @jwt.auth_token,
-        device: @device_id,
-        offset: @offset,
-      )
+      res = wait_for 'authentication' do
+        SelfSDK.logger.info "authenticating"
+        send_raw Msgproto::Auth.new(
+          type: Msgproto::MsgType::AUTH,
+          id: "authentication",
+          token: @jwt.auth_token,
+          device: @device_id,
+          offset: @offset,
+        )
+      end
+
+      return res unless res.nil?
+
+      SelfSDK.logger.info "authentication timed out, retrying ..."
+      close
+      start_connection
     end
 
     def send_raw(msg)
