@@ -286,6 +286,14 @@ module SelfSDK
         @acks["authentication"][:waiting_cond].wait_while { @acks["authentication"][:waiting] }
         @acks.delete("authentication")
       end
+      # In case this does not succeed start the process again.
+      if @acks.include? 'authentication'
+        if @acks['authentication'][:waiting]
+          close
+          start_connection
+        end
+        @acks.delete("authentication")
+      end
     end
 
     # Cleans expired messages
@@ -404,22 +412,14 @@ module SelfSDK
 
     # Authenticates current client on the websocket server.
     def authenticate
-      res = wait_for 'authentication' do
-        SelfSDK.logger.info "authenticating"
-        send_raw Msgproto::Auth.new(
-          type: Msgproto::MsgType::AUTH,
-          id: "authentication",
-          token: @jwt.auth_token,
-          device: @device_id,
-          offset: @offset,
-        )
-      end
-
-      return res unless res.nil?
-
-      SelfSDK.logger.info "authentication timed out, retrying ..."
-      close
-      start_connection
+      SelfSDK.logger.info "authenticating"
+      send_raw Msgproto::Auth.new(
+        type: Msgproto::MsgType::AUTH,
+        id: "authentication",
+        token: @jwt.auth_token,
+        device: @device_id,
+        offset: @offset,
+      )
     end
 
     def send_raw(msg)
