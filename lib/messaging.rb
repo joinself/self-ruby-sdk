@@ -415,7 +415,7 @@ module SelfSDK
       SelfSDK.logger.info "authenticating"
       send_raw Msgproto::Auth.new(
         type: Msgproto::MsgType::AUTH,
-        id: "authentication",
+        id: SecureRandom.uuid,
         token: @jwt.auth_token,
         device: @device_id,
         offset: @offset,
