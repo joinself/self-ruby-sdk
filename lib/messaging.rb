@@ -43,6 +43,7 @@ module SelfSDK
       @client = client
       @ack_timeout = 60 # seconds
       @timeout = 120 # seconds
+      @auth_id = SecureRandom.uuid
       @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
       @auto_reconnect = options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT)
       @raw_storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
@@ -264,8 +265,10 @@ module SelfSDK
     # Start sthe websocket listener
     def start
       SelfSDK.logger.info "starting"
+      auth_id = @auth_id.dup
+
       @mon.synchronize do
-        @acks["authentication"] = { waiting_cond: @mon.new_cond,
+        @acks[auth_id] = { waiting_cond: @mon.new_cond,
                                     waiting: true,
                                     timeout: SelfSDK::Time.now + @ack_timeout }
       end
@@ -283,16 +286,16 @@ module SelfSDK
       end
 
       @mon.synchronize do
-        @acks["authentication"][:waiting_cond].wait_while { @acks["authentication"][:waiting] }
-        @acks.delete("authentication")
+        @acks[auth_id][:waiting_cond].wait_while { @acks[auth_id][:waiting] }
+        @acks.delete(auth_id)
       end
       # In case this does not succeed start the process again.
-      if @acks.include? 'authentication'
-        if @acks['authentication'][:waiting]
+      if @acks.include? auth_id
+        if @acks[auth_id][:waiting]
           close
           start_connection
         end
-        @acks.delete("authentication")
+        @acks.delete(auth_id)
       end
     end
 
@@ -412,14 +415,18 @@ module SelfSDK
 
     # Authenticates current client on the websocket server.
     def authenticate
+      @auth_id = SecureRandom.uuid if @auth_id.nil?
+
       SelfSDK.logger.info "authenticating"
       send_raw Msgproto::Auth.new(
         type: Msgproto::MsgType::AUTH,
-        id: "authentication",
+        id: @auth_id,
         token: @jwt.auth_token,
         device: @device_id,
         offset: @offset,
       )
+      
+      @auth_id = nil
     end
 
     def send_raw(msg)
