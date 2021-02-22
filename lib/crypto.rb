@@ -24,7 +24,8 @@ module SelfSDK
         keys = @account.otk['curve25519'].map{|k,v| {id: k, key: v}}.to_json
 
         # 1b-iv) post those keys to POST /v1/identities/<selfid>/devices/1/pre_keys/
-        @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
+        res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
+        raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
 
         # 1b-v) store the account to a file
         File.write(account_path, @account.to_pickle(storage_key))
