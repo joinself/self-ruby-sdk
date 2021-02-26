@@ -5,7 +5,7 @@
 require 'selfsdk'
 
 # Process input data
-# abort("provide self_id to authenticate") if ARGV.length != 1
+abort("provide self_id to authenticate") if ARGV.length != 1
 user = ARGV.first
 SelfSDK.logger = ::Logger.new($stdout).tap do |log|
   log.progname = "SelfSDK examples"
@@ -33,10 +33,10 @@ begin
   end
 
   # Authenticate a user to your app.
-#  puts "Sending an authentication request to your device..."
-#  @app.authentication.request user, async: true
+  puts "Sending an authentication request to your device..."
+  @app.authentication.request user, async: true
 rescue => e
   puts "ERROR : #{e}"
   exit!
 end
-sleep 1000000
+sleep 100
