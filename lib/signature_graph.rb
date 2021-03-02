@@ -261,7 +261,7 @@ module SelfSDK
 
       sk = @keys[operation.signing_key]
 
-      raise "operation specifies a signing key that does not exist" if k.nil?
+      raise "operation specifies a signing key that does not exist" if sk.nil?
 
       # if this is an account recovery, nuke all existing keys
       if sk.type == KEY_TYPE_RECOVERY

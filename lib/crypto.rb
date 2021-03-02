@@ -90,6 +90,27 @@ module SelfSDK
 
         # 7b-ii) use the initial message to create a session for bob or carol
         session_with_bob = @account.inbound_session(m)
+
+        # 7b-iii) remove the session's prekey from the account
+        @account.remove_one_time_keys(session_with_bob)
+
+        current_one_time_keys = @account.otk['curve25519']
+
+        # 7b-iv) if the number of remaining prekeys is below a certain threshold, publish new keys
+        if current_one_time_keys.length < 10
+          @account.gen_otk(100)
+
+          keys = Array.new
+
+          @account.otk['curve25519'].each do |k,v|
+            keys.push({id: k, key: v}) if current_one_time_keys[k].nil?
+          end
+
+          res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys.to_json)
+          raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
+        end
+
+        File.write(account_path, @account.to_pickle(@storage_key))
       end
 
       # 8) create a group session and set the identity of the account you're using
