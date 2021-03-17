@@ -10,6 +10,7 @@ module SelfSDK
                     :description, :sub, :exp_timeout
 
       def initialize(messaging)
+        @intermediary = nil
         @client = messaging.client
         @jwt = @client.jwt
         @messaging = messaging

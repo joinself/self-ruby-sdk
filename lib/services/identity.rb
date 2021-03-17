@@ -35,6 +35,18 @@ module SelfSDK
         @client.public_key(selfid, kid).public_key
       end
 
+      # Gets an identity score
+      #
+      # @param [String] selfid gets the identity details (app/user)
+      # @return [integer] the identity score
+      def score(selfid)
+        res = @client.get("/v1/identities/#{selfid}/score")
+        payload = JSON.parse(res.body, symbolize_names: true)
+        raise payload[:message] if payload.include? :error_code
+
+        payload[:score]
+      end
+
       # Gets an app/identity details
       #
       # @param [String] selfid gets the identity details (app/user)
