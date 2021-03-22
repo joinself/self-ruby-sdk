@@ -2,6 +2,8 @@
 
 By [Self ID](https://www.joinself.com/).
 
+
+![example branch parameter](https://github.com/joinself/self-ruby-sdk/actions/workflows/ci.yml/badge.svg?branch=master)
 [![Build Status](https://api.travis-ci.org/joinself/self-ruby-sdk.svg?branch=master)](http://travis-ci.org/joinself/self-ruby-sdk)
 [![Gem Version](https://badge.fury.io/rb/selfsdk.svg)](https://badge.fury.io/rb/selfsdk)
 

@@ -1,0 +1,30 @@
+name: CI
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ruby:2.6.3
+      env:
+        TZ: UTC
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup environment
+        run: |
+          apt-get update
+          apt-get -y install curl libsodium-dev
+          curl https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb -o /tmp/libself-olm_0.1.17_amd64.deb
+          curl https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb -o /tmp/libself-omemo_0.1.3_amd64.deb
+          apt-get -y install /tmp/libself-olm_0.1.17_amd64.deb
+          apt-get -y install /tmp/libself-omemo_0.1.3_amd64.deb
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Test Package
+        run: rake test
