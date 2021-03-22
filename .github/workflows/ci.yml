@@ -8,8 +8,6 @@ jobs:
 
     container:
       image: ruby:2.6.3
-      env:
-        TZ: UTC
 
     steps:
       - uses: actions/checkout@v2
