@@ -88,6 +88,7 @@ module SelfSDK
     def share_information(recipient, recipient_device, request)
       send_message Msgproto::Message.new(
         type: Msgproto::MsgType::MSG,
+        sub_type: Msgproto::MsgSubType::Unknown,
         id: SecureRandom.uuid,
         sender: "#{@jwt.id}:#{@device_id}",
         recipient: "#{recipient}:#{recipient_device}",
@@ -105,6 +106,7 @@ module SelfSDK
         @to_device = @client.devices(recipient).first
         send_message msg = Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
+          sub_type: Msgproto::MsgSubType::Unknown,
           id: SecureRandom.uuid,
           sender: "#{@jwt.id}:#{@device_id}",
           recipient: "#{recipient}:#{@to_device}",

@@ -105,6 +105,7 @@ module SelfSDK
 
         Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
+          sub_type: Msgproto::MsgSubType::FactReq,
           id: @id,
           sender: "#{@jwt.id}:#{@messaging.device_id}",
           recipient: recipient,
