@@ -88,6 +88,7 @@ module SelfSDK
         @to_device = to_device
         Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
+          sub_type: Msgproto::MsgSubType::FactResp,
           id: SecureRandom.uuid,
           sender: "#{@jwt.id}:#{@messaging.device_id}",
           recipient: "#{@to}:#{@to_device}",

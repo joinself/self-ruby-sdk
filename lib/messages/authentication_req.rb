@@ -42,6 +42,7 @@ module SelfSDK
 
       def proto(to_device)
         Msgproto::Message.new(type: Msgproto::MsgType::MSG,
+                              sub_type: Msgproto::MsgSubType::AuthenticationReq,
                               sender: "#{@jwt.id}:#{@messaging.device_id}",
                               id: @id,
                               recipient: "#{@to}:#{to_device}",
