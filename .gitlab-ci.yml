@@ -55,18 +55,16 @@ stages:
     echo "Version hasn't changed. Nothing to do here."
   fi
 
-.slack-notify: &slack-notify |
-  if [[ -z ${body} ]]; then
-    slack chat send "New release <https://github.com/joinself/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/joinself/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n- ${subject}" '#ci'
-  else
-    slack chat send "New release <https://github.com/joinself/${CI_PROJECT_NAME}|${CI_PROJECT_NAME}> <https://github.com/joinself/${CI_PROJECT_NAME}/commits/${version}|${version}>\n\n${body}" '#ci'
-  fi
+.setup-slack: &setup-slack |
+  curl https://raw.githubusercontent.com/rockymadden/slack-cli/master/src/slack -o /usr/local/bin/slack
+  chmod +x /usr/local/bin/slack
 
 .publish: &publish |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
 
   if ! gem search -a selfsdk | grep $version; then
     gem push selfsdk-${version}.gem
+    ${SCRIPTS_DIR}/slack-release-notification ${version}
   else
     echo "Gem version already exists. Nothing to do here."
   fi
@@ -110,7 +108,6 @@ release:
   script:
     - ${SCRIPTS_DIR}/git-setup
     - *git-release
-    - *slack-notify
   only:
     - master
 
@@ -118,6 +115,7 @@ rubyGems:
   stage: publish
   script:
     - ${SCRIPTS_DIR}/rubygems-setup
+    - *setup-slack
     - *publish
   only:
     - master
