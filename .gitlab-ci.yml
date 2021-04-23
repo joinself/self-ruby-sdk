@@ -55,16 +55,12 @@ stages:
     echo "Version hasn't changed. Nothing to do here."
   fi
 
-.setup-slack: &setup-slack |
-  curl https://raw.githubusercontent.com/rockymadden/slack-cli/master/src/slack -o /usr/local/bin/slack
-  chmod +x /usr/local/bin/slack
-
 .publish: &publish |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
 
   if ! gem search -a selfsdk | grep $version; then
     gem push selfsdk-${version}.gem
-    ${SCRIPTS_DIR}/slack-release-notification ${version}
+    ${SCRIPTS_DIR}/slack-release-notification -v ${version}
   else
     echo "Gem version already exists. Nothing to do here."
   fi
@@ -115,7 +111,6 @@ rubyGems:
   stage: publish
   script:
     - ${SCRIPTS_DIR}/rubygems-setup
-    - *setup-slack
     - *publish
   only:
     - master
