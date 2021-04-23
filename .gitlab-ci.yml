@@ -60,7 +60,7 @@ stages:
 
   if ! gem search -a selfsdk | grep $version; then
     gem push selfsdk-${version}.gem
-    ${SCRIPTS_DIR}/slack-release-notification -v ${version}
+    ${SCRIPTS_DIR}/slack-release-notification -n joinself -v ${version}
   else
     echo "Gem version already exists. Nothing to do here."
   fi
