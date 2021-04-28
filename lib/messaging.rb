@@ -281,10 +281,6 @@ module SelfSDK
         loop { sleep 10; clean_timeouts }
       end
 
-      Thread.new do
-        loop { sleep 30; ping }
-      end
-
       @mon.synchronize do
         @acks[auth_id][:waiting_cond].wait_while { @acks[auth_id][:waiting] }
         @acks.delete(auth_id)
@@ -351,11 +347,6 @@ module SelfSDK
       end
     end
 
-    # Pings the websocket server to keep the connection alive.
-    def ping
-      # SelfSDK.logger.info "ping"
-      @ws&.ping
-    end
 
     # Process an event when it arrives through the websocket connection.
     def on_message(event)
