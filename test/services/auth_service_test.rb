@@ -52,12 +52,12 @@ class SelfSDKTest < Minitest::Test
     let(:app) { { paid_actions: true } }
     let(:blocked_app) { { paid_actions: false } }
 
-    def test_get_request_body
+    it "test_get_request_body" do
       req = service.request(selfid, cid: cid, request: false)
       assert_equal json_body, req
     end
 
-    def test_non_blocking_request
+    it "test_non_blocking_request" do
       expect(messaging_service).to receive(:is_permitted?).and_return(true)
       expect(messaging).to receive(:device_id).and_return(app_device_id)
       expect(messaging).to receive(:set_observer).once
@@ -73,20 +73,20 @@ class SelfSDKTest < Minitest::Test
       assert_equal cid, res
     end
 
-    def test_blocking_request
+    it "test_blocking_request" do
       expect(messaging_service).to receive(:is_permitted?).and_return(true)
-      expect(messaging).to receive(:device_id).and_return(app_device_id)
+      expect(messaging).to receive(:device_id).twice.and_return(app_device_id)
       expect(messaging).to receive(:send_and_wait_for_response).and_return(cid)
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
-      expect(client).to receive(:devices).and_return([app_device_id])
+      expect(client).to receive(:devices).twice.and_return([app_device_id])
       expect(client).to receive(:app).and_return(app)
 
       res = service.request selfid, cid: cid
       assert_equal "cid", res
     end
 
-    def test_generate_qr
+    it "test_generate_qr" do
       res = service.generate_qr(selfid: selfid, cid: cid)
       assert_equal RQRCode::QRCode, res.class
     end

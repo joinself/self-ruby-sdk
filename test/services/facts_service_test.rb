@@ -52,21 +52,20 @@ class SelfSDKTest < Minitest::Test
     let(:response) { double("response", input: response_input, uuid: cid, selfid: selfid) }
     let(:identity) { { public_keys: [ { key: "pk1"} ] } }
 
-    def test_get_request_body
+    it "test_get_request_body" do
       req = service.request(selfid, ["email_address", "display_name"], request: false)
       assert_equal json_body, req
     end
 
-    def test_non_blocking_request
+    it ":test_non_blocking_request" do
       expect(messaging_service).to receive(:is_permitted?).and_return(true)
       expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:device_id).and_return("1").once
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
-      expect(client).to receive(:devices).and_return(devices)
+      expect(client).to receive(:devices).and_return(devices).once
       expect(messaging).to receive(:send_message) do |arg|
         assert_equal arg.type, :MSG
-        assert_equal arg.id, cid
         assert_equal arg.sender, "#{appid}:1"
         assert_equal arg.recipient, "#{selfid}:#{devices.first}"
         assert_equal arg.ciphertext, '{}'
@@ -79,34 +78,33 @@ class SelfSDKTest < Minitest::Test
       assert_equal json_body, res
     end
 
-    def test_blocking_request
+    it ":test_blocking_request" do
       expect(messaging_service).to receive(:is_permitted?).and_return(true)
-      expect(messaging).to receive(:device_id).once.and_return("1")
+      expect(messaging).to receive(:device_id).twice.and_return("1")
       expect(messaging).to receive(:send_and_wait_for_response).once.and_return("response")
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
-      expect(client).to receive(:devices).and_return(devices)
+      expect(client).to receive(:devices).twice.and_return(devices)
       expect(client).to receive(:app).and_return(app)
 
       res = service.request selfid, ["email_address", "display_name"], cid: cid
       assert_equal "response", res
     end
 
-    def test_generate_qr
+    it ":test_generate_qr" do
       res = service.generate_qr(["email_address", "display_name"], cid: cid, selfid: selfid)
       assert_equal RQRCode::QRCode, res.class
     end
 
-    def test_intermediary_request
+    it ":test_intermediary_request" do
       expect(messaging_service).to receive(:is_permitted?).and_return(true)
       expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:device_id).and_return("1").once
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
-      expect(client).to receive(:devices).and_return(devices)
+      expect(client).to receive(:devices).and_return(devices).once
       expect(messaging).to receive(:send_message) do |arg|
         assert_equal arg.type, :MSG
-        assert_equal arg.id, cid
         assert_equal arg.sender, "#{appid}:1"
         assert_equal arg.recipient, "#{selfid}:#{devices.first}"
         assert_equal arg.ciphertext, '{}'

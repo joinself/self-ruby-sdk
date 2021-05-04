@@ -101,15 +101,27 @@ module SelfSDK
     # @param type [string] message type
     # @param request [hash] original message requesing information
     def send_custom(recipient, request_body)
-      # TODO (adriacidre) this is sending the message to the first device only
-        @to_device = @client.devices(recipient).first
-        send_message msg = Msgproto::Message.new(
+      @client.devices(recipient).each do |to_device|
+        send_message Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
           id: SecureRandom.uuid,
           sender: "#{@jwt.id}:#{@device_id}",
-          recipient: "#{recipient}:#{@to_device}",
+          recipient: "#{recipient}:#{to_device}",
           ciphertext: @jwt.prepare(request_body),
         )
+      end
+
+      @client.devices(@jwt.id).each do |to_device|
+        if to-device != @device_id 
+          send_message Msgproto::Message.new(
+            type: Msgproto::MsgType::MSG,
+            id: SecureRandom.uuid,
+            sender: "#{@jwt.id}:#{@device_id}",
+            recipient: "#{recipient}:#{to_device}",
+            ciphertext: @jwt.prepare(request_body),
+          )
+        end
+      end
     end
 
     # Allows incomming messages from the given identity

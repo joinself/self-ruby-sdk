@@ -105,7 +105,7 @@ module SelfSDK
 
         Msgproto::Message.new(
           type: Msgproto::MsgType::MSG,
-          id: @id,
+          id: SecureRandom.uuid,
           sender: "#{@jwt.id}:#{@messaging.device_id}",
           recipient: recipient,
           ciphertext: ciphertext )
