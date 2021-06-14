@@ -21,8 +21,13 @@ module SelfSDK
         msgs = []
         devices.each do |d|
           msgs << proto(d)
-          SelfSDK.logger.info "synchronously messaging to #{@to}:#{d}"
         end
+        current_devices.each do |d|
+          if d != @messaging.device_id
+            msgs << proto(d)
+          end
+        end
+        SelfSDK.logger.info "synchronously messaging to #{@to}"
         res = @messaging.send_and_wait_for_response(msgs, self)
         res
       end
@@ -82,6 +87,10 @@ module SelfSDK
         return @client.devices(@to) if @intermediary.nil?
                   
         @client.devices(@intermediary)
+      end
+
+      def current_devices
+        @client.devices(@jwt.id)
       end
 
       def check_credits!
