@@ -366,7 +366,8 @@ module SelfSDK
       SelfSDK.logger.info " - received #{input.id} (#{input.type})"
       case input.type
       when :ERR
-        SelfSDK.logger.info "error #{input.sender} on #{input.id}"
+        SelfSDK.logger.warn "error #{input.sender} on #{input.id}"
+        SelfSDK.logger.warn "#{input.to_json}"
         mark_as_arrived(input.id)
       when :ACK
         SelfSDK.logger.info "#{input.id} acknowledged"

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.172)
+    selfsdk (0.0.173)
       async
       ed25519
       eventmachine
@@ -38,7 +38,7 @@ GEM
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
     fiber-local (1.0.0)
-    google-protobuf (3.17.3)
+    google-protobuf (3.17.3-universal-darwin)
     hashdiff (1.0.0)
     httparty (0.18.1)
       mime-types (~> 3.0)
