@@ -11,16 +11,19 @@ module SelfSDK
     def initialize(messaging)
       @messaging = messaging
       @jwt = @messaging.jwt
+      @acl_rules = []
     end
 
     # Lists allowed connections.
     def list
       SelfSDK.logger.info "Listing allowed connections"
-      @messaging.list_acl_rules
+      @acl_rules = @messaging.list_acl_rules if @acl_rules.empty?
+      @acl_rules
     end
 
     # Allows incomming messages from the given identity.
     def allow(id)
+      @acl_rules << id
       SelfSDK.logger.info "Allowing connections from #{id}"
       @messaging.add_acl_rule(@jwt.prepare(jti: SecureRandom.uuid,
                                            cid: SecureRandom.uuid,
@@ -35,6 +38,7 @@ module SelfSDK
 
     # Deny incomming messages from the given identity.
     def deny(id)
+      @acl_rules.delete(id)
       SelfSDK.logger.info "Denying connections from #{id}"
       @messaging.remove_acl_rule(@jwt.prepare(jti: SecureRandom.uuid,
                                                cid: SecureRandom.uuid,
