@@ -47,7 +47,7 @@ stages:
     git remote set-url origin https://github.com/joinself/${CI_PROJECT_NAME}
     git tag -a ${version} -m "${version}"
     git push origin ${version}
-    hub release create -m "${version}" -m "${release_notes}" ${version}
+    gh release create "${version}" --notes "${release_notes}"
   else
     echo "Version hasn't changed. Nothing to do here."
   fi
