@@ -4,6 +4,7 @@
 
 require_relative 'test_helper'
 require 'selfsdk'
+require 'self_msgproto'
 require "ed25519"
 
 require 'webmock/minitest'
@@ -23,7 +24,7 @@ class SelfSDKTest < Minitest::Test
 
     def test_share_information
       expect(ws).to receive(:send) do |msg|
-        input = Msgproto::Message.decode(msg.pack('c*'))
+        input = SelfMsg::Message.new(data: msg.pack('c*'))
         jwt = JSON.parse(input.ciphertext, symbolize_names: true)
         payload = JSON.parse(messaging_client.jwt.decode(jwt[:payload]), symbolize_names: true)
         assert_equal body, payload

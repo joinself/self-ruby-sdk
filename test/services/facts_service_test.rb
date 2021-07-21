@@ -5,6 +5,7 @@
 require_relative '../test_helper'
 require 'rspec/mocks/minitest_integration'
 require 'selfsdk'
+require 'self_msgproto'
 
 require 'webmock/minitest'
 
@@ -65,7 +66,6 @@ class SelfSDKTest < Minitest::Test
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
       expect(client).to receive(:devices).and_return(devices).once
       expect(messaging).to receive(:send_message) do |arg|
-        assert_equal arg.type, :MSG
         assert_equal arg.sender, "#{appid}:1"
         assert_equal arg.recipient, "#{selfid}:#{devices.first}"
         assert_equal arg.ciphertext, '{}'
@@ -104,7 +104,6 @@ class SelfSDKTest < Minitest::Test
       expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
       expect(client).to receive(:devices).and_return(devices).once
       expect(messaging).to receive(:send_message) do |arg|
-        assert_equal arg.type, :MSG
         assert_equal arg.sender, "#{appid}:1"
         assert_equal arg.recipient, "#{selfid}:#{devices.first}"
         assert_equal arg.ciphertext, '{}'
