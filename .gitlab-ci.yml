@@ -28,12 +28,10 @@ stages:
   tmpdir=$(mktemp -d)
   curl https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb -o ${tmpdir}/libself-olm_0.1.17_amd64.deb
   curl https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb -o ${tmpdir}/libself-omemo_0.1.3_amd64.deb
-  curl http://archive.ubuntu.com/ubuntu/pool/universe/f/flatbuffers/libflatbuffers1_1.12.1~git20200711.33e2d80+dfsg1-0.6_amd64.deb -o ${tmpdir}libflatbuffers.deb
-  curl http://archive.ubuntu.com/ubuntu/pool/universe/f/flatbuffers/libflatbuffers-dev_1.12.1~git20200711.33e2d80+dfsg1-0.6_amd64.deb -o ${tmpdir}libflatbuffers-dev.deb
   apt-get -y install ${tmpdir}/libself-olm_0.1.17_amd64.deb
   apt-get -y install ${tmpdir}/libself-omemo_0.1.3_amd64.deb
-  apt-get -y install ${tmpdir}/libflatbuffers.deb
-  apt-get -y install ${tmpdir}/libflatbuffers-dev.deb
+  cd ${tmpdir} && git clone https://github.com/google/flatbuffers.git
+  cd ${tmpdir}/flatbuffers && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
 
 .git-release: &git-release |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
