@@ -2,6 +2,7 @@
 
 # frozen_string_literal: true
 
+require 'self_msgproto'
 require_relative 'base'
 require_relative '../ntptime'
 require_relative 'authentication_message'
@@ -41,11 +42,12 @@ module SelfSDK
       protected
 
       def proto(to_device)
-        Msgproto::Message.new(type: Msgproto::MsgType::MSG,
-                              sender: "#{@jwt.id}:#{@messaging.device_id}",
-                              id: SecureRandom.uuid,
-                              recipient: "#{@to}:#{to_device}",
-                              ciphertext: encrypt_message(@jwt.prepare(body), @to, to_device))
+        m = SelfMsg::Message.new
+        m.id = SecureRandom.uuid
+        m.sender = "#{@jwt.id}:#{@messaging.device_id}"
+        m.recipient = "#{@to}:#{to_device}"
+        m.ciphertext = encrypt_message(@jwt.prepare(body), @to, to_device)
+        m
       end
 
     end

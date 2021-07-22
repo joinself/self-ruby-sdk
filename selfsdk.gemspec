@@ -23,15 +23,6 @@ Gem::Specification.new do |s|
     "lib/signature_graph.rb",
     "lib/acl.rb",
     "lib/sources.rb",
-    "lib/proto/",
-    "lib/proto/acl_pb.rb",
-    "lib/proto/aclcommand_pb.rb",
-    "lib/proto/auth_pb.rb",
-    "lib/proto/errtype_pb.rb",
-    "lib/proto/header_pb.rb",
-    "lib/proto/message_pb.rb",
-    "lib/proto/msgtype_pb.rb",
-    "lib/proto/notification_pb.rb",
     "lib/messages/",
     "lib/messages/base.rb",
     "lib/messages/fact.rb",
@@ -47,8 +38,9 @@ Gem::Specification.new do |s|
     "lib/services/identity.rb",
     "lib/services/messaging.rb"
   ]
-  s.require_paths = ["lib", "lib/proto", "lib/messages", "lib/services"]
+  s.require_paths = ["lib", "lib/messages", "lib/services"]
   s.add_dependency "self_crypto"
+  s.add_dependency "self_msgproto"
   s.add_dependency "async"
   s.add_dependency "ed25519"
   s.add_dependency "eventmachine"

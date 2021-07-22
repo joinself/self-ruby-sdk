@@ -6,13 +6,9 @@ require 'json'
 require 'monitor'
 require 'faye/websocket'
 require 'fileutils'
+require 'self_msgproto'
 require_relative 'crypto'
 require_relative 'messages/message'
-require_relative 'proto/auth_pb'
-require_relative 'proto/message_pb'
-require_relative 'proto/msgtype_pb'
-require_relative 'proto/acl_pb'
-require_relative 'proto/aclcommand_pb'
 
 module SelfSDK
   class MessagingClient
@@ -86,13 +82,13 @@ module SelfSDK
     # @param recipient_device [string] device id for the selfID to be requested
     # @param request [string] original message requesing information
     def share_information(recipient, recipient_device, request)
-      send_message Msgproto::Message.new(
-        type: Msgproto::MsgType::MSG,
-        id: SecureRandom.uuid,
-        sender: "#{@jwt.id}:#{@device_id}",
-        recipient: "#{recipient}:#{recipient_device}",
-        ciphertext: @jwt.prepare(request),
-      )
+      m = SelfMsg::Message.new
+      m.id = SecureRandom.uuid 
+      m.sender = "#{@jwt.id}:#{@device_id}"
+      m.recipient = "#{recipient}:#{recipient_device}"
+      m.ciphertext = @jwt.prepare(request)
+
+      send_message m
     end
 
     # Send custom mmessage
@@ -102,24 +98,24 @@ module SelfSDK
     # @param request [hash] original message requesing information
     def send_custom(recipient, request_body)
       @client.devices(recipient).each do |to_device|
-        send_message Msgproto::Message.new(
-          type: Msgproto::MsgType::MSG,
-          id: SecureRandom.uuid,
-          sender: "#{@jwt.id}:#{@device_id}",
-          recipient: "#{recipient}:#{to_device}",
-          ciphertext: @jwt.prepare(request_body),
-        )
+        m = SelfMsg::Message.new
+        m.id = SecureRandom.uuid
+        m.sender = "#{@jwt.id}:#{@device_id}"
+        m.recipient = "#{recipient}:#{to_device}"
+        m.ciphertext = @jwt.prepare(request_body)
+
+        send_message m
       end
 
       @client.devices(@jwt.id).each do |to_device|
-        if to-device != @device_id 
-          send_message Msgproto::Message.new(
-            type: Msgproto::MsgType::MSG,
-            id: SecureRandom.uuid,
-            sender: "#{@jwt.id}:#{@device_id}",
-            recipient: "#{recipient}:#{to_device}",
-            ciphertext: @jwt.prepare(request_body),
-          )
+        if to_device != @device_id 
+          m = SelfMsg::Message.new
+          m.id = SecureRandom.uuid
+          m.sender = "#{@jwt.id}:#{@device_id}"
+          m.recipient = "#{recipient}:#{to_device}"
+          m.ciphertext = @jwt.prepare(request_body)
+
+          send_message m
         end
       end
     end
@@ -128,40 +124,40 @@ module SelfSDK
     #
     # @params payload [string] base64 encoded payload to be sent
     def add_acl_rule(payload)
-      send_message Msgproto::AccessControlList.new(
-        type: Msgproto::MsgType::ACL,
-        id: SecureRandom.uuid,
-        command: Msgproto::ACLCommand::PERMIT,
-        payload: payload,
-      )
+      a = SelfMsg::Acl.new
+      a.id = SecureRandom.uuid
+      a.command = SelfMsg::AclCommandPERMIT
+      a.payload = payload
+
+      send_message a
     end
 
     # Blocks incoming messages from specified identities
     #
     # @params payload [string] base64 encoded payload to be sent
     def remove_acl_rule(payload)
-      send_message Msgproto::AccessControlList.new(
-        type: Msgproto::MsgType::ACL,
-        id: SecureRandom.uuid,
-        command: Msgproto::ACLCommand::REVOKE,
-        payload: payload,
-      )
+      a = SelfMsg::Acl.new
+      a.id = SecureRandom.uuid
+      a.command = SelfMsg::AclCommandREVOKE
+      a.payload = payload
+
+      send_message a
     end
 
     # Lists acl rules
     def list_acl_rules
       wait_for 'acl_list' do
-        send_raw Msgproto::AccessControlList.new(
-          type: Msgproto::MsgType::ACL,
-          id: SecureRandom.uuid,
-          command: Msgproto::ACLCommand::LIST,
-        )
+        a = SelfMsg::Acl.new
+        a.id = SecureRandom.uuid
+        a.command = SelfMsg::AclCommandLIST
+
+        send_raw a
       end
     end
 
     # Sends a message and waits for the response
     #
-    # @params msg [Msgproto::Message] message object to be sent
+    # @params msg [SelfMsg::Message] message object to be sent
     def send_and_wait_for_response(msgs, original)
       wait_for msgs.first.id, original do
         msgs.each do |msg|
@@ -202,7 +198,7 @@ module SelfSDK
 
     # Send a message through self network
     #
-    # @params msg [Msgproto::Message] message object to be sent
+    # @params msg [SelfMsg::Message] message object to be sent
     def send_message(msg)
       uuid = msg.id
       @mon.synchronize do
@@ -362,34 +358,39 @@ module SelfSDK
 
     # Process an event when it arrives through the websocket connection.
     def on_message(event)
-      input = Msgproto::Message.decode(event.data.pack('c*'))
-      SelfSDK.logger.info " - received #{input.id} (#{input.type})"
-      case input.type
-      when :ERR
-        SelfSDK.logger.warn "error #{input.sender} on #{input.id}"
-        SelfSDK.logger.warn "#{input.to_json}"
-        mark_as_arrived(input.id)
-      when :ACK
-        SelfSDK.logger.info "#{input.id} acknowledged"
-        mark_as_acknowledged input.id
-      when :ACL
+      data = event.data.pack('c*')
+      hdr = SelfMsg::Header.new(data: data)
+
+      SelfSDK.logger.info " - received #{hdr.id} (#{hdr.type})"
+      case hdr.type
+      when SelfMsg::MsgTypeMSG
+        SelfSDK.logger.info "Message #{hdr.id} received"
+        m = SelfMsg::Message.new(data: data)
+        process_incomming_message m
+      when SelfMsg::MsgTypeACK
+        SelfSDK.logger.info "#{hdr.id} acknowledged"
+        mark_as_acknowledged hdr.id
+      when SelfMsg::MsgTypeERR
+        SelfSDK.logger.warn "error on #{hdr.id}"
+        e = SelfMsg::Notification.new(data: data)
+        SelfSDK.logger.warn "#{e.error}"
+        mark_as_arrived(hdr.id)
+      when SelfMsg::MsgTypeACL
         SelfSDK.logger.info "ACL received"
-        process_incomming_acl input
-      when :MSG
-        SelfSDK.logger.info "Message #{input.id} received"
-        process_incomming_message input
+        a = SelfMsg::Acl.new(data: data)
+        process_incomming_acl a
       end
     rescue TypeError
       SelfSDK.logger.info "invalid array message"
     end
 
     def process_incomming_acl(input)
-      list = JSON.parse(input.recipient)
+      list = JSON.parse(input.payload)
 
       @messages['acl_list'][:response] = list
       mark_as_arrived 'acl_list'
     rescue StandardError => e
-      p "Error processing incoming ACL #{input.to_json}"
+      p "Error processing incoming ACL #{input.id} #{input.payload}"
       SelfSDK.logger.info e
       SelfSDK.logger.info e.backtrace
       nil
@@ -422,19 +423,20 @@ module SelfSDK
       @auth_id = SecureRandom.uuid if @auth_id.nil?
 
       SelfSDK.logger.info "authenticating"
-      send_raw Msgproto::Auth.new(
-        type: Msgproto::MsgType::AUTH,
-        id: @auth_id,
-        token: @jwt.auth_token,
-        device: @device_id,
-        offset: @offset,
-      )
-      
+
+      a = SelfMsg::Auth.new
+      a.id = @auth_id
+      a.token = @jwt.auth_token
+      a.device = @device_id
+      a.offset = @offset
+
+      send_raw a
+
       @auth_id = nil
     end
 
     def send_raw(msg)
-      @ws.send(msg.to_proto.bytes)
+      @ws.send(msg.to_fb.bytes)
     end
 
     # Marks a message as arrived.

@@ -30,7 +30,7 @@ module SelfSDK
   # @attr_reader [Types] app_key the api key for the current app.
   class App
     BASE_URL = "https://api.joinself.com".freeze
-    MESSAGING_URL = "wss://messaging.joinself.com/v1/messaging".freeze
+    MESSAGING_URL = "wss://messaging.joinself.com/v2/messaging".freeze
 
     attr_reader :client
     attr_accessor :messaging_client
@@ -105,7 +105,7 @@ module SelfSDK
 
       def messaging_url(opts)
         return opts[:messaging_url] if opts.key? :messaging_url
-        return "wss://messaging.#{opts[:env].to_s}.joinself.com/v1/messaging" if opts.key? :env
+        return "wss://messaging.#{opts[:env].to_s}.joinself.com/v2/messaging" if opts.key? :env
         MESSAGING_URL
       end
 
