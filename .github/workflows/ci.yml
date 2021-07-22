@@ -18,7 +18,7 @@ jobs:
           apt-get -y install curl libsodium-dev
           curl https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb -o /tmp/libself-olm_0.1.17_amd64.deb
           curl https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb -o /tmp/libself-omemo_0.1.3_amd64.deb
-          curl http://archive.ubuntu.com/ubuntu/pool/universe/f/flatbuffers/libflatbuffers-dev_1.12.1~git20200711.33e2d80+dfsg1-0.6_amd64.deb /tmp/libflatbuffers-dev.deb
+          curl http://archive.ubuntu.com/ubuntu/pool/universe/f/flatbuffers/libflatbuffers-dev_1.12.1~git20200711.33e2d80+dfsg1-0.6_amd64.deb -o /tmp/libflatbuffers-dev.deb
           apt-get -y install /tmp/libself-olm_0.1.17_amd64.deb
           apt-get -y install /tmp/libself-omemo_0.1.3_amd64.deb
           apt-get -y install /tmp/libflatbuffers-dev.deb
