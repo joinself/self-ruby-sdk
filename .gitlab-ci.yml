@@ -23,6 +23,7 @@ stages:
   gem install selfsdk-${version}.gem
 
 .setup: &setup |
+  cwd=$(pwd)
   apt-get update
   apt-get -y install libsodium-dev cmake build-essential
   tmpdir=$(mktemp -d)
@@ -32,6 +33,7 @@ stages:
   apt-get -y install ${tmpdir}/libself-omemo_0.1.3_amd64.deb
   cd ${tmpdir} && git clone https://github.com/google/flatbuffers.git
   cd ${tmpdir}/flatbuffers && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
+  cd ${cwd}
 
 .git-release: &git-release |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
