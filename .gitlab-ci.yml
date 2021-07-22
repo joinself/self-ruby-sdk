@@ -24,7 +24,7 @@ stages:
 
 .setup: &setup |
   apt-get update
-  apt-get -y install libsodium-dev
+  apt-get -y install libsodium-dev libflatbuffers-dev
   tmpdir=$(mktemp -d)
   curl https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb -o ${tmpdir}/libself-olm_0.1.17_amd64.deb
   curl https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb -o ${tmpdir}/libself-omemo_0.1.3_amd64.deb

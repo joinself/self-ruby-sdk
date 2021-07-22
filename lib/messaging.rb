@@ -373,7 +373,7 @@ module SelfSDK
       when SelfMsg::MsgTypeERR
         SelfSDK.logger.warn "error on #{hdr.id}"
         e = SelfMsg::Notification.new(data: data)
-        SelfSDK.logger.warn "#{data.error}"
+        SelfSDK.logger.warn "#{e.error}"
         mark_as_arrived(hdr.id)
       when SelfMsg::MsgTypeACL
         SelfSDK.logger.info "ACL received"
