@@ -1,5 +1,5 @@
 stages:
-  - pre-build
+  - prebuild
   - build
   - release
   - publish
@@ -71,7 +71,7 @@ before_script:
   - git clone -q --depth 1 "${SCRIPTS_REPO}" "${SCRIPTS_DIR}"
 
 license-check:
-  stage: pre-build
+  stage: prebuild
   image: licensefinder/license_finder
   script:
     - ${SCRIPTS_DIR}/git-setup
@@ -80,8 +80,21 @@ license-check:
   only:
     - branches
 
+git-leak:
+  stage: prebuild
+  image: docker:stable-git
+  services:
+    - docker:19.03.2-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker run -v ${PWD}:/repo zricethezav/gitleaks --path=/repo --redact -v
+  only:
+    - branches
+
 unit-test:
-  stage: pre-build
+  stage: prebuild
   image: ruby:2.6.6-buster
   script:
     - *setup
