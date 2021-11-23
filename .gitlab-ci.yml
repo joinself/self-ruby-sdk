@@ -22,7 +22,7 @@ stages:
   gem build selfsdk.gemspec
   gem install selfsdk-${version}.gem
 
-.setup: &setup |
+.setup-environment: &setup-environment |
   cwd=$(pwd)
   apt-get update
   apt-get -y install libsodium-dev cmake build-essential
@@ -80,7 +80,7 @@ license-check:
   only:
     - branches
 
-git-leak:
+secrets-check:
   stage: prebuild
   image: docker:stable-git
   services:
@@ -89,7 +89,7 @@ git-leak:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
   script:
-    - docker run -v ${PWD}:/repo zricethezav/gitleaks --path=/repo --redact -v
+    - ${SCRIPTS_DIR}/git-secrets
   only:
     - branches
 
@@ -97,7 +97,7 @@ unit-test:
   stage: prebuild
   image: ruby:2.6.6-buster
   script:
-    - *setup
+    - *setup-environment
     - *unit-test
   only:
     - branches
@@ -106,7 +106,7 @@ build:
   stage: build
   image: ruby:2.6.6-buster
   script:
-    - *setup
+    - *setup-environment
     - *build
   artifacts:
     paths:
