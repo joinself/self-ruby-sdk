@@ -75,6 +75,7 @@ license-check:
   image: licensefinder/license_finder
   script:
     - ${SCRIPTS_DIR}/git-setup
+    - *setup-environment
     - *license-check
   allow_failure: true
   only:
