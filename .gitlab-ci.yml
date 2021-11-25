@@ -77,7 +77,6 @@ license-check:
     - ${SCRIPTS_DIR}/git-setup
     - *setup-environment
     - *license-check
-  allow_failure: true
   only:
     - branches
 
