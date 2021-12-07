@@ -2,7 +2,7 @@
 
 By [Self ID](https://www.joinself.com/).
 
-![Build Status](https://github.com/joinself/self-ruby-sdk/actions/workflows/ci.yml/badge.svg?branch=master)
+![Build Status](https://github.com/joinself/self-ruby-sdk/actions/workflows/ci.yml/badge.svg?branch=main)
 [![Gem Version](https://badge.fury.io/rb/selfsdk.svg)](https://badge.fury.io/rb/selfsdk)
 
 This gem provides a toolset to interact with self network from your ruby code.

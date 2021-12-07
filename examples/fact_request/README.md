@@ -1,6 +1,6 @@
 # SelfID based information request
 
-Your app can request certain bits of information to your connected users. To do this, you'll only need its _SelfID_ and the fields you want to request you can find a list of updated valid fields [here](https://github.com/selfid-net/selfid-gem/blob/master/lib/sources.rb).
+Your app can request certain bits of information to your connected users. To do this, you'll only need its _SelfID_ and the fields you want to request you can find a list of updated valid fields [here](https://github.com/selfid-net/selfid-gem/blob/main/lib/sources.rb).
 
 Due of its nature the information request is an asynchronous process, where your program should wait for user's input before processing the response. This process is fully managed by `request_information` gem function.
 

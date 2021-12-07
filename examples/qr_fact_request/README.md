@@ -1,6 +1,6 @@
 # QR based information request
 
-Your app can request certain bits of information to your connected users via QR code. To do this, you'll only need its _SelfID_ and the fields you want to request you can find a list of updated valid fields [here](https://github.com/selfid-net/selfid-gem/blob/master/lib/sources.rb).
+Your app can request certain bits of information to your connected users via QR code. To do this, you'll only need its _SelfID_ and the fields you want to request you can find a list of updated valid fields [here](https://github.com/selfid-net/selfid-gem/blob/main/lib/sources.rb).
 
 As part of this process, you have to share the generated QR code with your users, and wait for a response
 

@@ -121,7 +121,7 @@ release:
     - ${SCRIPTS_DIR}/git-setup
     - *git-release
   only:
-    - master
+    - main
 
 rubyGems:
   stage: publish
@@ -130,4 +130,4 @@ rubyGems:
     - ${SCRIPTS_DIR}/rubygems-setup
     - *publish
   only:
-    - master
+    - main

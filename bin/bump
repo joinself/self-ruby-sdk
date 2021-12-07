@@ -10,7 +10,7 @@ echo "commit and tag release"
 git add .
 git commit -m "Bump version $OUT"
 git tag -a $OUT -m 'Bump version $OUT'
-git push origin master --tags
+git push origin main --tags
 
 echo "compiling and pushing gem"
 gem build selfsdk.gemspec
