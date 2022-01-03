@@ -6,6 +6,9 @@ require_relative "fact_request"
 require_relative "fact_response"
 require_relative "authentication_resp"
 require_relative "authentication_req"
+require_relative "chat_message"
+require_relative "chat_message_read"
+require_relative "chat_message_delivered"
 
 module SelfSDK
   module Messages
@@ -35,8 +38,17 @@ module SelfSDK
       when "identities.authenticate.req"
         m = AuthenticationReq.new(messaging)
         m.parse(body, envelope)
+      when SelfSDK::Messages::ChatMessage::MSG_TYPE
+        m = ChatMessage.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::ChatMessageDelivered::MSG_TYPE
+        m = ChatMessageDelivered.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::ChatMessageRead::MSG_TYPE
+        m = ChatMessageRead.new(messaging)
+        m.parse(body, envelope)
       else
-        raise StandardError.new("Invalid message type.")
+        raise StandardError.new("Invalid message type #{payload[:typ]}.")
       end
       return m
     end

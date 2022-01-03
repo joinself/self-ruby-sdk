@@ -97,6 +97,7 @@ module SelfSDK
     # @param type [string] message type
     # @param request [hash] original message requesing information
     def send_custom(recipient, request_body)
+      SelfSDK.logger.info "sending custom message to #{recipient} - #{request_body.to_json}"
       @client.devices(recipient).each do |to_device|
         m = SelfMsg::Message.new
         m.id = SecureRandom.uuid

@@ -29,6 +29,9 @@ Gem::Specification.new do |s|
     "lib/messages/attestation.rb",
     "lib/messages/fact_request.rb",
     "lib/messages/fact_response.rb",
+    "lib/messages/chat_message.rb",
+    "lib/messages/chat_message_read.rb",
+    "lib/messages/chat_message_delivered.rb",
     "lib/messages/authentication_resp.rb",
     "lib/messages/authentication_req.rb",
     "lib/messages/authentication_message.rb",
@@ -36,7 +39,8 @@ Gem::Specification.new do |s|
     "lib/services/auth.rb",
     "lib/services/facts.rb",
     "lib/services/identity.rb",
-    "lib/services/messaging.rb"
+    "lib/services/messaging.rb",
+    "lib/services/chat.rb"
   ]
   s.require_paths = ["lib", "lib/messages", "lib/services"]
   s.add_dependency "self_crypto"

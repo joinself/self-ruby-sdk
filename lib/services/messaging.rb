@@ -84,14 +84,16 @@ module SelfSDK
       # @param type [string] message type
       # @param request [hash] message to be sent
       def send(recipient, request)
-        request[:jti] = SecureRandom.uuid
+        request[:jti] = SecureRandom.uuid unless request.include?(:jti)
         request[:iss] = @client.jwt.id
         request[:sub] = recipient
-        request[:iat] = SelfSDK::Time.now.strftime('%FT%TZ'),
-        request[:exp] = (SelfSDK::Time.now + 300).strftime('%FT%TZ'),
-        request[:cid] = SecureRandom.uuid unless request.include? :cid
+        request[:iat] = SelfSDK::Time.now.strftime('%FT%TZ')
+        request[:exp] = (SelfSDK::Time.now + 300).strftime('%FT%TZ')        
+        request[:cid] = SecureRandom.uuid unless request.include?(:cid)
+        request[:aud] = recipient unless request.key?(:aud)
 
         @client.send_custom(recipient, request)
+        request
       end
 
       def notify(recipient, message)

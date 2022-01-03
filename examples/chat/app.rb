@@ -27,22 +27,45 @@ storage_dir = "#{File.expand_path("..", File.dirname(__FILE__))}/self_storage"
 
 @app.messaging.permit_connection("*")
 
-@app.messaging.subscribe :chat_message do |msg|
-  # Mark the message as read
-  @app.chat.delivered(user, msg.id)
-  # Mark the message as delivered
-  @app.chat.read(user, msg.id)
-  # Print the incoming message
-  puts "Bob:".red
-  puts msg.body
 
-  puts "You:".green
-  b = get_input
-  @app.chat.message(user, b)
+=begin
+puts "Write your message and hit enter".green
+Thread.new do
+  while b = get_input do
+    m = @app.chat.message(user, b)
+    sleep 5
+    m.edit("no way!")
+    sleep 5
+    m.delete!
+  end
+end
+=end
+
+
+@app.chat.subscribe_to_messages do |msg|
+  msg.mark_as_delivered
+  msg.mark_as_read
+  msg.respond("hi!")
+
+  resp = msg.message("howre you doin?")
+  sleep 2
+  resp.edit("how're you doing?")
+  sleep 3
+  resp.delete!
 end
 
-puts "You:".green
-b = get_input
-@app.chat.message(user, b)
+=begin
+#Thread.new do 
+  @app.messaging.subscribe :chat_message do |msg|
+    # Mark the message as read
+    @app.chat.delivered(user, msg.id)
+    # Mark the message as delivered
+    @app.chat.read(user, msg.id)
+    # Print the incoming message
+    puts "Bob:".red
+    puts msg.body  
+  end  
+end
+=end
 
 sleep 100000

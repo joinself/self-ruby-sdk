@@ -33,8 +33,12 @@ module SelfSDK
       types = { authentication_request: SelfSDK::Messages::AuthenticationReq::MSG_TYPE,
                 authentication_response: SelfSDK::Messages::AuthenticationResp::MSG_TYPE,
                 fact_request: SelfSDK::Messages::FactRequest::MSG_TYPE,
-                fact_response: SelfSDK::Messages::FactResponse::MSG_TYPE }
-      raise "invalid message type" unless types.key? s
+                fact_response: SelfSDK::Messages::FactResponse::MSG_TYPE,
+                chat_message: SelfSDK::Messages::ChatMessage::MSG_TYPE,
+                chat_message_deivered: SelfSDK::Messages::ChatMessageDelivered::MSG_TYPE,
+                chat_message_read: SelfSDK::Messages::ChatMessageRead::MSG_TYPE,
+               }
+      raise "invalid message type '#{s}'" unless types.key? s
       return types[s]
     end
 
