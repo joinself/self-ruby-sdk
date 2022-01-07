@@ -4,6 +4,11 @@ stages:
   - release
   - publish
 
+.rules:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE =~ /external_pull_request_event|web/
+
 .license-check: &license-check |
   git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
   source ~/.profile
@@ -77,8 +82,8 @@ license-check:
     - ${SCRIPTS_DIR}/git-setup
     - *setup-environment
     - *license-check
-  only:
-    - branches
+  rules:
+    - !reference [.rules, rules]
 
 secrets-check:
   stage: prebuild
@@ -90,8 +95,8 @@ secrets-check:
     DOCKER_TLS_CERTDIR: ""
   script:
     - ${SCRIPTS_DIR}/git-secrets
-  only:
-    - branches
+  rules:
+    - !reference [.rules, rules]
 
 unit-test:
   stage: prebuild
@@ -99,8 +104,8 @@ unit-test:
   script:
     - *setup-environment
     - *unit-test
-  only:
-    - branches
+  rules:
+    - !reference [.rules, rules]
 
 build:
   stage: build
@@ -111,8 +116,8 @@ build:
   artifacts:
     paths:
       - ./*.gem
-  only:
-    - branches
+  rules:
+    - !reference [.rules, rules]
 
 release:
   stage: release
@@ -120,8 +125,8 @@ release:
   script:
     - ${SCRIPTS_DIR}/git-setup
     - *git-release
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 rubyGems:
   stage: publish
@@ -129,5 +134,5 @@ rubyGems:
   script:
     - ${SCRIPTS_DIR}/rubygems-setup
     - *publish
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
