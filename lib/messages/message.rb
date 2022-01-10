@@ -9,6 +9,9 @@ require_relative "authentication_req"
 require_relative "chat_message"
 require_relative "chat_message_read"
 require_relative "chat_message_delivered"
+require_relative "chat_invite"
+require_relative "chat_join"
+require_relative "chat_remove"
 
 module SelfSDK
   module Messages
@@ -46,6 +49,15 @@ module SelfSDK
         m.parse(body, envelope)
       when SelfSDK::Messages::ChatMessageRead::MSG_TYPE
         m = ChatMessageRead.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::ChatInvite::MSG_TYPE
+        m = ChatInvite.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::ChatRemove::MSG_TYPE
+        m = ChatRemove.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::ChatJoin::MSG_TYPE
+        m = ChatJoin.new(messaging)
         m.parse(body, envelope)
       else
         raise StandardError.new("Invalid message type #{payload[:typ]}.")

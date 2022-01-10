@@ -1,12 +1,17 @@
 module SelfSDK
   module Services
     class ChatMessage
+      attr_accessor :gid, :body, :from
+
       def initialize(chat, recipients, payload)
         @chat = chat
         @recipients = recipients
         @recipients = [@recipients] if @recipients.is_a? String
+        @gid = payload[:gid] if payload.key? :gid
         @payload = payload
         @payload[:jti] = SecureRandom.uuid unless @payload.include?(:jti)
+        @body = @payload[:msg]
+        @from = @payload[:iss]
       end
 
       # delete! deletes the current message from the conversation.
@@ -20,6 +25,7 @@ module SelfSDK
       def edit(body)
         return if @recipients == [@chat.app_id]
 
+        @body = body
         @chat.edit(@recipients, @payload[:jti], body, @payload[:gid])
       end
 
@@ -61,15 +67,46 @@ module SelfSDK
       # @param body [string] the new message body.
       #
       # @return ChatMessage
-      def message(body)
+      def message(body, recs = nil)
         opts = {}
         opts[:aud] = @payload[:gid] if @payload.key? :gid
         opts[:gid] = @payload[:gid] if @payload.key? :gid
 
-        to = @recipients
+        to = recs || @recipients
         to = [@payload[:iss]] if @recipients = [@chat.app_id]
 
         @chat.message(to, body, opts)
+      end
+    end
+
+    class ChatGroup
+      attr_accessor :gid, :name, :members, :payload
+
+      def initialize(chat, payload)
+        @chat = chat
+        @payload = payload
+        @gid = payload[:gid]
+        @members = payload[:members]
+        @name = payload[:name]
+        # TODO manage object (name, link, key and mime)
+      end
+
+      def invite(user)
+        @members << user
+        @chat.invite(@gid, @name, @members)
+      end
+
+      def leave
+        @chat.leave(@gid, @members)
+      end
+
+      def join
+        @chat.join(@gid, @members)
+      end
+
+      def message(body, opts = {})
+        opts[:gid] = @gid
+        @chat.message(@members, body, opts)
       end
     end
 
@@ -99,10 +136,15 @@ module SelfSDK
         ChatMessage.new(self, recipients, payload)
       end
 
-      def subscribe_to_messages(&block)
+
+      def on_message(opts = {}, &block)
         @messaging.subscribe :chat_message do |msg|
           puts "(#{msg.payload[:iss]}, #{msg.payload[:jti]})"
           cm = ChatMessage.new(self, msg.payload[:aud], msg.payload)
+
+          cm.mark_as_delivered unless opts[:mark_as_delivered] == false
+          cm.mark_as_read if opts[:mark_as_read] == true
+
           block.call(cm)
         end
       end
@@ -128,17 +170,12 @@ module SelfSDK
       end
 
       def edit(recipients, cid, body, gid = nil)
-        recipients.each do |recipient|
-          # TODO: this shouldn't be necessary when (https://zube.io/joinself/self/c/7632) is fixed
-          # you should be able to call send instead
-          gid = recipient if gid.nil?
-          send(recipient, {
-            typ: "chat.message.edit",
-            cid: cid,
-            msg: body,
-            gid: gid,
-          })
-        end
+        send(recipients, {
+          typ: "chat.message.edit",
+          cid: cid,
+          msg: body,
+          gid: gid,
+        })
       end
 
       # Sends a message to delete a specific message.
@@ -155,20 +192,35 @@ module SelfSDK
         })
       end
 
+      def on_invite(&block)
+        @messaging.subscribe :chat_invite do |msg|
+          g = ChatGroup.new(self, msg.payload)
+          block.call(g)
+        end
+      end
+
+      def on_join(&block)
+        @messaging.subscribe :chat_join do |msg|
+          block.call(iss: msg.payload[:iss], gid: msg.payload[:gid])
+        end
+      end
+
+      def on_leave(&block)
+        @messaging.subscribe :chat_remove do |msg|
+          block.call(iss: msg.payload[:iss], gid: msg.payload[:gid])
+        end
+      end
+
       # Invite sends group invitation to a list of members.
       #
       # @param gid [string] group id.
       # @param name [string] name of the group.
       # @param members [array] list of group members.
       def invite(gid, name, members, opts = {})
-        members.each do |m|
-          b = {
-            typ: "chat.invite",
-            gid: gid,
-            sub: m,
-            name: name,
-            members: members,
-          }
+        @messaging.send(members, typ: "chat.invite",
+                                 gid: gid,
+                                 name: name,
+                                 members: members)
 
           #TODO: support objects.
 =begin
@@ -181,8 +233,6 @@ module SelfSDK
             })
           end
 =end
-          @messaging.send(m, b)
-        end
       end
 
       # Join a group
@@ -190,11 +240,7 @@ module SelfSDK
       # @param gid [string] group id.
       # @param members [array] list of group members.
       def join(gid, members)
-        send(members, {
-          typ: `chat.join`,
-          gid: gid,
-          aud: gid,
-        })
+        send(members, typ: 'chat.join', gid: gid, aud: gid)
       end
 
       # Leaves a group
@@ -202,37 +248,32 @@ module SelfSDK
       # @param gid [string] group id.
       # @members members [array] list of group members.
       def leave(gid, members)
-        send(members, {
-          typ: "chat.remove",
-          gid: gid,
-        })
+        send(members, typ: "chat.remove", gid: gid )
       end
-      
+
       private
 
-        # sends a confirmation for a list of messages to a list of recipients.
-        def confirm(action, recipients, cids, gid = nil)
-          cids = [cids] if cids.is_a? String
-          gid = recipients if gid.nil? || gid.empty?
-          p " -> chat.message.#{action} (#{recipients} - #{cids})"
-          send(recipients, {
-            typ: "chat.message.#{action}",
-            cids: cids,
-            gid: gid
-          })
-        end
+      # sends a confirmation for a list of messages to a list of recipients.
+      def confirm(action, recipients, cids, gid = nil)
+        cids = [cids] if cids.is_a? String
+        gid = recipients if gid.nil? || gid.empty?
+        p " -> chat.message.#{action} (#{recipients} - #{cids})"
+        send(recipients, {
+          typ: "chat.message.#{action}",
+          cids: cids,
+          gid: gid
+        })
+      end
 
-        # sends a message to a list of recipients.
-        def send(recipients, body)
-          recipients = [recipients] if recipients.is_a? String
-          m = []
-          recipients.each do |r|
-            m << @messaging.send(r, body)
-          end
-          return m
+      # sends a message to a list of recipients.
+      def send(recipients, body)
+        recipients = [recipients] if recipients.is_a? String
+        m = []
+        recipients.each do |r|
+          m << @messaging.send(r, body)
         end
-        
-
+        m
+      end
     end
   end
 end

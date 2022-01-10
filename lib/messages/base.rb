@@ -44,8 +44,8 @@ module SelfSDK
         res.first
       end
 
-      def encrypt_message(message, recipient, recipient_device)
-        @messaging.encryption_client.encrypt(message, recipient, recipient_device)
+      def encrypt_message(message, recipients)
+        @messaging.encryption_client.encrypt(message, recipients)
       end
 
       def unauthorized?
