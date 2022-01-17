@@ -43,7 +43,10 @@ Gem::Specification.new do |s|
     "lib/services/facts.rb",
     "lib/services/identity.rb",
     "lib/services/messaging.rb",
-    "lib/services/chat.rb"
+    "lib/services/chat.rb",
+    "lib/chat/file_object.rb",
+    "lib/chat/group.rb",
+    "lib/chat/message.rb"
   ]
   s.require_paths = ["lib", "lib/messages", "lib/services"]
   s.add_dependency "self_crypto"
