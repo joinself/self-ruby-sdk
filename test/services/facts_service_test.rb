@@ -63,7 +63,7 @@ class SelfSDKTest < Minitest::Test
       expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:device_id).and_return("1").once
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
-      expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
+      expect(encryption_client).to receive(:encrypt).with("{}", [{ device_id: "1", id: "user_self_id" }]).and_return("{}")
       expect(client).to receive(:devices).and_return(devices).once
       expect(messaging).to receive(:send_message) do |arg|
         assert_equal arg.sender, "#{appid}:1"
@@ -83,7 +83,7 @@ class SelfSDKTest < Minitest::Test
       expect(messaging).to receive(:device_id).twice.and_return("1")
       expect(messaging).to receive(:send_and_wait_for_response).once.and_return("response")
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
-      expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
+      expect(encryption_client).to receive(:encrypt).with("{}", [{ device_id: "1", id: "user_self_id" }]).and_return("{}")
       expect(client).to receive(:devices).twice.and_return(devices)
       expect(client).to receive(:app).and_return(app)
 
@@ -101,7 +101,7 @@ class SelfSDKTest < Minitest::Test
       expect(messaging).to receive(:set_observer).once
       expect(messaging).to receive(:device_id).and_return("1").once
       expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
-      expect(encryption_client).to receive(:encrypt).with("{}", "user_self_id", "1").and_return("{}")
+      expect(encryption_client).to receive(:encrypt).with("{}", [{ device_id: "1", id: "user_self_id" }]).and_return("{}")
       expect(client).to receive(:devices).and_return(devices).once
       expect(messaging).to receive(:send_message) do |arg|
         assert_equal arg.sender, "#{appid}:1"

@@ -26,6 +26,7 @@ module SelfSDK
           typ: "chat.message",
           msg: body,
         }
+        payload[:jti] = opts[:jti] if opts.key? :jti
         payload[:aud] = opts[:gid] if opts.key? :gid
         payload[:gid] = opts[:gid] if opts.key? :gid
         payload[:rid] = opts[:rid] if opts.key? :rid
@@ -77,10 +78,10 @@ module SelfSDK
       # @param body [string] the new body to replace the previous one.
       # @param gid [string] group id where the conversation ids are referenced.
       def edit(recipients, cid, body, gid = nil)
-        send(recipients, { typ: "chat.message.edit",
-                           cid: cid,
-                           msg: body,
-                           gid: gid })
+        send(recipients, typ: "chat.message.edit",
+                         cid: cid,
+                         msg: body,
+                         gid: gid)
       end
 
       # Sends a message to delete a specific message.
@@ -90,9 +91,9 @@ module SelfSDK
       # @param gid [string] group id where the conversation ids are referenced.
       def delete(recipients, cids, gid = nil)
         cids = [cids] if cids.is_a? String
-        send(recipients, { typ: "chat.message.delete",
-                           cids: cids,
-                           gid: gid })
+        send(recipients, typ: "chat.message.delete",
+                         cids: cids,
+                         gid: gid)
       end
 
       def on_invite(&block)
@@ -158,12 +159,9 @@ module SelfSDK
       def confirm(action, recipients, cids, gid = nil)
         cids = [cids] if cids.is_a? String
         gid = recipients if gid.nil? || gid.empty?
-        p " -> chat.message.#{action} (#{recipients} - #{cids})"
-        send(recipients, {
-          typ: "chat.message.#{action}",
-          cids: cids,
-          gid: gid
-        })
+        send(recipients, typ: "chat.message.#{action}",
+                         cids: cids,
+                         gid: gid)
       end
 
       # sends a message to a list of recipients.

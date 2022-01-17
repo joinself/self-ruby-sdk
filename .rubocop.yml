@@ -10,8 +10,6 @@ Metrics/BlockLength:
 AllCops:
   Exclude:
     - 'selfsdk.gemspec'
-
-AllCops:
   Include:
     - rubocop-rspec
 

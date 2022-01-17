@@ -76,7 +76,7 @@ module SelfSDK
         opts[:rid] = @payload[:jti]
 
         to = @recipients
-        to = [@payload[:iss]] if @recipients = [@chat.app_id]
+        to = [@payload[:iss]] if @recipients == [@chat.app_id]
 
         @chat.message(to, body, opts)
       end
@@ -91,7 +91,7 @@ module SelfSDK
         opts[:gid] = @payload[:gid] if @payload.key? :gid
 
         to = opts[:recipients] if opts.key? :recipients
-        to = [@payload[:iss]] if @recipients = [@chat.app_id]
+        to = [@payload[:iss]] if @recipients == [@chat.app_id]
 
         @chat.message(to, body, opts)
       end
