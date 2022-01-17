@@ -21,7 +21,7 @@ jobs:
           apt-get -y install /tmp/libself-olm_0.1.17_amd64.deb
           apt-get -y install /tmp/libself-omemo_0.1.3_amd64.deb
           cd /tmp && git clone https://github.com/google/flatbuffers.git
-          cd /tmp/flatbuffers && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
+          cd /tmp/flatbuffers && git checkout v2.0.0 && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
 
       - name: Install dependencies
         run: bundle install
