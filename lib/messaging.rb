@@ -86,6 +86,7 @@ module SelfSDK
       m.id = SecureRandom.uuid 
       m.sender = "#{@jwt.id}:#{@device_id}"
       m.recipient = "#{recipient}:#{recipient_device}"
+      # TODO: this is unencrypted!!!
       m.ciphertext = @jwt.prepare(request)
 
       send_message m
@@ -96,27 +97,39 @@ module SelfSDK
     # @param recipient [string] selfID to be requested
     # @param type [string] message type
     # @param request [hash] original message requesing information
-    def send_custom(recipient, request_body)
-      @client.devices(recipient).each do |to_device|
-        m = SelfMsg::Message.new
-        m.id = SecureRandom.uuid
-        m.sender = "#{@jwt.id}:#{@device_id}"
-        m.recipient = "#{recipient}:#{to_device}"
-        m.ciphertext = @jwt.prepare(request_body)
+    def send_custom(recipients, request_body)
+      # convert argument into an array if is a string
+      recipients = [recipients] if recipients.is_a? String
 
-        send_message m
+      # send to current identity devices except the current one.
+      recipients |= [@jwt.id]
+
+      # build recipients list
+      recs = []
+      recipients.each do |r|
+        @client.devices(r).each do |to_device|
+          recs << { id: r, device_id: to_device }
+        end
       end
 
-      @client.devices(@jwt.id).each do |to_device|
-        if to_device != @device_id 
-          m = SelfMsg::Message.new
-          m.id = SecureRandom.uuid
-          m.sender = "#{@jwt.id}:#{@device_id}"
-          m.recipient = "#{recipient}:#{to_device}"
-          m.ciphertext = @jwt.prepare(request_body)
+      SelfSDK.logger.info "sending custom message #{request_body.to_json}"
+      current_device = "#{@jwt.id}:#{@device_id}"
 
-          send_message m
-        end
+      recs.each do |r|
+        next if current_device == "#{r[:id]}:#{r[:device_id]}"
+
+        request_body[:sub] = r[:id]
+        request_body[:aud] = r[:id] unless request_body.key?(:aud)
+        ciphertext = @encryption_client.encrypt(@jwt.prepare(request_body), recs)
+
+        m = SelfMsg::Message.new
+        m.id = SecureRandom.uuid
+        m.sender = current_device
+        m.recipient = "#{r[:id]}:#{r[:device_id]}"
+        m.ciphertext = ciphertext
+
+        SelfSDK.logger.info " -> to #{m.recipient}"
+        send_message m
       end
     end
 
@@ -159,6 +172,7 @@ module SelfSDK
     #
     # @params msg [SelfMsg::Message] message object to be sent
     def send_and_wait_for_response(msgs, original)
+      SelfSDK.logger.info "sending/wait for #{msgs.first.id}"
       wait_for msgs.first.id, original do
         msgs.each do |msg|
           send_message msg
@@ -414,7 +428,7 @@ module SelfSDK
     rescue StandardError => e
       p "Error processing incoming message #{input.to_json}"
       SelfSDK.logger.info e
-      p e.backtrace
+      # p e.backtrace
       nil
     end
 

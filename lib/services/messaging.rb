@@ -77,21 +77,20 @@ module SelfSDK
         @client.uuid_observer[cid]
       end
 
-
       # Send custom mmessage
       #
-      # @param recipient [string] recipient for the message
+      # @param recipients [String|array] recipient for the message
       # @param type [string] message type
       # @param request [hash] message to be sent
-      def send(recipient, request)
-        request[:jti] = SecureRandom.uuid
+      def send(recipients, request)
+        request[:jti] = SecureRandom.uuid unless request.include?(:jti)
         request[:iss] = @client.jwt.id
-        request[:sub] = recipient
-        request[:iat] = SelfSDK::Time.now.strftime('%FT%TZ'),
-        request[:exp] = (SelfSDK::Time.now + 300).strftime('%FT%TZ'),
-        request[:cid] = SecureRandom.uuid unless request.include? :cid
+        request[:iat] = SelfSDK::Time.now.strftime('%FT%TZ')
+        request[:exp] = (SelfSDK::Time.now + 300).strftime('%FT%TZ')        
+        request[:cid] = SecureRandom.uuid unless request.include?(:cid)
 
-        @client.send_custom(recipient, request)
+        @client.send_custom(recipients, request)
+        request
       end
 
       def notify(recipient, message)

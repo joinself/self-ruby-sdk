@@ -10,6 +10,7 @@ module SelfSDK
                     :description, :sub, :exp_timeout
 
       def initialize(messaging)
+        @intermediary = nil
         @client = messaging.client
         @jwt = @client.jwt
         @messaging = messaging
@@ -44,8 +45,8 @@ module SelfSDK
         res.first
       end
 
-      def encrypt_message(message, recipient, recipient_device)
-        @messaging.encryption_client.encrypt(message, recipient, recipient_device)
+      def encrypt_message(message, recipients)
+        @messaging.encryption_client.encrypt(message, recipients)
       end
 
       def unauthorized?

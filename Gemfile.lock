@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.178)
+    selfsdk (0.0.179)
       async
       ed25519
       eventmachine
@@ -27,7 +27,7 @@ GEM
       timers (~> 4.1)
     chunky_png (1.4.0)
     coderay (1.1.2)
-    console (1.13.1)
+    console (1.14.0)
       fiber-local
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
@@ -39,20 +39,20 @@ GEM
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
     fiber-local (1.0.0)
-    google-protobuf (3.18.0)
+    google-protobuf (3.19.1)
     hashdiff (1.0.0)
-    httparty (0.19.0)
+    httparty (0.20.0)
       mime-types (~> 3.0)
       multi_xml (>= 0.5.2)
     jaro_winkler (1.5.3)
     json (2.3.1)
-    jwt (2.2.3)
-    logger (1.4.3)
+    jwt (2.3.0)
+    logger (1.5.0)
     method_source (0.9.2)
-    mime-types (3.3.1)
+    mime-types (3.4.1)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2021.0901)
-    minitest (5.12.2)
+    mime-types-data (3.2021.1115)
+    minitest (5.15.0)
     multi_xml (0.6.0)
     net-ntp (2.1.3)
     nio4r (2.5.8)
@@ -64,7 +64,7 @@ GEM
       method_source (~> 0.9.0)
     public_suffix (4.0.1)
     rainbow (3.0.0)
-    rake (12.3.3)
+    rake (13.0.6)
     rice (4.0.2)
     rqrcode (2.1.0)
       chunky_png (~> 1.0)
@@ -92,7 +92,7 @@ GEM
       unicode-display_width (>= 1.4.0, < 1.7)
     ruby-progressbar (1.10.1)
     safe_yaml (1.0.5)
-    self_crypto (0.0.7)
+    self_crypto (0.0.8)
     self_msgproto (0.0.8)
       rice
     semantic (1.6.1)
@@ -119,7 +119,7 @@ DEPENDENCIES
   bundler (~> 1.12)
   minitest
   pry
-  rake (~> 12.3)
+  rake (~> 13.0)
   rspec
   rubocop (~> 0.49)
   selfsdk!

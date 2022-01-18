@@ -43,10 +43,10 @@ module SelfSDK
 
       def proto(to_device)
         m = SelfMsg::Message.new
-        m.id = SecureRandom.uuid
+        m.id = @id
         m.sender = "#{@jwt.id}:#{@messaging.device_id}"
         m.recipient = "#{@to}:#{to_device}"
-        m.ciphertext = encrypt_message(@jwt.prepare(body), @to, to_device)
+        m.ciphertext = encrypt_message(@jwt.prepare(body), [{ id: @to, device_id: to_device }])
         m
       end
 

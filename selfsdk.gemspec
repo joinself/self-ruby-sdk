@@ -29,6 +29,12 @@ Gem::Specification.new do |s|
     "lib/messages/attestation.rb",
     "lib/messages/fact_request.rb",
     "lib/messages/fact_response.rb",
+    "lib/messages/chat_message.rb",
+    "lib/messages/chat_message_read.rb",
+    "lib/messages/chat_message_delivered.rb",
+    "lib/messages/chat_invite.rb",
+    "lib/messages/chat_join.rb",
+    "lib/messages/chat_remove.rb",
     "lib/messages/authentication_resp.rb",
     "lib/messages/authentication_req.rb",
     "lib/messages/authentication_message.rb",
@@ -36,7 +42,11 @@ Gem::Specification.new do |s|
     "lib/services/auth.rb",
     "lib/services/facts.rb",
     "lib/services/identity.rb",
-    "lib/services/messaging.rb"
+    "lib/services/messaging.rb",
+    "lib/services/chat.rb",
+    "lib/chat/file_object.rb",
+    "lib/chat/group.rb",
+    "lib/chat/message.rb"
   ]
   s.require_paths = ["lib", "lib/messages", "lib/services"]
   s.add_dependency "self_crypto"
@@ -54,7 +64,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "bundler", "~> 1.12"
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"
-  s.add_development_dependency "rake", "~> 12.3"
+  s.add_development_dependency "rake", "~> 13.0"
   s.add_development_dependency "rubocop", "~> 0.49"
   s.add_development_dependency "timecop"
   s.add_development_dependency "webmock"

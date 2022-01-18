@@ -98,14 +98,14 @@ module SelfSDK
         @to_device = to_device
         if @intermediary.nil?
           recipient = "#{@to}:#{@to_device}"
-          ciphertext = encrypt_message(@jwt.prepare(body), @to, @to_device)
+          ciphertext = encrypt_message(@jwt.prepare(body), [{id: @to, device_id: @to_device}])
         else
           recipient = "#{@intermediary}:#{@to_device}"
-          ciphertext = encrypt_message(@jwt.prepare(body), @intermediary, @to_device)
+          ciphertext = encrypt_message(@jwt.prepare(body), [{id: @intermediary, device_id: @to_device}])
         end
 
         m = SelfMsg::Message.new
-        m.id = SecureRandom.uuid
+        m.id = @id
         m.sender = "#{@jwt.id}:#{@messaging.device_id}"
         m.recipient = recipient
         m.ciphertext = ciphertext
