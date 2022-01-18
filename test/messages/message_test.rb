@@ -99,5 +99,114 @@ class SelfSDKTest < Minitest::Test
         assert_equal res.class, SelfSDK::Messages::FactRequest
       end
     end
+
+    describe "chat.message" do
+      let(:input) { '{"protected": "header", "payload":"chat.message"}' }
+      let(:typ) { "chat.message" }
+      let(:client) { double("client") }
+      let(:body) { '{"typ":"chat.message","exp":"'+exp+'","iat":"'+iat+'"}' }
+      def test_parse_identity_info_req
+        expect(jwt).to receive(:decode).with("header").and_return('{"kid":"kid"}').once
+        expect(jwt).to receive(:decode).with("chat.message").and_return(body).twice
+        expect(jwt).to receive(:verify).and_return(true)
+        expect(messaging).to receive(:client).and_return(client)
+        expect(messaging).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:public_key).and_return(double(raw_public_key: "pk1"))
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::ChatMessage
+      end
+    end
+
+    describe "chat.message.delivered" do
+      let(:input) { '{"protected": "header", "payload":"chat.message.delivered"}' }
+      let(:typ) { "chat.message.delivered" }
+      let(:client) { double("client") }
+      let(:body) { '{"typ":"chat.message.delivered","exp":"'+exp+'","iat":"'+iat+'"}' }
+      def test_parse_identity_info_req
+        expect(jwt).to receive(:decode).with("header").and_return('{"kid":"kid"}').once
+        expect(jwt).to receive(:decode).with("chat.message.delivered").and_return(body).twice
+        expect(jwt).to receive(:verify).and_return(true)
+        expect(messaging).to receive(:client).and_return(client)
+        expect(messaging).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:public_key).and_return(double(raw_public_key: "pk1"))
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::ChatMessageDelivered
+      end
+    end
+
+    describe "chat.message.read" do
+      let(:input) { '{"protected": "header", "payload":"chat.message.read"}' }
+      let(:typ) { "chat.message.read" }
+      let(:client) { double("client") }
+      let(:body) { '{"typ":"chat.message.read","exp":"'+exp+'","iat":"'+iat+'"}' }
+      def test_parse_identity_info_req
+        expect(jwt).to receive(:decode).with("header").and_return('{"kid":"kid"}').once
+        expect(jwt).to receive(:decode).with("chat.message.read").and_return(body).twice
+        expect(jwt).to receive(:verify).and_return(true)
+        expect(messaging).to receive(:client).and_return(client)
+        expect(messaging).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:public_key).and_return(double(raw_public_key: "pk1"))
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::ChatMessageRead
+      end
+    end
+
+    describe "chat.invite" do
+      let(:input) { '{"protected": "header", "payload":"chat.invite"}' }
+      let(:typ) { "chat.invite" }
+      let(:client) { double("client") }
+      let(:body) { '{"typ":"chat.invite","exp":"'+exp+'","iat":"'+iat+'"}' }
+      def test_parse_identity_info_req
+        expect(jwt).to receive(:decode).with("header").and_return('{"kid":"kid"}').once
+        expect(jwt).to receive(:decode).with("chat.invite").and_return(body).twice
+        expect(jwt).to receive(:verify).and_return(true)
+        expect(messaging).to receive(:client).and_return(client)
+        expect(messaging).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:public_key).and_return(double(raw_public_key: "pk1"))
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::ChatInvite
+      end
+    end
+
+    describe "chat.remove" do
+      let(:input) { '{"protected": "header", "payload":"chat.remove"}' }
+      let(:typ) { "chat.remove" }
+      let(:client) { double("client") }
+      let(:body) { '{"typ":"chat.remove","exp":"'+exp+'","iat":"'+iat+'"}' }
+      def test_parse_identity_info_req
+        expect(jwt).to receive(:decode).with("header").and_return('{"kid":"kid"}').once
+        expect(jwt).to receive(:decode).with("chat.remove").and_return(body).twice
+        expect(jwt).to receive(:verify).and_return(true)
+        expect(messaging).to receive(:client).and_return(client)
+        expect(messaging).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:public_key).and_return(double(raw_public_key: "pk1"))
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::ChatRemove
+      end
+    end
+
+    describe "chat.join" do
+      let(:input) { '{"protected": "header", "payload":"chat.join"}' }
+      let(:typ) { "chat.join" }
+      let(:client) { double("client") }
+      let(:body) { '{"typ":"chat.join","exp":"'+exp+'","iat":"'+iat+'"}' }
+      def test_parse_identity_info_req
+        expect(jwt).to receive(:decode).with("header").and_return('{"kid":"kid"}').once
+        expect(jwt).to receive(:decode).with("chat.join").and_return(body).twice
+        expect(jwt).to receive(:verify).and_return(true)
+        expect(messaging).to receive(:client).and_return(client)
+        expect(messaging).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:public_key).and_return(double(raw_public_key: "pk1"))
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::ChatJoin
+      end
+    end
+
   end
 end
