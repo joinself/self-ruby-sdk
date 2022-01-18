@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
     "lib/messages/attestation.rb",
     "lib/messages/fact_request.rb",
     "lib/messages/fact_response.rb",
+    "lib/messages/chat.rb",
     "lib/messages/chat_message.rb",
     "lib/messages/chat_message_read.rb",
     "lib/messages/chat_message_delivered.rb",
