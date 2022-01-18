@@ -1,6 +1,7 @@
 # Copyright 2020 Self Group Ltd. All Rights Reserved.
 
 # frozen_string_literal: true
+require 'open-uri'
 
 module SelfSDK
   module Chat
@@ -77,7 +78,7 @@ module SelfSDK
         https.use_ssl = true
         req = Net::HTTP::Post.new(uri.path)
         req["Authorization"] = "Bearer #{@token}"
-        req.body = ciphertext
+        req.body = ciphertext.force_encoding("UTF-8")
         res = https.request(req)
         JSON.parse(res.body)
       end
