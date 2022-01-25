@@ -1,13 +1,12 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
 stages:
   - prebuild
   - build
   - release
   - publish
-
-.rules:
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE =~ /external_pull_request_event|web/
 
 .license-check: &license-check |
   git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
@@ -82,8 +81,6 @@ license-check:
     - ${SCRIPTS_DIR}/git-setup
     - *setup-environment
     - *license-check
-  rules:
-    - !reference [.rules, rules]
 
 secrets-check:
   stage: prebuild
@@ -95,8 +92,6 @@ secrets-check:
     DOCKER_TLS_CERTDIR: ""
   script:
     - ${SCRIPTS_DIR}/git-secrets
-  rules:
-    - !reference [.rules, rules]
 
 unit-test:
   stage: prebuild
@@ -104,8 +99,6 @@ unit-test:
   script:
     - *setup-environment
     - *unit-test
-  rules:
-    - !reference [.rules, rules]
 
 build:
   stage: build
@@ -116,8 +109,6 @@ build:
   artifacts:
     paths:
       - ./*.gem
-  rules:
-    - !reference [.rules, rules]
 
 release:
   stage: release
