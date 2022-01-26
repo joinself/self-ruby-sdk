@@ -47,9 +47,9 @@ module SelfSDK
 
         begin
           session_with_bob = get_outbound_session_with_bob(r[:id], r[:device_id], session_file_name)
-        rescue
+        rescue => e
           ::SelfSDK.logger.warn("  there is a problem adding group participant #{r[:id]}:#{r[:device_id]}, skipping...")
-          ::SelfSDK.logger.warn(error)
+          ::SelfSDK.logger.warn(e)
           next
         end
 
