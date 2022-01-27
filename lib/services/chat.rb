@@ -14,7 +14,9 @@ module SelfSDK
       def initialize(messaging, client)
         @messaging = messaging
         @client = client
-        @app_id = @client.jwt.id
+        @app_id = @messaging.client.client.jwt.id
+        @auth_token = @messaging.client.client.jwt.auth_token
+        @self_url = @messaging.client.client.self_url
       end
 
       # Sends a message to a list of recipients.
@@ -32,7 +34,7 @@ module SelfSDK
         payload[:rid] = opts[:rid] if opts.key? :rid
         payload[:objects] = opts[:objects] if opts.key? :objects
 
-        m = SelfSDK::Chat::Message.new(self, recipients, payload, @messaging.client.jwt.auth_token, @client.self_url)
+        m = SelfSDK::Chat::Message.new(self, recipients, payload, @auto_token, @self_url)
         _req = send(m.recipients, m.payload)
 
         m
@@ -41,8 +43,7 @@ module SelfSDK
       # Subscribes to an incoming chat message
       def on_message(opts = {}, &block)
         @messaging.subscribe :chat_message do |msg|
-          puts "(#{msg.payload[:iss]}, #{msg.payload[:jti]})"
-          cm = SelfSDK::Chat::Message.new(self, msg.payload[:aud], msg.payload, @messaging.client.jwt.auth_token, @client.self_url)
+          cm = SelfSDK::Chat::Message.new(self, msg.payload[:aud], msg.payload, @auth_token, @self_url)
 
           cm.mark_as_delivered unless opts[:mark_as_delivered] == false
           cm.mark_as_read if opts[:mark_as_read] == true
@@ -127,7 +128,7 @@ module SelfSDK
                     members: members }
 
         if opts.key? :data
-          obj = SelfSDK::Chat::FileObject.new(@messaging.client.jwt.auth_token, @client.self_url)
+          obj = SelfSDK::Chat::FileObject.new(@auth_token, @self_url)
           obj_payload = obj.build_from_data("", opts[:data], opts[:mime]).to_payload
           obj_payload.delete(:name)
           payload.merge! obj_payload
@@ -142,6 +143,12 @@ module SelfSDK
       # @param gid [string] group id.
       # @param members [array] list of group members.
       def join(gid, members)
+        # Allow incoming connections from the given members
+
+        # Create missing sessions with group members.
+        create_missing_sessions(members)
+
+        # Send joining confirmation.
         send(members, typ: 'chat.join', gid: gid, aud: gid)
       end
 
@@ -172,6 +179,31 @@ module SelfSDK
           m << @messaging.send(r, body)
         end
         m
+      end
+
+      # Group invites may come with members of the group we haven't set up a session
+      # previously, for those identitiese need to establish a session, but only if
+      # our identity appears before the others in the list members.
+      def create_missing_sessions(members)
+        return if members.empty?
+
+        posterior_members = false
+        requests = []
+
+        members.each do |m|
+          if posterior_members
+            @client.devices(m).each do |d|
+              continue unless @messaging.hasSession(m, d)
+
+              requests << @messaging.send("#{m}:#{d}", {
+                typ: 'sessions.create',
+                aud: m
+              })
+            end
+          end
+
+          posterior_members = true if m == @app_id
+        end
       end
     end
   end
