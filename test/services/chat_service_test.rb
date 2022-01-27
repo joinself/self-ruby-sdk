@@ -11,10 +11,11 @@ class Chat < Minitest::Test
   describe 'chat' do
     let(:jti) { "jti" }
     let(:app_id) { "app_id" }
-    let(:messaging_client) { double("messaging_client", jwt: jwt) }
-    let(:messaging) { double("messaging", client: messaging_client) }
+    let(:messaging_client) { double("messaging_client", jwt: jwt, self_url: "https://api.joinself.com") }
+    let(:m_client) { double("m_client", client: messaging_client) }
+    let(:messaging) { double("messaging", client: m_client) }
     let(:jwt) { double("jwt", id: app_id, auth_token: "TOK_123") }
-    let(:client) { double("client", jwt: jwt, self_url: "https://api.joinself.com") }
+    let(:client) { double("client" ) }
     let(:chat) do
       SelfSDK::Services::Chat.new(messaging, client)
     end
