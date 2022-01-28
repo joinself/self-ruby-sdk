@@ -193,7 +193,7 @@ module SelfSDK
         members.each do |m|
           if posterior_members
             @client.devices(m).each do |d|
-              continue unless @messaging.hasSession(m, d)
+              continue unless @messaging.client.session?(m, d)
 
               requests << @messaging.send("#{m}:#{d}", {
                 typ: 'sessions.create',

@@ -92,6 +92,11 @@ module SelfSDK
       send_message m
     end
 
+    def session?(identifier, device)
+      path = @encryption_client.session_path(identifier, device)
+      File.file?(path)
+    end
+
     # Send custom mmessage
     #
     # @param recipient [string] selfID to be requested
