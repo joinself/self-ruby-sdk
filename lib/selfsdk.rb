@@ -85,7 +85,7 @@ module SelfSDK
 
     # Provides access to SelfSDK::Services::Chat service
     def chat
-      @chat ||= SelfSDK::Services::Chat.new(messaging, @client)
+      @chat ||= SelfSDK::Services::Chat.new(messaging, identity)
     end
 
     def app_id
