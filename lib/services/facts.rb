@@ -40,6 +40,7 @@ module SelfSDK
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :cid The unique identifier of the authentication request.
       #  @option opts [Integer] :exp_timeout timeout in seconds to expire the request.
+      #  @option opts [Integer] :allowed_until timeout in seconds to expire the request.
       #  @return [Object] SelfSDK:::Messages::FactRequest
       def request(selfid, facts, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"
