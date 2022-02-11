@@ -90,7 +90,7 @@ module SelfSDK
         }
         b[:options] = @options unless (@options.nil? || @options == false)
         b[:description] = @description unless (@description.nil? || @description.empty?)
-        b[:allowed_until] = @allowed_until unless @allowed_until.nil?
+        b[:allowed_until] = (SelfSDK::Time.now + @allowed_until).strftime('%FT%TZ') unless @allowed_until.nil?
         b
       end
 
