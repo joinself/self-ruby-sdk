@@ -344,9 +344,7 @@ module SelfSDK
     # Creates a websocket connection and sets up its callbacks.
     def start_connection
       SelfSDK.logger.info "starting listener"
-      @ws = Faye::WebSocket::Client.new(@url, [], tls: {
-        verify_peer: false
-      })
+      @ws = Faye::WebSocket::Client.new(@url)
       SelfSDK.logger.info "initialized"
 
       @ws.on :open do |_event|
