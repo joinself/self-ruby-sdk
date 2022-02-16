@@ -34,7 +34,7 @@ module SelfSDK
         @options = opts.fetch(:options, false)
         @description = opts.include?(:description) ? opts[:description] : nil
         @exp_timeout = opts.fetch(:exp_timeout, DEFAULT_EXP_TIMEOUT)
-        @allowed_until = opts.fetch(:allowed_until, nil)
+        @allowed_for = opts.fetch(:allowed_for, nil)
 
         @intermediary = if opts.include?(:intermediary)
                           opts[:intermediary]
@@ -90,7 +90,7 @@ module SelfSDK
         }
         b[:options] = @options unless (@options.nil? || @options == false)
         b[:description] = @description unless (@description.nil? || @description.empty?)
-        b[:allowed_until] = (SelfSDK::Time.now + @allowed_until).strftime('%FT%TZ') unless @allowed_until.nil?
+        b[:allowed_until] = (SelfSDK::Time.now + @allowed_for).strftime('%FT%TZ') unless @allowed_for.nil?
         b
       end
 
