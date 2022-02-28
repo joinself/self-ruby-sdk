@@ -12,6 +12,7 @@ require_relative "chat_message_delivered"
 require_relative "chat_invite"
 require_relative "chat_join"
 require_relative "chat_remove"
+require_relative "document_sign_resp"
 
 module SelfSDK
   module Messages
@@ -58,6 +59,9 @@ module SelfSDK
         m.parse(body, envelope)
       when SelfSDK::Messages::ChatJoin::MSG_TYPE
         m = ChatJoin.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::DocumentSignResponse::MSG_TYPE
+        m = DocumentSignResponse.new(messaging)
         m.parse(body, envelope)
       else
         raise StandardError.new("Invalid message type #{payload[:typ]}.")

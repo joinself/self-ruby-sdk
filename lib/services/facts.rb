@@ -8,7 +8,7 @@ module SelfSDK
   module Services
     # Self provides this self-hosted verified intermediary.
     DEFAULT_INTERMEDIARY = "self_intermediary"
-    # Input class to handle authentication requests on self network.
+    # Input class to handle fact requests on self network.
     class Facts
       # Creates a new facts service.
       # Facts service mainly manages fact requests against self users wanting
@@ -32,7 +32,7 @@ module SelfSDK
       #  @param selfid [string] the receiver of the authentication request.
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :cid The unique identifier of the authentication request.
-      #  @yield [request] Invokes the block with a street name for each result.
+      # @yield [request] Invokes the given block when a response is received.
       #  @return [Object] SelfSDK:::Messages::FactRequest
       #
       # @overload request(selfid, facts, opts = {})

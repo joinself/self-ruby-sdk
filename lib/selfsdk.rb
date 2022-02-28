@@ -21,6 +21,7 @@ require_relative 'services/facts'
 require_relative 'services/identity'
 require_relative 'services/messaging'
 require_relative 'services/chat'
+require_relative 'services/docs'
 
 # Namespace for classes and modules that handle Self interactions.
 module SelfSDK
@@ -86,6 +87,11 @@ module SelfSDK
     # Provides access to SelfSDK::Services::Chat service
     def chat
       @chat ||= SelfSDK::Services::Chat.new(messaging, identity)
+    end
+
+    # Provides access to SelfSDK::Services::Docs service
+    def docs
+      @docs ||= SelfSDK::Services::Docs.new(messaging, @client.self_url)
     end
 
     def app_id
