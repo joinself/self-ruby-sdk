@@ -40,11 +40,13 @@ Gem::Specification.new do |s|
     "lib/messages/authentication_req.rb",
     "lib/messages/authentication_message.rb",
     "lib/messages/message.rb",
+    "lib/messages/document_sign_resp.rb",
     "lib/services/auth.rb",
     "lib/services/facts.rb",
     "lib/services/identity.rb",
     "lib/services/messaging.rb",
     "lib/services/chat.rb",
+    "lib/services/docs.rb",
     "lib/chat/file_object.rb",
     "lib/chat/group.rb",
     "lib/chat/message.rb"

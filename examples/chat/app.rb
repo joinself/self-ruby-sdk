@@ -4,6 +4,7 @@
 
 require_relative '../../lib/selfsdk'
 require_relative '../utilities/colorize.rb'
+require_relative '../utilities/setup.rb'
 
 @app = setup_sdk
 
