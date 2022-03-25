@@ -9,11 +9,12 @@ stages:
   - publish
 
 .license-check: &license-check |
-  git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
-  source ~/.profile
-  bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
-  gem install bundler:${bundler_version}
+  #source ~/.profile
+  #bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
+  #gem install bundler:${bundler_version}
   bundle install
+  gem install license_finder
+  git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
   license_finder --decisions_file ./license-finder/dependency_decisions.yml
 
 .unit-test: &unit-test |
@@ -76,7 +77,7 @@ before_script:
 
 license-check:
   stage: prebuild
-  image: licensefinder/license_finder
+  image: ruby:2.7.3
   script:
     - ${SCRIPTS_DIR}/git-setup
     - *setup-environment
