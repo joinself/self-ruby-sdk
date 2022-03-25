@@ -9,9 +9,8 @@ stages:
   - publish
 
 .license-check: &license-check |
-  #source ~/.profile
-  #bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
-  #gem install bundler:${bundler_version}
+  bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
+  gem install bundler:${bundler_version}
   bundle install
   gem install license_finder
   git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
