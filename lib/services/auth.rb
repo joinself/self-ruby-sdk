@@ -89,11 +89,11 @@ module SelfSDK
         body = @client.jwt.encode(request(selfid, opts))
 
         if @client.env.empty?
-          return "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app"
+          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app"
         elsif @client.env == 'development'
-          return "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
+          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
         end
-        "https://joinself.page.link/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{@client.env}"
+        "https://#{@client.env}.links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{@client.env}"
       end
 
       # Adds an observer for an authentication response
