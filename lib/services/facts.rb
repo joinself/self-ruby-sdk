@@ -41,6 +41,7 @@ module SelfSDK
       #  @option opts [String] :cid The unique identifier of the authentication request.
       #  @option opts [Integer] :exp_timeout timeout in seconds to expire the request.
       #  @option opts [Integer] :allowed_for number of seconds for enabling recurrent requests.
+      #  @option opts [Boolean] :auth allows displaying the request as anuthentication request with facts.
       #  @return [Object] SelfSDK:::Messages::FactRequest
       def request(selfid, facts, opts = {}, &block)
         SelfSDK.logger.info "authenticating #{selfid}"

@@ -24,6 +24,7 @@ module SelfSDK
         @issued = ::Time.parse(payload[:iat])
         @audience = payload[:aud]
         @status = payload[:status]
+        @auth = payload[:auth]
         @facts = []
         payload[:facts] = [] if payload[:facts].nil?
         payload[:facts].each do |f|
@@ -69,7 +70,7 @@ module SelfSDK
         @facts.each do |fact|
           encoded_facts.push(fact.to_hash)
         end
-        
+
         { typ: MSG_TYPE,
           iss: @jwt.id,
           sub: @sub || @to,
@@ -79,7 +80,8 @@ module SelfSDK
           cid: @id,
           jti: SecureRandom.uuid,
           status: @status,
-          facts: encoded_facts }        
+          facts: encoded_facts,
+          auth: @auth }
       end
 
       protected
