@@ -8,7 +8,8 @@ require_relative '../utilities/setup.rb'
 
 @app = setup_sdk
 
-@app.chat.subscribe_to_messages do |msg|
+@app.chat.message(ARGV.first, "hi")
+@app.chat.on_message do |msg|
   msg.mark_as_delivered
   msg.mark_as_read
   msg.respond("hi!")
