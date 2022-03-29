@@ -11,7 +11,7 @@ module SelfSDK
     class FactResponse < Base
       MSG_TYPE = "identities.facts.query.resp"
 
-      attr_accessor :facts, :audience
+      attr_accessor :facts, :audience, :auth
 
       def parse(input, envelope=nil)
         @input = input
