@@ -38,7 +38,7 @@ module SelfSDK
     # @param id [string] app/identity self_id.
     def entity(id)
       #TODO : Consider a better check for this conditional
-      if id.length == 11
+      if id.length == 11 && id[0..5] == "self_"
         return identity(id)
       else
         return app(id)
