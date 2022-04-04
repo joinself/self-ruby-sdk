@@ -141,12 +141,17 @@ module SelfSDK
       if File.exist?(session_file_name)
         # 7a) if carol's session file exists load the pickle from the file
         session_with_bob = SelfCrypto::Session.from_pickle(File.read(session_file_name), @storage_key)
-      else
-        # 7b-i) if you have not previously sent or received a message to/from bob,
-        #       you should extract the initial message from the group message intended
-        #       for your account id.
-        m = SelfCrypto::GroupMessage.new(message.to_s).get_message("#{@client.jwt.id}:#{@device}")
+      end
 
+      # 7b-i) if you have not previously sent or received a message to/from bob,
+      #       you should extract the initial message from the group message intended
+      #       for your account id.
+      m = SelfCrypto::GroupMessage.new(message.to_s).get_message("#{@client.jwt.id}:#{@device}")
+
+      # if there is no session, create one
+      # if there is an existing session and we are sent a one time key message, check
+      # if it belongs to this current session and create a new inbound session if it doesn't
+      if session_with_bob.nil? || m.instance_of?(SelfCrypto::PreKeyMessage) and !session_with_bob.will_receive?(m)
         # 7b-ii) use the initial message to create a session for bob or carol
         session_with_bob = @account.inbound_session(m)
 
