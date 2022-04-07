@@ -1,12 +1,12 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.186)
+    selfsdk (0.0.187)
       async
       ed25519
       eventmachine
       faye-websocket
-      google-protobuf
+      google-protobuf (~> 3.19)
       httparty
       jwt
       logger
