@@ -37,7 +37,7 @@ module SelfSDK
       end
 
       def validate!(original)
-        raise ::StandardError.new("invalid origin") if @to != original.to
+        raise ::StandardError.new("invalid origin") if @to.split(":").first != original.to
       end
 
       def signed

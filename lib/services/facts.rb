@@ -152,7 +152,13 @@ module SelfSDK
         raise 'provided fact does not specify a name' if f[:fact].empty?
         return unless f.has_key? :sources
 
-        valid_sources = [SOURCE_USER_SPECIFIED, SOURCE_PASSPORT, SOURCE_DRIVING_LICENSE, SOURCE_IDENTITY_CARD]
+        valid_sources = [ SOURCE_USER_SPECIFIED, 
+                          SOURCE_PASSPORT, 
+                          SOURCE_DRIVING_LICENSE, 
+                          SOURCE_IDENTITY_CARD, 
+                          SOURCE_TWITTER,
+                          SOURCE_LINKEDIN,
+                          SOURCE_FACEBOK ]
         factsForPassport = [ FACT_DOCUMENT_NUMBER, 
           FACT_SURNAME, 
           FACT_GIVEN_NAMES,
@@ -177,7 +183,11 @@ module SelfSDK
           FACT_DISPLAY_NAME,
           FACT_EMAIL,
           FACT_PHONE ]
-          
+
+        factsForTwitter = [ FACT_ACCOUNT_ID, FACT_NICKNAME ]
+        factsForLinkedin = [ FACT_ACCOUNT_ID, FACT_NICKNAME ]
+        factsForFacebook = [ FACT_ACCOUNT_ID, FACT_NICKNAME ]
+  
         f[:sources].each do |s|
           raise errInvalidSource unless valid_sources.include? s.to_s
 
@@ -191,6 +201,18 @@ module SelfSDK
 
           if s.to_s == SOURCE_USER_SPECIFIED
             raise errInvalidFactToSource unless factsForUser.include? f[:fact].to_s
+          end
+
+          if s.to_s == SOURCE_TWITTER
+            raise errInvalidFactToSource unless factsForTwitter.include? f[:fact].to_s
+          end
+
+          if s.to_s == SOURCE_LINKEDIN
+            raise errInvalidFactToSource unless factsForLinkedin.include? f[:fact].to_s
+          end
+
+          if s.to_s == SOURCE_FACEBOOK
+            raise errInvalidFactToSource unless factsForFacebok.include? f[:fact].to_s
           end
         end
       end
