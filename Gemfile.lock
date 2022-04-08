@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.187)
+    selfsdk (0.0.188)
       async
       ed25519
       eventmachine
@@ -27,7 +27,7 @@ GEM
       timers (~> 4.1)
     chunky_png (1.4.0)
     coderay (1.1.2)
-    console (1.14.0)
+    console (1.15.0)
       fiber-local
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
