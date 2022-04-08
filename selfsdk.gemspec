@@ -58,7 +58,7 @@ Gem::Specification.new do |s|
   s.add_dependency "ed25519"
   s.add_dependency "eventmachine"
   s.add_dependency "faye-websocket"
-  s.add_dependency "google-protobuf"
+  s.add_dependency "google-protobuf", "~> 3.19"
   s.add_dependency "httparty"
   s.add_dependency "logger"
   s.add_dependency "net-ntp"
