@@ -75,7 +75,7 @@ module SelfSDK
       def upload(ciphertext)
         uri = URI.parse("#{@url}/v1/objects")
         https = Net::HTTP.new(uri.host, uri.port)
-        https.use_ssl = true if uri.scheme == "https"
+        https.use_ssl = true
         req = Net::HTTP::Post.new(uri.path)
         req["Authorization"] = "Bearer #{@token}"
         req.body = ciphertext.force_encoding("UTF-8")
