@@ -28,7 +28,7 @@ module SelfSDK
       # @param objects [Array] array of objects to be signed. provide an empty array if 
       # you just want the body to be signed.
       # @yield [request] Invokes the given block when a response is received.
-      def request_signature(recipient, body, objects, &block)
+      def request_signature(recipient, body, objects, opts = {}, &block)
         jti = SecureRandom.uuid
         req = {
           jti: jti,
@@ -43,7 +43,8 @@ module SelfSDK
           req[:objects] << SelfSDK::Chat::FileObject.new(auth_token, @self_url).build_from_data(
             o[:name],
             o[:data],
-            o[:mime]
+            o[:mime],
+            opts
           ).to_payload
         end
 

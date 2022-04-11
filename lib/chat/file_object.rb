@@ -13,7 +13,7 @@ module SelfSDK
         @url = url
       end
 
-      def build_from_data(name, data, mime)
+      def build_from_data(name, data, mime, opts = {})
         @key = SelfCrypto::Util.aead_xchacha20poly1305_ietf_keygen
         @nonce = SelfCrypto::Util.aead_xchacha20poly1305_ietf_nonce
         @content = data
@@ -25,7 +25,8 @@ module SelfSDK
 
         # Upload
         remote_object = upload(ciphertext)
-        @link = "#{@url}/v1/objects/#{remote_object["id"]}"
+        public_url = opts[:public_url] || @url
+        @link = "#{public_url}/v1/objects/#{remote_object["id"]}"
         @expires = remote_object["expires"]
 
         self
