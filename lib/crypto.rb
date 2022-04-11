@@ -151,7 +151,7 @@ module SelfSDK
       # if there is no session, create one
       # if there is an existing session and we are sent a one time key message, check
       # if it belongs to this current session and create a new inbound session if it doesn't
-      if session_with_bob.nil? || m.instance_of?(SelfCrypto::PreKeyMessage) and !session_with_bob.will_receive?(m)
+      if session_with_bob.nil? || m.instance_of?(SelfCrypto::PreKeyMessage) && !session_with_bob.will_receive?(m)
         # 7b-ii) use the initial message to create a session for bob or carol
         session_with_bob = @account.inbound_session(m)
 
