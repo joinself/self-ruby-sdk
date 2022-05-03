@@ -24,6 +24,7 @@ module SelfSDK
   FACT_COUNTRY_OF_ISSUANCE = "country_of_issuance"
   FACT_ACCOUNT_ID = "account_id"
   FACT_NICKNAME = "nickname"
+  FACT_SELFIE = "selfie_verification"
 
   SOURCE_USER_SPECIFIED = "user_specified"
   SOURCE_PASSPORT = "passport"
@@ -32,6 +33,7 @@ module SelfSDK
   SOURCE_TWITTER = "twitter"
   SOURCE_LINKEDIN = "linkedin"
   SOURCE_FACEBOOK = "facebook"
+  SOURCE_LIVE = "live"
 
   class << self
     def message_type(s)
@@ -82,18 +84,20 @@ module SelfSDK
                 sort_code: FACT_SORT_CODE,
                 country_of_issuance: FACT_COUNTRY_OF_ISSUANCE, 
                 account_id: FACT_ACCOUNT_ID,
-                nickname: FACT_NICKNAME }
+                nickname: FACT_NICKNAME,
+                selfie: FACT_SELFIE }
       get(facts, input, "fact")
     end
 
     def source(input)
       sources = { user_specified: SOURCE_USER_SPECIFIED,
-                passport: SOURCE_PASSPORT,
-                driving_license: SOURCE_DRIVING_LICENSE,
-                identity_card: SOURCE_IDENTITY_CARD,
-                twitter: SOURCE_TWITTER,
-                linkedin: SOURCE_LINKEDIN,
-                facebook: SOURCE_FACEBOOK }
+                  passport: SOURCE_PASSPORT,
+                  driving_license: SOURCE_DRIVING_LICENSE,
+                  identity_card: SOURCE_IDENTITY_CARD,
+                  twitter: SOURCE_TWITTER,
+                  linkedin: SOURCE_LINKEDIN,
+                  facebook: SOURCE_FACEBOOK,
+                  live: SOURCE_LIVE }
       get(sources, input, "source")
     end
 
