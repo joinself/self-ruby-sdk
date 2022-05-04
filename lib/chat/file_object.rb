@@ -6,7 +6,7 @@ require 'open-uri'
 module SelfSDK
   module Chat
     class FileObject
-      attr_accessor :link, :mime, :content, :key, :nonce, :ciphertext
+      attr_accessor :name, :link, :mime, :content, :key, :nonce, :ciphertext
 
       def initialize(token, url)
         @token = token
@@ -35,7 +35,20 @@ module SelfSDK
       # Incoming objects
       def build_from_object(input)
         # Download from CDN
-        ciphertext = URI.open(input[:link], "Authorization" => "Bearer #{@token}").read
+        ciphertext = ""
+        5.times do
+          begin
+            ciphertext = URI.open(input[:link], "Authorization" => "Bearer #{@token}").read
+            break
+          rescue
+            sleep 1
+          end
+        end
+
+        if ciphertext.empty?
+          SelfSDK.logger.warn "unable to process incoming object"
+          return
+        end
 
         @content = ciphertext
         @key = nil
