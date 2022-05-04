@@ -62,6 +62,10 @@ module SelfSDK
           return req.send_message
         end
 
+        if opts[:async] == true
+          return req.send_message
+        end
+
         # Otherwise the request is synchronous
         req.request
       end
