@@ -156,67 +156,72 @@ module SelfSDK
         raise 'provided fact does not specify a name' if f[:fact].empty?
         return unless f.has_key? :sources
 
-        valid_sources = [ SOURCE_USER_SPECIFIED, 
-                          SOURCE_PASSPORT, 
-                          SOURCE_DRIVING_LICENSE, 
-                          SOURCE_IDENTITY_CARD, 
-                          SOURCE_TWITTER,
-                          SOURCE_LINKEDIN,
-                          SOURCE_FACEBOK ]
-        factsForPassport = [ FACT_DOCUMENT_NUMBER, 
-          FACT_SURNAME, 
-          FACT_GIVEN_NAMES,
-          FACT_DATE_OF_BIRTH,
-          FACT_DATE_OF_EXPIRATION, 
-          FACT_SEX, 
-          FACT_NATIONALITY,
-          FACT_COUNTRY_OF_ISSUANCE ]
+        valid_sources = [SOURCE_USER_SPECIFIED,
+                         SOURCE_PASSPORT,
+                         SOURCE_DRIVING_LICENSE,
+                         SOURCE_IDENTITY_CARD,
+                         SOURCE_TWITTER,
+                         SOURCE_LINKEDIN,
+                         SOURCE_FACEBOK]
+        fact_for_passport = [FACT_DOCUMENT_NUMBER,
+                             FACT_SURNAME,
+                             FACT_GIVEN_NAMES,
+                             FACT_DATE_OF_BIRTH,
+                             FACT_DATE_OF_EXPIRATION,
+                             FACT_SEX,
+                             FACT_NATIONALITY,
+                             FACT_COUNTRY_OF_ISSUANCE]
 
-        factsForDL = [ FACT_DOCUMENT_NUMBER,
-          FACT_SURNAME,
-          FACT_GIVEN_NAMES,
-          FACT_DATE_OF_BIRTH,
-          FACT_DATE_OF_ISSUANCE,
-          FACT_DATE_OF_EXPIRATION,
-          FACT_ADDRESS, 
-          FACT_ISSUING_AUTHORITY,
-          FACT_PLACE_OF_BIRTH, 
-          FACT_COUNTRY_OF_ISSUANCE ]
+        facts_for_dl = [FACT_DOCUMENT_NUMBER,
+                        FACT_SURNAME,
+                        FACT_GIVEN_NAMES,
+                        FACT_DATE_OF_BIRTH,
+                        FACT_DATE_OF_ISSUANCE,
+                        FACT_DATE_OF_EXPIRATION,
+                        FACT_ADDRESS, 
+                        FACT_ISSUING_AUTHORITY,
+                        FACT_PLACE_OF_BIRTH, 
+                        FACT_COUNTRY_OF_ISSUANCE]
 
-        factsForUser = [ FACT_DOCUMENT_NUMBER,
-          FACT_DISPLAY_NAME,
-          FACT_EMAIL,
-          FACT_PHONE ]
+        facts_for_user = [FACT_DOCUMENT_NUMBER,
+                          FACT_DISPLAY_NAME,
+                          FACT_EMAIL,
+                          FACT_PHONE]
 
-        factsForTwitter = [ FACT_ACCOUNT_ID, FACT_NICKNAME ]
-        factsForLinkedin = [ FACT_ACCOUNT_ID, FACT_NICKNAME ]
-        factsForFacebook = [ FACT_ACCOUNT_ID, FACT_NICKNAME ]
-  
+        facts_for_twitter = [FACT_ACCOUNT_ID, FACT_NICKNAME]
+        facts_for_linkedin = [FACT_ACCOUNT_ID, FACT_NICKNAME]
+        facts_for_facebook = [FACT_ACCOUNT_ID, FACT_NICKNAME]
+        facts_for_live = [FACT_SELFIE]
+
         f[:sources].each do |s|
           raise errInvalidSource unless valid_sources.include? s.to_s
 
           if s.to_s == SOURCE_PASSPORT || s.to_s == SOURCE_IDENTITY_CARD
-            raise errInvalidFactToSource unless factsForPassport.include? f[:fact]
+            raise errInvalidFactToSource unless fact_for_passport.include? f[:fact]
           end
 
           if s.to_s == SOURCE_DRIVING_LICENSE
-            raise errInvalidFactToSource unless factsForDL.include? f[:fact]
+            raise errInvalidFactToSource unless facts_for_dl.include? f[:fact]
           end
 
           if s.to_s == SOURCE_USER_SPECIFIED
-            raise errInvalidFactToSource unless factsForUser.include? f[:fact].to_s
+            raise errInvalidFactToSource unless facts_for_user.include? f[:fact].to_s
           end
 
           if s.to_s == SOURCE_TWITTER
-            raise errInvalidFactToSource unless factsForTwitter.include? f[:fact].to_s
+            raise errInvalidFactToSource unless facts_for_twitter.include? f[:fact].to_s
           end
 
           if s.to_s == SOURCE_LINKEDIN
-            raise errInvalidFactToSource unless factsForLinkedin.include? f[:fact].to_s
+            raise errInvalidFactToSource unless facts_for_linkedin.include? f[:fact].to_s
           end
 
           if s.to_s == SOURCE_FACEBOOK
-            raise errInvalidFactToSource unless factsForFacebok.include? f[:fact].to_s
+            raise errInvalidFactToSource unless facts_for_facebook.include? f[:fact].to_s
+          end
+
+          if s.to_s == SOURCE_LIVE
+            raise errInvalidFactToSource unless facts_for_live.include? f[:fact].to_s
           end
         end
       end
