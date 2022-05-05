@@ -116,7 +116,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.12)
+  bundler (~> 2.3, >= 2.3.13)
   minitest
   pry
   rake (~> 13.0)
@@ -129,4 +129,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   1.17.3
+   2.3.13

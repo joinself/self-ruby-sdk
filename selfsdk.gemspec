@@ -64,7 +64,7 @@ Gem::Specification.new do |s|
   s.add_dependency "net-ntp"
   s.add_dependency "rqrcode"
   s.add_dependency "jwt"
-  s.add_development_dependency "bundler", "~> 1.12"
+  s.add_development_dependency 'bundler', '~> 2.3', '>= 2.3.13'
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"
   s.add_development_dependency "rake", "~> 13.0"
