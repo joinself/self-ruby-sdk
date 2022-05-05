@@ -11,7 +11,7 @@ class SelfSDKTest < Minitest::Test
     let(:client) { double("client") }
     let(:jwt) { double("jwt") }
     let(:messaging) do
-      double("messaging", jwt: jwt, client: client)
+      double("messaging", jwt: jwt, client: client, source: SelfSDK::Sources.new("#{__dir__}/../../lib/sources.json"))
     end
     subject{ SelfSDK::Messages::Fact.new(messaging) }
 
