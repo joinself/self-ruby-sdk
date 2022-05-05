@@ -14,14 +14,11 @@ module SelfSDK
       end
 
       def parse(fact)
-        @name = SelfSDK::fact_name(fact[:fact])
-
-        @operator = ""
-        @operator = SelfSDK::operator(fact[:operator]) if fact[:operator]
-
+        @name = @messaging.source.normalize_fact_name! fact[:fact]
+        @operator = @messaging.source.normalize_operator!(fact[:operator])
         @sources = []
         fact[:sources]&.each do |s|
-          @sources << SelfSDK::source(s)
+          @sources << @messaging.source.normalize_source!(s)
         end
 
         @expected_value = fact[:expected_value] || ""

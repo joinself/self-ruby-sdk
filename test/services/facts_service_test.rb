@@ -39,7 +39,7 @@ class SelfSDKTest < Minitest::Test
       mm
     end
     let(:messaging) do
-      mm = double("messaging")
+      mm = double("messaging", source: SelfSDK::Sources.new("#{__dir__}/../../lib/sources.json"))
       expect(mm).to receive(:client).and_return(client)
       mm
     end

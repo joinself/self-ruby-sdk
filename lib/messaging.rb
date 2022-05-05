@@ -17,7 +17,7 @@ module SelfSDK
     DEFAULT_STORAGE_DIR="./.self_storage"
     ON_DEMAND_CLOSE_CODE=3999
 
-    attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer, :encryption_client
+    attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer, :encryption_client, :source
 
     # RestClient initializer
     #
@@ -47,6 +47,7 @@ module SelfSDK
       FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
       @offset_file = "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
       @offset = read_offset
+      @source = SelfSDK::Sources.new("#{__dir__}/sources.json")
       migrate_old_storage_format
 
       unless options.include? :no_crypto
@@ -283,7 +284,7 @@ module SelfSDK
     end
 
     def subscribe(type, &block)
-      type = SelfSDK::message_type(type) if type.is_a? Symbol
+      type = @source.message_type(type) if type.is_a? Symbol
       @type_observer[type] = { block: block }
     end
 

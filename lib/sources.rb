@@ -2,40 +2,42 @@
 
 # frozen_string_literal: true
 
+require "json"
 module SelfSDK
-  FACT_EMAIL = "email_address"
-  FACT_PHONE = "phone_number"
-  FACT_DISPLAY_NAME = "display_name"
-  FACT_DOCUMENT_NUMBER = "document_number"
-  FACT_GIVEN_NAMES = "given_names"
-  FACT_SURNAME = "surname"
-  FACT_SEX = "sex"
-  FACT_ISSUING_AUTHORITY = "issuing_authority"
-  FACT_NATIONALITY = "nationality"
-  FACT_ADDRESS = "address"
-  FACT_PLACE_OF_BIRTH = "place_of_birth"
-  FACT_DATE_OF_BIRTH = "date_of_birth"
-  FACT_DATE_OF_ISSUANCE = "date_of_issuance"
-  FACT_DATE_OF_EXPIRATION = "date_of_expiration"
-  FACT_VALID_FROM = "valid_from"
-  FACT_VALID_TO = "valid_to"
-  FACT_CATEGORIES = "categories"
-  FACT_SORT_CODE = "sort_code"
-  FACT_COUNTRY_OF_ISSUANCE = "country_of_issuance"
-  FACT_ACCOUNT_ID = "account_id"
-  FACT_NICKNAME = "nickname"
-  FACT_SELFIE = "selfie_verification"
+  class Sources
+    def initialize(sources_file)
+      file = File.open sources_file
+      data = JSON.load(file)
+      file.close
+      @sources = data["sources"]
+      @facts = []
+      @sources.each do |source, facts|
+        @facts.push(*facts)
+      end
+    end
 
-  SOURCE_USER_SPECIFIED = "user_specified"
-  SOURCE_PASSPORT = "passport"
-  SOURCE_DRIVING_LICENSE = "driving_license"
-  SOURCE_IDENTITY_CARD = "identity_card"
-  SOURCE_TWITTER = "twitter"
-  SOURCE_LINKEDIN = "linkedin"
-  SOURCE_FACEBOOK = "facebook"
-  SOURCE_LIVE = "live"
+    def normalize_fact_name!(fact)
+      fact = fact.to_s
+      raise "invalid fact '#{fact}'" unless @facts.include?(fact)
+      fact
+    end
 
-  class << self
+    def validate_source!(source)
+      raise "invalid source '#{source}'" unless @sources.keys.include?(source.to_s)
+    end
+
+    def normalize_operator!(input)
+      return "" unless input
+
+      operators = { equals: '==',
+                    different: '!=',
+                    great_or_equal_than: '>=',
+                    less_or_equal: '<=',
+                    great_than: '>',
+                    less_than: '<' }
+      get(operators, input, "operator")
+    end
+
     def message_type(s)
       types = { authentication_request: SelfSDK::Messages::AuthenticationReq::MSG_TYPE,
                 authentication_response: SelfSDK::Messages::AuthenticationResp::MSG_TYPE,
@@ -53,53 +55,7 @@ module SelfSDK
       return types[s]
     end
 
-    def operator(input)
-      operators = { equals: '==',
-                    different: '!=',
-                    great_or_equal_than: '>=',
-                    less_or_equal: '<=',
-                    great_than: '>',
-                    less_than: '<' }
-      get(operators, input, "operator")
-    end
-
-    def fact_name(input)
-      facts = { email_address: FACT_EMAIL,
-                phone_number: FACT_PHONE,
-                display_name: FACT_DISPLAY_NAME,
-                document_number: FACT_DOCUMENT_NUMBER,
-                given_names: FACT_GIVEN_NAMES,
-                surname: FACT_SURNAME,
-                sex: FACT_SEX,
-                issuing_authority: FACT_ISSUING_AUTHORITY,
-                nationality: FACT_NATIONALITY,
-                address: FACT_ADDRESS,
-                place_of_birth: FACT_PLACE_OF_BIRTH,
-                date_of_birth: FACT_DATE_OF_BIRTH,
-                date_of_issuance: FACT_DATE_OF_ISSUANCE,
-                date_of_expiration: FACT_DATE_OF_EXPIRATION,
-                valid_from: FACT_VALID_FROM,
-                valid_to: FACT_VALID_TO,
-                categories: FACT_CATEGORIES,
-                sort_code: FACT_SORT_CODE,
-                country_of_issuance: FACT_COUNTRY_OF_ISSUANCE, 
-                account_id: FACT_ACCOUNT_ID,
-                nickname: FACT_NICKNAME,
-                selfie: FACT_SELFIE }
-      get(facts, input, "fact")
-    end
-
-    def source(input)
-      sources = { user_specified: SOURCE_USER_SPECIFIED,
-                  passport: SOURCE_PASSPORT,
-                  driving_license: SOURCE_DRIVING_LICENSE,
-                  identity_card: SOURCE_IDENTITY_CARD,
-                  twitter: SOURCE_TWITTER,
-                  linkedin: SOURCE_LINKEDIN,
-                  facebook: SOURCE_FACEBOOK,
-                  live: SOURCE_LIVE }
-      get(sources, input, "source")
-    end
+    private
 
     def get(options, input, option_type)
       if input.is_a? Symbol
@@ -109,6 +65,5 @@ module SelfSDK
       raise "invalid #{option_type} '#{input}'" unless options.values.include? input
       input
     end
-
   end
 end
