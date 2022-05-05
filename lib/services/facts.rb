@@ -139,13 +139,13 @@ module SelfSDK
         fs = []
         facts.each do |f|
           fact = if f.is_a?(Hash)
-                  f
-                else
-                  { fact: f }
-                end
+                   f
+                 else
+                   { fact: f }
+                 end
           # validate_fact!(fact)
           fs << fact
-        end      
+        end
         fs
       end
 
