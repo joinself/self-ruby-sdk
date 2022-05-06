@@ -41,8 +41,7 @@ module SelfSDK
             ciphertext = URI.open(input[:link], "Authorization" => "Bearer #{@token}").read
             break
           rescue => e
-            SelfSDK.logger.info e.message
-            SelfSDK.logger.info e.backtrace.join("\n")
+            SelfSDK.logger.info "error fetching #{input[:link]} : #{e.message}"
             sleep 1
           end
         end
