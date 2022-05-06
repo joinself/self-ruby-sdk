@@ -10,6 +10,7 @@ stages:
 
 .license-check: &license-check |
   bundle install
+  bundle lock --add-platform x86_64-linux
   gem install license_finder
   git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
   license_finder --decisions_file ./license-finder/dependency_decisions.yml
@@ -77,12 +78,9 @@ license-check:
   stage: prebuild
   image: ruby:2.7.3-buster
   script:
-    - echo "Skipped due to bug on license check tool"
-    - exit 1
     - ${SCRIPTS_DIR}/git-setup
     - *setup-environment
     - *license-check
-  allow_failure: true
 
 secrets-check:
   stage: prebuild
