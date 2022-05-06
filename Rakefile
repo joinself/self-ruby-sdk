@@ -31,6 +31,23 @@ namespace :bump do
   end
 end
 
+namespace :sources do
+  task :generate do
+    # Get json specification for sources
+    json_file = File.open("./config/sources.json")
+    sources_spec = json_file.read
+    json_file.close
+
+    content = <<HEREDOC
+module SelfSDK
+  SOURCE_DATA = '#{sources_spec}'
+end
+HEREDOC
+
+    File.write("lib/source_definition.rb", content)
+  end
+end
+
 def bump_version(current_version, new_version)
   versionfile = "./lib/version.rb"
 
