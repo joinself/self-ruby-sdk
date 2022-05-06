@@ -15,7 +15,7 @@ module SelfSDK
         @messaging = messaging
         @client = client
         @app_id = @messaging.client.client.jwt.id
-        @auth_token = @messaging.client.client.jwt.auth_token
+        @jwt = @messaging.client.client.jwt
         @self_url = @messaging.client.client.self_url
       end
 
@@ -34,7 +34,7 @@ module SelfSDK
         payload[:rid] = opts[:rid] if opts.key? :rid
         payload[:objects] = opts[:objects] if opts.key? :objects
 
-        m = SelfSDK::Chat::Message.new(self, recipients, payload, @auth_token, @self_url)
+        m = SelfSDK::Chat::Message.new(self, recipients, payload, @jwt.auth_token, @self_url)
         _req = send(m.recipients, m.payload)
 
         m
@@ -43,7 +43,7 @@ module SelfSDK
       # Subscribes to an incoming chat message
       def on_message(opts = {}, &block)
         @messaging.subscribe :chat_message do |msg|
-          cm = SelfSDK::Chat::Message.new(self, msg.payload[:aud], msg.payload, @auth_token, @self_url)
+          cm = SelfSDK::Chat::Message.new(self, msg.payload[:aud], msg.payload, @jwt.auth_token, @self_url)
 
           cm.mark_as_delivered unless opts[:mark_as_delivered] == false
           cm.mark_as_read if opts[:mark_as_read] == true
@@ -128,7 +128,7 @@ module SelfSDK
                     members: members }
 
         if opts.key? :data
-          obj = SelfSDK::Chat::FileObject.new(@auth_token, @self_url)
+          obj = SelfSDK::Chat::FileObject.new(@jwt.auth_token, @self_url)
           obj_payload = obj.build_from_data("", opts[:data], opts[:mime]).to_payload
           obj_payload.delete(:name)
           payload.merge! obj_payload
