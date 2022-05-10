@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
     "lib/signature_graph.rb",
     "lib/acl.rb",
     "lib/sources.rb",
+    "lib/source_definition.rb",
     "lib/messages/",
     "lib/messages/base.rb",
     "lib/messages/fact.rb",
