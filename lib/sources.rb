@@ -8,8 +8,7 @@ require_relative "source_definition.rb"
 module SelfSDK
   class Sources
     def initialize(sources_file)
-      data = JSON.parse(SOURCE_DATA)
-      @sources = data["sources"]
+      @sources = SOURCE_DATA["sources"]
       @facts = []
       @sources.each do |source, facts|
         @facts.push(*facts)

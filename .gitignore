@@ -9,3 +9,4 @@ vendor/*
 .bundle
 .self_storage
 self_storage
+_support/sources
