@@ -28,6 +28,7 @@ module SelfSDK
       #  @param [String] selfid the receiver of the authentication request.
       #  @param [Hash] opts the options to authenticate.
       #  @option opts [String] :cid The unique identifier of the authentication request.
+      #  @option opts [Array] :facts array of facts to be requested
       #  @yield [request] Invokes the block with an authentication response for each result.
       #  @return [String, String] conversation id or encoded body.
       #
@@ -36,6 +37,7 @@ module SelfSDK
       #  @param [Hash] opts the options to authenticate.
       #  @option [Boolean] :async if the request is asynchronous.
       #  @option opts [String] :cid The unique identifier of the authentication request.
+      #  @option opts [Array] :facts array of facts to be requested
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
         opts[:auth] = true
