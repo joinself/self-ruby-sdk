@@ -17,6 +17,7 @@ require_relative 'authenticated'
 require_relative 'acl'
 require_relative 'sources'
 require_relative 'services/auth'
+require_relative 'services/requester'
 require_relative 'services/facts'
 require_relative 'services/identity'
 require_relative 'services/messaging'
@@ -66,12 +67,12 @@ module SelfSDK
 
     # Provides access to SelfSDK::Services::Facts service
     def facts
-      @facts ||= SelfSDK::Services::Facts.new(messaging, @client)
+      @facts ||= SelfSDK::Services::Facts.new(requester)
     end
 
     # Provides access to SelfSDK::Services::Authentication service
     def authentication
-      @authentication ||= SelfSDK::Services::Authentication.new(facts)
+      @authentication ||= SelfSDK::Services::Authentication.new(requester)
     end
 
     # Provides access to SelfSDK::Services::Identity service
@@ -108,6 +109,10 @@ module SelfSDK
     end
 
     protected
+
+      def requester
+        @requester ||= SelfSDK::Services::Requester.new(messaging, @client)
+      end
 
       def base_url(opts)
         return opts[:base_url] if opts.key? :base_url

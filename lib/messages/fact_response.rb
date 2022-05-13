@@ -89,6 +89,10 @@ module SelfSDK
           auth: @auth }
       end
 
+      def auth_response?
+        @auth == true
+      end
+
       protected
 
       def proto(to_device)

@@ -16,8 +16,8 @@ module SelfSDK
       # @param client [SelfSDK::Client] http client object.
       #
       # @return [SelfSDK::Services::Authentication] authentication service.
-      def initialize(facts)
-        @facts = facts
+      def initialize(requester)
+        @requester = requester
       end
 
       # Sends an authentication request to the specified selfid.
@@ -39,7 +39,17 @@ module SelfSDK
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
         opts[:auth] = true
-        @facts.request(selfid, [], opts, &block)
+        facts = opts.fetch(:facts, [])
+
+        @requester.request(selfid, facts, opts, &block)
+      end
+
+      # Adds an observer for a fact response
+      # Whenever you receive a fact response registered observers will receive a notification.
+      #
+      #  @yield [request] Invokes the block with a fact response message.
+      def subscribe(&block)
+        @requester.subscribe(true, &block)
       end
 
       # Generates a QR code so users can authenticate to your app.
@@ -50,7 +60,9 @@ module SelfSDK
       # @return [String, String] conversation id or encoded body.
       def generate_qr(opts = {})
         opts[:auth] = true
-        @facts.generate_qr([], opts)
+        facts = opts.fetch(:facts, [])
+
+        @requester.generate_qr(facts, opts)
       end
 
       # Generates a deep link to authenticate with self app.
@@ -62,7 +74,9 @@ module SelfSDK
       # @return [String, String] conversation id or encoded body.
       def generate_deep_link(callback, opts = {})
         opts[:auth] = true
-        @facts.generate_deep_link([], callback, opts)
+        facts = opts.fetch(:facts, [])
+
+        @requester.generate_deep_link(facts, callback, opts)
       end
 
       private
@@ -101,7 +115,7 @@ module SelfSDK
         identity = @client.entity(payload[:sub])
         return if identity.nil?
 
-        return payload
+        payload
       end
     end
   end
