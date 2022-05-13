@@ -38,9 +38,7 @@ module SelfSDK
     end
 
     def message_type(s)
-      types = { authentication_request: SelfSDK::Messages::AuthenticationReq::MSG_TYPE,
-                authentication_response: SelfSDK::Messages::AuthenticationResp::MSG_TYPE,
-                fact_request: SelfSDK::Messages::FactRequest::MSG_TYPE,
+      types = { fact_request: SelfSDK::Messages::FactRequest::MSG_TYPE,
                 fact_response: SelfSDK::Messages::FactResponse::MSG_TYPE,
                 chat_message: SelfSDK::Messages::ChatMessage::MSG_TYPE,
                 chat_message_deivered: SelfSDK::Messages::ChatMessageDelivered::MSG_TYPE,

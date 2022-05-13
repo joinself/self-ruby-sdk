@@ -26,7 +26,7 @@ module SelfSDK
       # Subscribes to a specific message type and attaches the given observer
       # which will be executed when a meeting criteria message is received.
       #
-      # @param [String] type message type (ex: SelfSDK::Messages::AuthenticationResp.MSG_TYPE
+      # @param [String] type message type (ex: SelfSDK::Messages::FactRequest.MSG_TYPE
       # @yield [SelfSDK::Messages::Message] receives incoming message.
       def subscribe(type, &block)
         @client.subscribe(type, &block)

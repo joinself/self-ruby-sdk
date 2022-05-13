@@ -35,19 +35,19 @@ class SelfSDKTest < Minitest::Test
     end
 
     def test_notify_observer_type
-      messaging_client.type_observer[SelfSDK::Messages::AuthenticationResp::MSG_TYPE] = {block: Proc.new do |res|
-        assert_equal res.typ, SelfSDK::Messages::AuthenticationResp::MSG_TYPE
+      messaging_client.type_observer[SelfSDK::Messages::FactResponse::MSG_TYPE] = {block: Proc.new do |res|
+        assert_equal res.typ, SelfSDK::Messages::FactResponse::MSG_TYPE
       end }
-      message = SelfSDK::Messages::AuthenticationResp.new(messaging_client)
+      message = SelfSDK::Messages::FactResponse.new(messaging_client)
       messaging_client.send(:notify_observer, message)
     end
 
     def test_notify_observer_uuid
       messaging_client.uuid_observer["lol"] = { block: Proc.new do |input|
-        assert_equal input.typ, SelfSDK::Messages::AuthenticationResp::MSG_TYPE
-        assert_equal input.id, "lol"
+        assert_equal SelfSDK::Messages::FactResponse::MSG_TYPE, input.typ
+        assert_equal "lol", input.id
       end }
-      message = SelfSDK::Messages::AuthenticationResp.new(messaging_client)
+      message = SelfSDK::Messages::FactResponse.new(messaging_client)
       message.id = "lol"
       messaging_client.send(:notify_observer, message)
     end

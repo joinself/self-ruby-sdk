@@ -16,10 +16,8 @@ module SelfSDK
       # @param client [SelfSDK::Client] http client object.
       #
       # @return [SelfSDK::Services::Authentication] authentication service.
-      def initialize(messaging, client)
-        @messaging = messaging.client
-        @messaging_service = messaging
-        @client = client
+      def initialize(facts)
+        @facts = facts
       end
 
       # Sends an authentication request to the specified selfid.
@@ -40,27 +38,8 @@ module SelfSDK
       #  @option opts [String] :cid The unique identifier of the authentication request.
       #  @return [String, String] conversation id or encoded body.
       def request(selfid, opts = {}, &block)
-        SelfSDK.logger.info "authenticating #{selfid}"
-        rq = opts.fetch(:request, true)
-        if rq
-          raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
-        end
-
-        req = SelfSDK::Messages::AuthenticationReq.new(@messaging)
-        req.populate(selfid, opts)
-
-        body = @client.jwt.prepare(req.body)
-        return body unless rq
-        return req.send_message if opts.fetch(:async, false)
-
-        # when a block is given the request will always be asynchronous.
-        if block_given?
-          @messaging.set_observer(req, timeout: req.exp_timeout, &block)
-          return req.send_message
-        end
-
-        # Otherwise the request is synchronous
-        req.request
+        opts[:auth] = true
+        @facts.request(selfid, [], opts, &block)
       end
 
       # Generates a QR code so users can authenticate to your app.
@@ -70,10 +49,8 @@ module SelfSDK
       #
       # @return [String, String] conversation id or encoded body.
       def generate_qr(opts = {})
-        opts[:request] = false
-        selfid = opts.fetch(:selfid, "-")
-        req = request(selfid, opts)
-        ::RQRCode::QRCode.new(req, level: 'l')
+        opts[:auth] = true
+        @facts.generate_qr([], opts)
       end
 
       # Generates a deep link to authenticate with self app.
@@ -84,24 +61,8 @@ module SelfSDK
       #
       # @return [String, String] conversation id or encoded body.
       def generate_deep_link(callback, opts = {})
-        opts[:request] = false
-        selfid = opts.fetch(:selfid, "-")
-        body = @client.jwt.encode(request(selfid, opts))
-
-        if @client.env.empty?
-          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app"
-        elsif @client.env == 'development'
-          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
-        end
-        "https://#{@client.env}.links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{@client.env}"
-      end
-
-      # Adds an observer for an authentication response
-      def subscribe(&block)
-        @messaging.subscribe :authentication_response do |res|
-          valid_payload(res.input)
-          yield(res)
-        end
+        opts[:auth] = true
+        @facts.generate_deep_link([], callback, opts)
       end
 
       private
@@ -128,27 +89,6 @@ module SelfSDK
         SelfSDK.logger.error "error checking authentication for #{uuid} : #{e.message}"
         p e.backtrace
         nil
-      end
-
-      # Prepares an authentication payload to be sent to a user.
-      #
-      # @param selfid [string] the selfid of the user you want to send the auth request to.
-      # @param cid [string] the conversation id to be used.
-      def prepare_payload(selfid, cid)
-        # TODO should this be moved to its own message/auth_req.rb?
-        body = {
-            typ: 'identities.authenticate.req',
-            aud: @client.self_url,
-            iss: @client.jwt.id,
-            sub: selfid,
-            iat: SelfSDK::Time.now.strftime('%FT%TZ'),
-            exp: (SelfSDK::Time.now + 3600).strftime('%FT%TZ'),
-            cid: cid,
-            jti: SecureRandom.uuid,
-            device_id: @messaging.device_id,
-        }
-
-        @client.jwt.prepare(body)
       end
 
       def parse_payload(response)

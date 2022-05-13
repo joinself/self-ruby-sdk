@@ -37,8 +37,6 @@ Gem::Specification.new do |s|
     "lib/messages/chat_invite.rb",
     "lib/messages/chat_join.rb",
     "lib/messages/chat_remove.rb",
-    "lib/messages/authentication_resp.rb",
-    "lib/messages/authentication_req.rb",
     "lib/messages/authentication_message.rb",
     "lib/messages/message.rb",
     "lib/messages/document_sign_resp.rb",

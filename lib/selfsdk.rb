@@ -71,7 +71,7 @@ module SelfSDK
 
     # Provides access to SelfSDK::Services::Authentication service
     def authentication
-      @authentication ||= SelfSDK::Services::Authentication.new(messaging, @client)
+      @authentication ||= SelfSDK::Services::Authentication.new(facts)
     end
 
     # Provides access to SelfSDK::Services::Identity service
