@@ -28,6 +28,7 @@ module SelfSDK
       #
       # @overload request(selfid, facts, opts = {}, &block)
       #  @param selfid [string] the receiver of the fact request.
+      #  @param facts [Array] array of facts to be requested
       #  @param [Hash] opts the options to process the request.
       #  @option opts [String] :cid The unique identifier of the fact request.
       # @yield [request] Invokes the given block when a response is received.
@@ -35,6 +36,7 @@ module SelfSDK
       #
       # @overload request(selfid, facts, opts = {})
       #  @param selfid [string] the receiver of the fact request.
+      #  @param facts [Array] array of facts to be requested
       #  @param [Hash] opts the options to request.
       #  @option opts [String] :cid The unique identifier of the fact request.
       #  @option opts [Integer] :exp_timeout timeout in seconds to expire the request.
