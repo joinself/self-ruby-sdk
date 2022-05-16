@@ -12,7 +12,12 @@ module SelfSDK
       MSG_TYPE = "identities.facts.query.req"
       DEFAULT_EXP_TIMEOUT = 900
 
-      attr_accessor :facts, :options
+      attr_accessor :facts, :options, :auth
+
+      def initialize(messaging)
+        @typ = MSG_TYPE
+        super
+      end
 
       def parse_facts(facts)
         @facts = []
@@ -82,6 +87,7 @@ module SelfSDK
         b = {
           typ: MSG_TYPE,
           iss: @jwt.id,
+          aud: @to,
           sub: @to,
           iat: SelfSDK::Time.now.strftime('%FT%TZ'),
           exp: (SelfSDK::Time.now + @exp_timeout).strftime('%FT%TZ'),

@@ -48,7 +48,10 @@ class SelfSDKTest < Minitest::Test
       expect(mm).to receive(:client).and_return(messaging)
       mm
     end
-    let(:service) { SelfSDK::Services::Facts.new(messaging_service, client) }
+    let(:requester) do 
+      SelfSDK::Services::Requester.new(messaging_service, client)
+    end
+    let(:service) { SelfSDK::Services::Facts.new(requester) }
     let(:response_input) { 'input' }
     let(:response) { double("response", input: response_input, uuid: cid, selfid: selfid) }
     let(:identity) { { public_keys: [ { key: "pk1"} ] } }

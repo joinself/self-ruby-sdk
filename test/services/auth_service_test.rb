@@ -21,11 +21,13 @@ class SelfSDKTest < Minitest::Test
       j = double("jwt")
       expect(j).to receive(:id).and_return(appid).at_least(2).times
       expect(j).to receive(:prepare) do |arg|
-        assert_equal arg[:typ], "identities.authenticate.req"
-        assert_equal arg[:aud], selfid
-        assert_equal arg[:iss], appid
-        assert_equal arg[:sub], selfid
-        assert_equal arg[:cid], cid
+        assert_equal "identities.facts.query.req", arg[:typ]
+        # TODO: this is failing.... 
+        assert_equal selfid, arg[:aud]
+        assert_equal appid, arg[:iss]
+        assert_equal selfid, arg[:sub]
+        assert_equal cid, arg[:cid]
+        assert_equal true, arg[:auth]
       end.at_least(:once).and_return(json_body)
       j
     end
@@ -45,7 +47,10 @@ class SelfSDKTest < Minitest::Test
       expect(mm).to receive(:client).and_return(messaging)
       mm
     end
-    let(:service) { SelfSDK::Services::Authentication.new(messaging_service, client) }
+    let(:requester) do 
+      SelfSDK::Services::Requester.new(messaging_service, client)
+    end
+    let(:service) { SelfSDK::Services::Authentication.new(requester) }
     let(:response_input) { 'input' }
     let(:response) { double("response", input: response_input) }
     let(:identity) { { public_keys: [ { key: "pk1"} ] } }
