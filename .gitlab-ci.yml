@@ -3,31 +3,11 @@ workflow:
     - if: $CI_COMMIT_BRANCH
 
 stages:
-  - prebuild
   - build
   - release
   - publish
 
-.license-check: &license-check |
-  bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
-  gem install bundler:${bundler_version}
-  bundle install
-  gem install license_finder
-  git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
-  license_finder --decisions_file ./license-finder/dependency_decisions.yml
-
-.unit-test: &unit-test |
-  bundle install
-  bundle exec rake test
-
-.build: &build |
-  version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
-  bundle install
-  gem build selfsdk.gemspec
-  gem install selfsdk-${version}.gem
-
 .setup-environment: &setup-environment |
-  cwd=$(pwd)
   apt-get update
   apt-get -y install libsodium-dev cmake build-essential
   tmpdir=$(mktemp -d)
@@ -37,7 +17,14 @@ stages:
   apt-get -y install ${tmpdir}/libself-omemo_0.1.3_amd64.deb
   cd ${tmpdir} && git clone https://github.com/google/flatbuffers.git
   cd ${tmpdir}/flatbuffers && git checkout v2.0.0 && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
-  cd ${cwd}
+  cd ${CI_PROJECT_DIR}
+
+.build: &build |
+  version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
+  bundle install
+  bundle exec rake test
+  gem build selfsdk.gemspec
+  gem install selfsdk-${version}.gem
 
 .git-release: &git-release |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
@@ -74,31 +61,20 @@ before_script:
   - export SCRIPTS_DIR=$(mktemp -d)
   - git clone -q --depth 1 "${SCRIPTS_REPO}" "${SCRIPTS_DIR}"
 
-license-check:
-  stage: prebuild
-  image: ruby:2.7.3
-  script:
-    - ${SCRIPTS_DIR}/git-setup
-    - *setup-environment
-    - *license-check
-
-secrets-check:
-  stage: prebuild
-  image: docker:stable-git
-  services:
-    - docker:20.10.12-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-  script:
-    - ${SCRIPTS_DIR}/git-secrets
-
-unit-test:
-  stage: prebuild
-  image: ruby:2.6.6-buster
+license-compliance:
+  stage: build
+  image: licensefinder/license_finder
   script:
     - *setup-environment
-    - *unit-test
+    - ${SCRIPTS_DIR}/license-check
+
+secret-scan:
+  stage: build
+  image:
+    name: zricethezav/gitleaks:v8.2.4
+    entrypoint: [""]
+  script:
+    - ${SCRIPTS_DIR}/git-secret-scan
 
 build:
   stage: build
