@@ -7,21 +7,6 @@ stages:
   - release
   - publish
 
-.license-check: &license-check |
-  bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
-  gem install bundler:${bundler_version}
-  bundle install
-  gem install license_finder
-  git clone https://${GITHUB_TOKEN}:@github.com/aldgate-ventures/license-finder.git
-  license_finder --decisions_file ./license-finder/dependency_decisions.yml
-
-.build: &build |
-  version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
-  bundle install
-  bundle exec rake test
-  gem build selfsdk.gemspec
-  gem install selfsdk-${version}.gem
-
 .setup-environment: &setup-environment |
   apt-get update
   apt-get -y install libsodium-dev cmake build-essential
@@ -33,6 +18,13 @@ stages:
   cd ${tmpdir} && git clone https://github.com/google/flatbuffers.git
   cd ${tmpdir}/flatbuffers && git checkout v2.0.0 && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
   cd ${CI_PROJECT_DIR}
+
+.build: &build |
+  version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
+  bundle install
+  bundle exec rake test
+  gem build selfsdk.gemspec
+  gem install selfsdk-${version}.gem
 
 .git-release: &git-release |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
@@ -75,14 +67,6 @@ license-compliance:
   script:
     - *setup-environment
     - ${SCRIPTS_DIR}/license-check
-
-# license-compliance:
-#   stage: build
-#   image: ruby:2.7.3
-#   script:
-#     - ${SCRIPTS_DIR}/git-setup
-#     - *setup-environment
-#     - *license-check
 
 secret-scan:
   stage: build
