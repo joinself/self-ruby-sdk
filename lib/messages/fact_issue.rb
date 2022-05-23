@@ -18,15 +18,14 @@ module SelfSDK
       end
 
       def populate(selfid, source, facts, opts)
-        @attestations = build_attestations!(facts)
-
         @id = opts.fetch(:cid, SecureRandom.uuid)
         @exp_timeout = opts.fetch(:exp_timeout, DEFAULT_EXP_TIMEOUT)
         @source = source
         @viewers = opts.fetch(:viewers, "")
 
-        @from = @client.jwt.id
+        @from = @jwt.id
         @to = selfid
+        @attestations = build_attestations!(facts)
       end
 
       def body
@@ -45,8 +44,22 @@ module SelfSDK
         }
         # viewers
         b[:viewers] = @viewers unless @viewers.empty?
-        puts b.to_json
         b
+      end
+
+      protected
+
+      def proto(to_device)
+        @to_device = to_device
+        recipient = "#{@to}:#{@to_device}"
+        ciphertext = encrypt_message(@jwt.prepare(body), [{id: @to, device_id: @to_device}])
+
+        m = SelfMsg::Message.new
+        m.id = @id
+        m.sender = "#{@jwt.id}:#{@messaging.device_id}"
+        m.recipient = recipient
+        m.ciphertext = ciphertext
+        m
       end
 
       private
@@ -59,7 +72,7 @@ module SelfSDK
           att = fact.transform_keys(&:to_sym)
           raise 'invalid attestation : does not provide a key' if !att.has_key?(:key) || att[:key].empty?
 
-          raise 'invalid attestation : does not provide a key' if !att.has_key?(:value) || att[:value].empty?
+          raise 'invalid attestation : does not provide a value' if !att.has_key?(:value) || att[:value].empty?
 
           attestations << sign(att)
         end
@@ -70,12 +83,12 @@ module SelfSDK
       def sign(facts)
         fact = { jti: SecureRandom.uuid,
                  sub: @to,
-                 iss: @origin,
+                 iss: @from,
                  iat: SelfSDK::Time.now.strftime('%FT%TZ'),
                  source: @source,
                  verified: true,
                  facts: facts }
-        @messaging.jwt.signed(fact)
+        @client.jwt.signed(fact)
       end
     end
   end
