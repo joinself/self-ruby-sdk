@@ -6,6 +6,7 @@ require "json"
 require_relative "source_definition.rb"
 
 module SelfSDK
+  attr_reader :sources
   class Sources
     def initialize(sources_file)
       @sources = SOURCE_DATA["sources"]
@@ -51,6 +52,7 @@ module SelfSDK
       raise "invalid message type '#{s}'" unless types.key? s
       return types[s]
     end
+
 
     private
 
