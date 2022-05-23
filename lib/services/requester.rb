@@ -167,6 +167,9 @@ module SelfSDK
 
         raise 'provided fact does not specify a name' if f[:fact].empty?
         return unless f.has_key? :sources
+        return if f.has_key? :issuers # skip the validation if is a custom fact
+
+        raise "invalid fact '#{f[:fact]}'" unless @messaging.facts.include?(f[:fact])
 
         spec = @messaging.sources
         f[:sources].each do |s|

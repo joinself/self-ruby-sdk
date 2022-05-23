@@ -99,6 +99,7 @@ module SelfSDK
         b[:description] = @description unless (@description.nil? || @description.empty?)
         b[:allowed_until] = (SelfSDK::Time.now + @allowed_for).strftime('%FT%TZ') unless @allowed_for.nil?
         b[:auth] = @auth unless @auth.nil?
+        p b
         b
       end
 

@@ -48,7 +48,7 @@ module SelfSDK
       end
 
       def fact(name)
-        name = @messaging.source.normalize_fact_name!(name)
+        name = @messaging.source.normalize_fact_name(name)
         @facts.select{|f| f.name == name}.first
       end
 

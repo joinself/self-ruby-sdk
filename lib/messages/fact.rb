@@ -14,11 +14,15 @@ module SelfSDK
       end
 
       def parse(fact)
-        @name = @messaging.source.normalize_fact_name! fact[:fact]
+        @name = @messaging.source.normalize_fact_name fact[:fact]
         @operator = @messaging.source.normalize_operator!(fact[:operator])
         @sources = []
         fact[:sources]&.each do |s|
-          @sources << @messaging.source.normalize_source!(s)
+          @sources << s.to_s
+        end
+        @issuers = []
+        fact[:issuers]&.each do |i|
+          @issuers << i.to_s
         end
 
         @expected_value = fact[:expected_value] || ""
@@ -39,6 +43,7 @@ module SelfSDK
 
       def to_hash
         h = { fact: @name }
+        h[:issuers] = @issuers if @issuers.length > 0
         unless @sources.nil?
           h[:sources] = @sources if @sources.length > 0
         end

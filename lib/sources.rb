@@ -6,7 +6,7 @@ require "json"
 require_relative "source_definition.rb"
 
 module SelfSDK
-  attr_reader :sources
+  attr_reader :sources, :facts
   class Sources
     def initialize(sources_file)
       @sources = SOURCE_DATA["sources"]
@@ -16,10 +16,12 @@ module SelfSDK
       end
     end
 
-    def normalize_fact_name!(fact)
-      fact = fact.to_s
-      raise "invalid fact '#{fact}'" unless @facts.include?(fact)
-      fact
+    def normalize_fact_name(fact)
+      fact.to_s
+    end
+
+    def normalize_source(source)
+      source.to_s
     end
 
     def validate_source!(source)
