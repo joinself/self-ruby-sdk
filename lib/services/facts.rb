@@ -1,13 +1,13 @@
 # Copyright 2020 Self Group Ltd. All Rights Reserved.
 
 # frozen_string_literal: true
+require_relative '../messages/fact_issue.rb'
 
 # Namespace for classes and modules that handle SelfSDK gem
 module SelfSDK
   # Namespace for classes and modules that handle selfsdk-gem public ui
   module Services
     # Self provides this self-hosted verified intermediary.
-    DEFAULT_INTERMEDIARY = "self_intermediary"
     # Input class to handle fact requests on self network.
     class Facts
       # Creates a new facts service.
@@ -92,6 +92,20 @@ module SelfSDK
       def generate_deep_link(facts, callback, opts = {})
         opts[:auth] = false
         @requester.generate_deep_link(facts, callback, opts)
+      end
+
+      # Issues a custom fact and sends it to the user.
+      #
+      # @param selfid [String] self identifier for the message recipient.
+      # @param source [String] source where facts belong to.
+      # @param facts [Array] facts to be sent to the user
+      # @option opts [String] :viewers list of self identifiers for the user that will have access to this facts.
+      def issue(selfid, source, facts, opts = {})
+        SelfSDK.logger.info "issuing facts for #{selfid}"
+        msg = SelfSDK::Messages::FactIssue.new(@requester.messaging)
+        msg.populate(selfid, source, facts, opts)
+
+        msg.send_message
       end
     end
   end

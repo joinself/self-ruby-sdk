@@ -10,6 +10,8 @@ module SelfSDK
     DEFAULT_INTERMEDIARY = "self_intermediary"
     # Input class to handle fact requests on self network.
     class Requester
+      attr_reader :messaging
+
       # Creates a new facts service.
       # Facts service mainly manages fact requests against self users wanting
       # to share their verified facts with your app.
