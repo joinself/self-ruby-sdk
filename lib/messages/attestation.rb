@@ -25,6 +25,8 @@ module SelfSDK
         @operator = payload[:operator]
         @fact_name = name.to_s
         if payload[name].nil?
+          return if payload[:facts].nil?
+
           payload[:facts].each do |f|
             if f[:key] == name.to_s
               @value = f[:value]

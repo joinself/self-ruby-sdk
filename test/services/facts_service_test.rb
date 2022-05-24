@@ -30,7 +30,7 @@ class SelfSDKTest < Minitest::Test
           assert_equal arg[:facts], expected_facts
         else
           assert_equal arg[:attestations], expected_attestations
-          assert_equal arg[:viewers], expected_viewers
+          assert_equal arg[:viewers], expected_viewers if expected_viewers
         end
       end.and_return(json_body)
       j
@@ -132,7 +132,7 @@ class SelfSDKTest < Minitest::Test
       let(:expected_facts) { nil }
       let(:subject_type) { "identities.facts.issue" }
       let(:expected_attestations) { ['<my_signed_attestation>'] }
-      let(:expected_viewers) { '' }
+      let(:expected_viewers) { nil }
       it ":issue" do
         expect(jwt).to receive(:signed).and_return("<my_signed_attestation>")
         expect(client).to receive(:app).with("app_self_id").and_return({ paid_actions: true })
