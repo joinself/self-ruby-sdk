@@ -43,8 +43,8 @@ begin
     end
 
     # Response comes in form of facts easy to access with facts method
-    attestations = res.attestation_values_for(:display_name).join(", ")
-    puts "Hello #{attestations}!"
+    attestations = res.attestation_values_for(my_fact.key.to_sym).join(", ")
+    puts "Your stored fact is #{attestations}!"
     exit!
   end
 rescue => e

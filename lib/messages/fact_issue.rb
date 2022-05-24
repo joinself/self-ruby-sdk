@@ -21,7 +21,7 @@ module SelfSDK
         @id = opts.fetch(:cid, SecureRandom.uuid)
         @exp_timeout = opts.fetch(:exp_timeout, DEFAULT_EXP_TIMEOUT)
         @source = source
-        @viewers = opts.fetch(:viewers, "")
+        @viewers = opts.fetch(:viewers, nil)
 
         @from = @jwt.id
         @to = selfid
@@ -39,11 +39,10 @@ module SelfSDK
           cid: @id,
           jti: SecureRandom.uuid,
           status: 'verified',
-          viewers: @viewers,
           attestations: @attestations
         }
         # viewers
-        b[:viewers] = @viewers unless @viewers.empty?
+        b[:viewers] = @viewers unless @viewers.nil?
         b
       end
 
@@ -87,7 +86,7 @@ module SelfSDK
                  iat: SelfSDK::Time.now.strftime('%FT%TZ'),
                  source: @source,
                  verified: true,
-                 facts: facts }
+                 facts: [ facts ] }
         @client.jwt.signed(fact)
       end
     end

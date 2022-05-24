@@ -113,6 +113,7 @@ module SelfSDK
         msg.send_message
       end
 
+      # Facts to be issued
       class Fact
         attr_accessor :key, :value, :display_name, :group
 
