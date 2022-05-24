@@ -27,12 +27,15 @@ my_fact = { key: "confirmation_code",
               name: "Trip to Venice",
               icon: "plane"
             }}
+
+my_group = SelfSDK::Services::Facts::Group.new("Trip to Venice", "plane") 
+my_fact = SelfSDK::Services::Facts::Fact.new("confirmation_code", "CD128763", "Confirmation code", my_group)
 @app.facts.issue(user, 'source', [my_fact], viewers: ["a", "b", "c"])
 sleep 5
 
 # Request the custom fact
 begin
-  @app.facts.request(user, [{ fact: my_fact[:key], issuers: [ENV["SELF_APP_ID"]] }]) do |res|
+  @app.facts.request(user, [{ fact: my_fact.key, issuers: [ENV["SELF_APP_ID"]] }]) do |res|
     # Information request has been rejected by the user
     if res.status == "rejected"
       puts 'Information request rejected'
