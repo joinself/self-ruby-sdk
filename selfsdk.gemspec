@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
     "lib/messages/",
     "lib/messages/base.rb",
     "lib/messages/fact.rb",
+    "lib/messages/fact_issue.rb",
     "lib/messages/attestation.rb",
     "lib/messages/fact_request.rb",
     "lib/messages/fact_response.rb",

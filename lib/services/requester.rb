@@ -10,6 +10,8 @@ module SelfSDK
     DEFAULT_INTERMEDIARY = "self_intermediary"
     # Input class to handle fact requests on self network.
     class Requester
+      attr_reader :messaging
+
       # Creates a new facts service.
       # Facts service mainly manages fact requests against self users wanting
       # to share their verified facts with your app.
@@ -155,7 +157,7 @@ module SelfSDK
                  else
                    { fact: f }
                  end
-          # validate_fact!(fact)
+          validate_fact!(fact) unless fact.key?('issuers')
           fs << fact
         end
         fs
@@ -167,74 +169,14 @@ module SelfSDK
 
         raise 'provided fact does not specify a name' if f[:fact].empty?
         return unless f.has_key? :sources
+        return if f.has_key? :issuers # skip the validation if is a custom fact
 
-        valid_sources = [SOURCE_USER_SPECIFIED,
-                         SOURCE_PASSPORT,
-                         SOURCE_DRIVING_LICENSE,
-                         SOURCE_IDENTITY_CARD,
-                         SOURCE_TWITTER,
-                         SOURCE_LINKEDIN,
-                         SOURCE_FACEBOK]
-        fact_for_passport = [FACT_DOCUMENT_NUMBER,
-                             FACT_SURNAME,
-                             FACT_GIVEN_NAMES,
-                             FACT_DATE_OF_BIRTH,
-                             FACT_DATE_OF_EXPIRATION,
-                             FACT_SEX,
-                             FACT_NATIONALITY,
-                             FACT_COUNTRY_OF_ISSUANCE]
+        raise "invalid fact '#{f[:fact]}'" unless @messaging.facts.include?(f[:fact])
 
-        facts_for_dl = [FACT_DOCUMENT_NUMBER,
-                        FACT_SURNAME,
-                        FACT_GIVEN_NAMES,
-                        FACT_DATE_OF_BIRTH,
-                        FACT_DATE_OF_ISSUANCE,
-                        FACT_DATE_OF_EXPIRATION,
-                        FACT_ADDRESS, 
-                        FACT_ISSUING_AUTHORITY,
-                        FACT_PLACE_OF_BIRTH, 
-                        FACT_COUNTRY_OF_ISSUANCE]
-
-        facts_for_user = [FACT_DOCUMENT_NUMBER,
-                          FACT_DISPLAY_NAME,
-                          FACT_EMAIL,
-                          FACT_PHONE]
-
-        facts_for_twitter = [FACT_ACCOUNT_ID, FACT_NICKNAME]
-        facts_for_linkedin = [FACT_ACCOUNT_ID, FACT_NICKNAME]
-        facts_for_facebook = [FACT_ACCOUNT_ID, FACT_NICKNAME]
-        facts_for_live = [FACT_SELFIE]
-
+        spec = @messaging.sources
         f[:sources].each do |s|
-          raise errInvalidSource unless valid_sources.include? s.to_s
-
-          if s.to_s == SOURCE_PASSPORT || s.to_s == SOURCE_IDENTITY_CARD
-            raise errInvalidFactToSource unless fact_for_passport.include? f[:fact]
-          end
-
-          if s.to_s == SOURCE_DRIVING_LICENSE
-            raise errInvalidFactToSource unless facts_for_dl.include? f[:fact]
-          end
-
-          if s.to_s == SOURCE_USER_SPECIFIED
-            raise errInvalidFactToSource unless facts_for_user.include? f[:fact].to_s
-          end
-
-          if s.to_s == SOURCE_TWITTER
-            raise errInvalidFactToSource unless facts_for_twitter.include? f[:fact].to_s
-          end
-
-          if s.to_s == SOURCE_LINKEDIN
-            raise errInvalidFactToSource unless facts_for_linkedin.include? f[:fact].to_s
-          end
-
-          if s.to_s == SOURCE_FACEBOOK
-            raise errInvalidFactToSource unless facts_for_facebook.include? f[:fact].to_s
-          end
-
-          if s.to_s == SOURCE_LIVE
-            raise errInvalidFactToSource unless facts_for_live.include? f[:fact].to_s
-          end
+          raise errInvalidSource unless spec.key?(s)
+          raise errInvalidFactToSource unless spec[s].include? f[:fact]
         end
       end
     end
