@@ -146,7 +146,7 @@ class SelfSDKTest < Minitest::Test
           assert_equal arg.ciphertext, '{}'
         end.and_return(json_body)
 
-        service.issue("user_self_id", "my_source", [{ key: "my_fact", value: "tupu" }])
+        service.issue("user_self_id", [{ key: "my_fact", value: "tupu", source: "my_source" }])
       end
     end
   end
