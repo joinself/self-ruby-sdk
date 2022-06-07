@@ -17,20 +17,26 @@ storage_dir = "#{File.expand_path("..", File.dirname(__FILE__))}/self_storage"
 
 # Connect your app to Self network, get your connection details creating a new
 # app on https://developer.selfsdk.net/
+puts 'connecting...'
 @app = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_DEVICE_SECRET"], ENV["STORAGE_KEY"], storage_dir, opts)
 
 # Create a custom fact and send it to the user.
-my_fact = { key: "confirmation_code",
-            value: "CD128763",
-            display_name: "Confirmation code",
-            group: {
-              name: "Trip to Venice",
-              icon: "plane"
-            }}
-
+puts 'issuing custom facts'
 my_group = SelfSDK::Services::Facts::Group.new("Trip to Venice", "plane") 
-my_fact = SelfSDK::Services::Facts::Fact.new("confirmation_code", "CD128763", "Confirmation code", my_group)
-@app.facts.issue(user, 'source', [my_fact], viewers: ["a", "b", "c"])
+my_fact = SelfSDK::Services::Facts::Fact.new(
+  "confirmation_code", 
+  "CD128763", 
+  "source12",
+  "Confirmation code", 
+  my_group)
+my_fact_2 = SelfSDK::Services::Facts::Fact.new(
+  "confirmation_code_2", 
+  "CD128763_2", 
+  "source11",
+  "Confirmation code 2", 
+  my_group)
+
+@app.facts.issue(user, [my_fact, my_fact_2])
 sleep 5
 
 # Request the custom fact
@@ -53,4 +59,4 @@ rescue => e
 end
 
 # Wait for asyncrhonous process to finish
-sleep 100
+sleep 1000

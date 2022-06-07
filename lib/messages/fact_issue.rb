@@ -17,10 +17,9 @@ module SelfSDK
         super
       end
 
-      def populate(selfid, source, facts, opts)
+      def populate(selfid, facts, opts)
         @id = opts.fetch(:cid, SecureRandom.uuid)
         @exp_timeout = opts.fetch(:exp_timeout, DEFAULT_EXP_TIMEOUT)
-        @source = source
         @viewers = opts.fetch(:viewers, nil)
 
         @from = @jwt.id
@@ -72,19 +71,20 @@ module SelfSDK
           raise 'invalid attestation : does not provide a key' if !att.has_key?(:key) || att[:key].empty?
 
           raise 'invalid attestation : does not provide a value' if !att.has_key?(:value) || att[:value].empty?
+          att.delete(:source)
 
-          attestations << sign(att)
+          attestations << sign(fact[:source], att)
         end
 
         attestations
       end
 
-      def sign(facts)
+      def sign(source, facts)
         fact = { jti: SecureRandom.uuid,
                  sub: @to,
                  iss: @from,
                  iat: SelfSDK::Time.now.strftime('%FT%TZ'),
-                 source: @source,
+                 source: source,
                  verified: true,
                  facts: [ facts ] }
         @client.jwt.signed(fact)

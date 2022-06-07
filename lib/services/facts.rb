@@ -97,10 +97,9 @@ module SelfSDK
       # Issues a custom fact and sends it to the user.
       #
       # @param selfid [String] self identifier for the message recipient.
-      # @param source [String] source where facts belong to.
       # @param facts [Array<Fact>] facts to be sent to the user
       # @option opts [String] :viewers list of self identifiers for the user that will have access to this facts.
-      def issue(selfid, source, facts, opts = {})
+      def issue(selfid, facts, opts = {})
         hased_facts = []
         facts.each do |f|
           hased_facts << f.to_hash
@@ -108,7 +107,7 @@ module SelfSDK
 
         SelfSDK.logger.info "issuing facts for #{selfid}"
         msg = SelfSDK::Messages::FactIssue.new(@requester.messaging)
-        msg.populate(selfid, source, hased_facts, opts)
+        msg.populate(selfid, hased_facts, opts)
 
         msg.send_message
       end
@@ -117,15 +116,16 @@ module SelfSDK
       class Fact
         attr_accessor :key, :value, :display_name, :group
 
-        def initialize(key, value, display_name = "", group = nil)
+        def initialize(key, value, source, display_name = "", group = nil)
           @key = key
           @value = value
+          @source = source
           @display_name = display_name
           @group = group
         end
 
         def to_hash
-          b = { key: @key, value: @value }
+          b = { key: @key, value: @value, source: @source }
           b[:display_name] = @display_name unless @display_name.empty?
           b[:group] = @group.to_hash unless @group.nil?
           b
