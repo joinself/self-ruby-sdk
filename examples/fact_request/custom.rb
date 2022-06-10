@@ -24,16 +24,15 @@ puts 'connecting...'
 puts 'issuing custom facts'
 my_group = SelfSDK::Services::Facts::Group.new("Trip to Venice", "plane") 
 my_fact = SelfSDK::Services::Facts::Fact.new(
-  "confirmation_code", 
-  "CD128763", 
+  "confirmation_code",
+  "CD128763",
   "source12",
-  "Confirmation code", 
   my_group)
+
 my_fact_2 = SelfSDK::Services::Facts::Fact.new(
-  "confirmation_code_2", 
-  "CD128763_2", 
+  "confirmation_code_2",
+  "CD128763_2",
   "source11",
-  "Confirmation code 2", 
   my_group)
 
 @app.facts.issue(user, [my_fact, my_fact_2])
