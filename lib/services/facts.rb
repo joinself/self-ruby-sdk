@@ -114,19 +114,17 @@ module SelfSDK
 
       # Facts to be issued
       class Fact
-        attr_accessor :key, :value, :display_name, :group
+        attr_accessor :key, :value, :group
 
-        def initialize(key, value, source, display_name = "", group = nil)
+        def initialize(key, value, source, group = nil)
           @key = key
           @value = value
           @source = source
-          @display_name = display_name
           @group = group
         end
 
         def to_hash
           b = { key: @key, value: @value, source: @source }
-          b[:display_name] = @display_name unless @display_name.empty?
           b[:group] = @group.to_hash unless @group.nil?
           b
         end
