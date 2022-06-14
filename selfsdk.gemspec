@@ -40,6 +40,8 @@ Gem::Specification.new do |s|
     "lib/messages/chat_remove.rb",
     "lib/messages/message.rb",
     "lib/messages/document_sign_resp.rb",
+    "lib/messages/connection_request.rb",
+    "lib/messages/connection_response.rb",
     "lib/services/auth.rb",
     "lib/services/facts.rb",
     "lib/services/requester.rb",

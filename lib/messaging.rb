@@ -430,9 +430,8 @@ module SelfSDK
         message.validate! @uuid_observer[message.id][:original_message] if @uuid_observer.include? message.id
         notify_observer(message)
       end
-
     rescue StandardError => e
-      p "Error processing incoming message #{input.to_json}"
+      p "Error processing incoming message #{e.message}"
       SelfSDK.logger.info e
       # p e.backtrace
       nil
