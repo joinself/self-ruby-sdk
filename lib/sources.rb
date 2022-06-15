@@ -50,6 +50,7 @@ module SelfSDK
                 chat_join: SelfSDK::Messages::ChatJoin::MSG_TYPE,
                 chat_remove: SelfSDK::Messages::ChatRemove::MSG_TYPE,
                 document_sign_response: SelfSDK::Messages::DocumentSignResponse::MSG_TYPE,
+                connection_response: SelfSDK::Messages::ConnectionResponse::MSG_TYPE,
                }
       raise "invalid message type '#{s}'" unless types.key? s
       return types[s]
