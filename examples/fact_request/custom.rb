@@ -27,13 +27,13 @@ my_fact = SelfSDK::Services::Facts::Fact.new(
   "confirmation_code",
   "CD128763",
   "source12",
-  my_group)
+  group: my_group)
 
 my_fact_2 = SelfSDK::Services::Facts::Fact.new(
   "confirmation_code_2",
   "CD128763_2",
   "source11",
-  my_group)
+  group: my_group)
 
 @app.facts.issue(user, [my_fact, my_fact_2])
 sleep 5

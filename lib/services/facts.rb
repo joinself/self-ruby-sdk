@@ -121,6 +121,7 @@ module SelfSDK
           @key = key
           @value = value
           @source = source
+          @display_name = opts.fetch(:display_name, "")
           @group = opts.fetch(:group, nil)
           @type = opts.fetch(:type, nil)
         end
