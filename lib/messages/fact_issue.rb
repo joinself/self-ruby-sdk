@@ -84,6 +84,7 @@ module SelfSDK
                  sub: @to,
                  iss: @from,
                  iat: SelfSDK::Time.now.strftime('%FT%TZ'),
+                 exp: (SelfSDK::Time.now + @exp_timeout).strftime('%FT%TZ'),
                  source: source,
                  verified: true,
                  facts: [ facts ] }
