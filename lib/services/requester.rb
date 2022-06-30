@@ -166,17 +166,18 @@ module SelfSDK
       def validate_fact!(f)
         errInvalidFactToSource = 'provided source does not support given fact'
         errInvalidSource = 'provided fact does not specify a valid source'
+        fact_name = f[:fact].to_s
 
-        raise 'provided fact does not specify a name' if f[:fact].empty?
+        raise 'provided fact does not specify a name' if fact_name.empty?
         return unless f.has_key? :sources
         return if f.has_key? :issuers # skip the validation if is a custom fact
 
-        raise "invalid fact '#{f[:fact]}'" unless @messaging.facts.include?(f[:fact])
+        raise "invalid fact '#{fact_name}'" unless @messaging.source.core_fact?(fact_name)
 
-        spec = @messaging.sources
+        spec = @messaging.source.sources
         f[:sources].each do |s|
-          raise errInvalidSource unless spec.key?(s)
-          raise errInvalidFactToSource unless spec[s].include? f[:fact]
+          raise errInvalidSource unless spec.key?(s.to_s)
+          raise errInvalidFactToSource unless spec[s.to_s].include? fact_name.to_s
         end
       end
     end

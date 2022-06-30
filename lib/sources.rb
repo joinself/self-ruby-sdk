@@ -6,8 +6,9 @@ require "json"
 require_relative "source_definition.rb"
 
 module SelfSDK
-  attr_reader :sources, :facts
   class Sources
+    attr_reader :sources, :facts
+
     def initialize(sources_file)
       @sources = SOURCE_DATA["sources"]
       @facts = []
@@ -38,6 +39,10 @@ module SelfSDK
                     great_than: '>',
                     less_than: '<' }
       get(operators, input, "operator")
+    end
+
+    def core_fact?(fact)
+      @facts.include? fact.to_s
     end
 
     def message_type(s)
