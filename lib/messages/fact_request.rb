@@ -87,7 +87,7 @@ module SelfSDK
         b = {
           typ: MSG_TYPE,
           iss: @jwt.id,
-          aud: @to,
+          aud: @intermediary ? @intermediary : @to,
           sub: @to,
           iat: SelfSDK::Time.now.strftime('%FT%TZ'),
           exp: (SelfSDK::Time.now + @exp_timeout).strftime('%FT%TZ'),
