@@ -18,6 +18,8 @@ stages:
   cd ${tmpdir} && git clone https://github.com/google/flatbuffers.git
   cd ${tmpdir}/flatbuffers && git checkout v2.0.0 && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
   cd ${CI_PROJECT_DIR}
+  #bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
+  #gem install bundler:${bundler_version}
 
 .build: &build |
   version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
@@ -66,6 +68,7 @@ license-compliance:
   image: licensefinder/license_finder
   script:
     - *setup-environment
+    - bundle lock --add-platform x86_64-linux
     - ${SCRIPTS_DIR}/license-check
 
 secret-scan:
@@ -78,7 +81,7 @@ secret-scan:
 
 build:
   stage: build
-  image: ruby:2.6.6-buster
+  image: ruby:2.7.3-buster
   script:
     - *setup-environment
     - *build
@@ -97,7 +100,7 @@ release:
 
 rubyGems:
   stage: publish
-  image: ruby:2.6.6-buster
+  image: ruby:2.7.3-buster
   script:
     - ${SCRIPTS_DIR}/rubygems-setup
     - *publish
