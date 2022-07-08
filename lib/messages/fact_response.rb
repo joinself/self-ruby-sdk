@@ -13,6 +13,11 @@ module SelfSDK
 
       attr_accessor :facts, :audience, :auth
 
+      def initialize(messaging)
+        @typ = MSG_TYPE
+        super
+      end
+
       def parse(input, envelope=nil)
         @input = input
         @typ = MSG_TYPE
@@ -43,7 +48,7 @@ module SelfSDK
       end
 
       def fact(name)
-        name = SelfSDK::fact_name(name)
+        name = @messaging.source.normalize_fact_name(name)
         @facts.select{|f| f.name == name}.first
       end
 
@@ -82,6 +87,10 @@ module SelfSDK
           status: @status,
           facts: encoded_facts,
           auth: @auth }
+      end
+
+      def auth_response?
+        @auth == true
       end
 
       protected

@@ -4,8 +4,6 @@
 
 require_relative "fact_request"
 require_relative "fact_response"
-require_relative "authentication_resp"
-require_relative "authentication_req"
 require_relative "chat_message"
 require_relative "chat_message_read"
 require_relative "chat_message_delivered"
@@ -13,6 +11,7 @@ require_relative "chat_invite"
 require_relative "chat_join"
 require_relative "chat_remove"
 require_relative "document_sign_resp"
+require_relative "connection_response"
 
 module SelfSDK
   module Messages
@@ -30,17 +29,11 @@ module SelfSDK
       payload = JSON.parse(messaging.jwt.decode(jwt[:payload]), symbolize_names: true)
 
       case payload[:typ]
-      when "identities.facts.query.req"
+      when SelfSDK::Messages::FactRequest::MSG_TYPE
         m = FactRequest.new(messaging)
         m.parse(body, envelope)
-      when "identities.facts.query.resp"
+      when SelfSDK::Messages::FactResponse::MSG_TYPE
         m = FactResponse.new(messaging)
-        m.parse(body, envelope)
-      when "identities.authenticate.resp"
-        m = AuthenticationResp.new(messaging)
-        m.parse(body, envelope)
-      when "identities.authenticate.req"
-        m = AuthenticationReq.new(messaging)
         m.parse(body, envelope)
       when SelfSDK::Messages::ChatMessage::MSG_TYPE
         m = ChatMessage.new(messaging)
@@ -62,6 +55,9 @@ module SelfSDK
         m.parse(body, envelope)
       when SelfSDK::Messages::DocumentSignResponse::MSG_TYPE
         m = DocumentSignResponse.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::ConnectionResponse::MSG_TYPE
+        m = ConnectionResponse.new(messaging)
         m.parse(body, envelope)
       else
         raise StandardError.new("Invalid message type #{payload[:typ]}.")

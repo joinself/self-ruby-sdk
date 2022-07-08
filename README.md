@@ -154,6 +154,13 @@ To install this gem onto your local machine, run `bundle exec rake install`.
 
 This project uses semantic versioning https://semver.org/. To create a new version run `bundle exec rake bump:(major|minor|patch)` depending on the version number you wish to increment. This will update the applications version as well as rebuild the dependencies to include the new version. Upon changes being merged into mainstream a new gem will be built, tagged and published to RubyGems.
 
+### Developer commands
+
+#### rake sources:generate
+
+Generates the valid sources based on a json file (config/sources.json) instead of have them hardcoded on the gem.
+
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/joinself/self-ruby-sdk.

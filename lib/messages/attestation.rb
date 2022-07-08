@@ -24,7 +24,16 @@ module SelfSDK
         @expected_value = payload[:expected_value]
         @operator = payload[:operator]
         @fact_name = name.to_s
-        unless payload[name].nil?
+        if payload[name].nil?
+          return if payload[:facts].nil?
+
+          payload[:facts].each do |f|
+            if f[:key] == name.to_s
+              @value = f[:value]
+              break
+            end
+          end
+        else
           @value = payload[name]
         end
       end

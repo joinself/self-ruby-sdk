@@ -6,6 +6,8 @@ require 'self_crypto'
 require_relative '../chat/file_object'
 require_relative '../chat/group'
 require_relative '../chat/message'
+require_relative "../messages/connection_request"
+
 module SelfSDK
   module Services
     class Chat
@@ -15,7 +17,7 @@ module SelfSDK
         @messaging = messaging
         @client = client
         @app_id = @messaging.client.client.jwt.id
-        @auth_token = @messaging.client.client.jwt.auth_token
+        @jwt = @messaging.client.client.jwt
         @self_url = @messaging.client.client.self_url
       end
 
@@ -34,7 +36,7 @@ module SelfSDK
         payload[:rid] = opts[:rid] if opts.key? :rid
         payload[:objects] = opts[:objects] if opts.key? :objects
 
-        m = SelfSDK::Chat::Message.new(self, recipients, payload, @auth_token, @self_url)
+        m = SelfSDK::Chat::Message.new(self, recipients, payload, @jwt.auth_token, @self_url)
         _req = send(m.recipients, m.payload)
 
         m
@@ -43,7 +45,7 @@ module SelfSDK
       # Subscribes to an incoming chat message
       def on_message(opts = {}, &block)
         @messaging.subscribe :chat_message do |msg|
-          cm = SelfSDK::Chat::Message.new(self, msg.payload[:aud], msg.payload, @auth_token, @self_url)
+          cm = SelfSDK::Chat::Message.new(self, msg.payload[:aud], msg.payload, @jwt.auth_token, @self_url)
 
           cm.mark_as_delivered unless opts[:mark_as_delivered] == false
           cm.mark_as_read if opts[:mark_as_read] == true
@@ -128,7 +130,7 @@ module SelfSDK
                     members: members }
 
         if opts.key? :data
-          obj = SelfSDK::Chat::FileObject.new(@auth_token, @self_url)
+          obj = SelfSDK::Chat::FileObject.new(@jwt.auth_token, @self_url)
           obj_payload = obj.build_from_data("", opts[:data], opts[:mime]).to_payload
           obj_payload.delete(:name)
           payload.merge! obj_payload
@@ -158,6 +160,46 @@ module SelfSDK
       # @members members [array] list of group members.
       def leave(gid, members)
         send(members, typ: "chat.remove", gid: gid )
+      end
+
+      # Generates a connection request in form of QR
+      #
+      #  @opts opts [Integer] :exp_timeout timeout in seconds to expire the request.
+      def generate_connection_qr(opts = {})
+        req = SelfSDK::Messages::ConnectionRequest.new(@messaging)
+        req.populate(@jwt.id, opts)
+        body = @jwt.prepare(req.body)
+
+        ::RQRCode::QRCode.new(body, level: 'l')
+      end
+
+      # Generates a connection request in form of deep link
+      #
+      # @param callback [String] the url you'll be redirected if the app is not installed.
+      #  @opts opts [Integer] :exp_timeout timeout in seconds to expire the request.
+      def generate_connection_deep_link(callback, opts = {})
+        req = SelfSDK::Messages::ConnectionRequest.new(@messaging)
+        req.populate(@jwt.id, opts)
+        body = @jwt.prepare(req.body)
+        body = @jwt.encode(body)
+
+        env = @messaging.client.client.env
+        if env.empty?
+          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app"
+        elsif env == 'development'
+          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
+        end
+
+        "https://#{env}.links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{env}"
+      end
+
+      # Subscribes to a connection response
+      #
+      #  @yield [request] Invokes the block with a connection response message.
+      def on_connection(&block)
+        @messaging.subscribe :connection_response do |msg|
+          block.call(msg)
+        end
       end
 
       private

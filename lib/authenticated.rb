@@ -14,6 +14,7 @@ module SelfSDK
 
     def accepted?
       return false if @payload.nil?
+      return false if @payload[:auth] != true
 
       @payload[:status] == "accepted"
     end

@@ -1,13 +1,13 @@
 # Copyright 2020 Self Group Ltd. All Rights Reserved.
 
 # frozen_string_literal: true
+require_relative '../messages/fact_issue.rb'
 
 # Namespace for classes and modules that handle SelfSDK gem
 module SelfSDK
   # Namespace for classes and modules that handle selfsdk-gem public ui
   module Services
     # Self provides this self-hosted verified intermediary.
-    DEFAULT_INTERMEDIARY = "self_intermediary"
     # Input class to handle fact requests on self network.
     class Facts
       # Creates a new facts service.
@@ -18,10 +18,8 @@ module SelfSDK
       # @param client [SelfSDK::Client] http client object.
       #
       # @return [SelfSDK::Services::Facts] facts service.
-      def initialize(messaging, client)
-        @messaging = messaging.client
-        @messaging_service = messaging
-        @client = client
+      def initialize(requester)
+        @requester = requester
       end
 
       # Sends a fact request to the specified selfid.
@@ -29,45 +27,24 @@ module SelfSDK
       # permission.
       #
       # @overload request(selfid, facts, opts = {}, &block)
-      #  @param selfid [string] the receiver of the authentication request.
-      #  @param [Hash] opts the options to authenticate.
-      #  @option opts [String] :cid The unique identifier of the authentication request.
+      #  @param selfid [string] the receiver of the fact request.
+      #  @param facts [Array] array of facts to be requested
+      #  @param [Hash] opts the options to process the request.
+      #  @option opts [String] :cid The unique identifier of the fact request.
       # @yield [request] Invokes the given block when a response is received.
       #  @return [Object] SelfSDK:::Messages::FactRequest
       #
       # @overload request(selfid, facts, opts = {})
-      #  @param selfid [string] the receiver of the authentication request.
-      #  @param [Hash] opts the options to authenticate.
-      #  @option opts [String] :cid The unique identifier of the authentication request.
+      #  @param selfid [string] the receiver of the fact request.
+      #  @param facts [Array] array of facts to be requested
+      #  @param [Hash] opts the options to request.
+      #  @option opts [String] :cid The unique identifier of the fact request.
       #  @option opts [Integer] :exp_timeout timeout in seconds to expire the request.
       #  @option opts [Integer] :allowed_for number of seconds for enabling recurrent requests.
-      #  @option opts [Boolean] :auth allows displaying the request as anuthentication request with facts.
       #  @return [Object] SelfSDK:::Messages::FactRequest
       def request(selfid, facts, opts = {}, &block)
-        SelfSDK.logger.info "authenticating #{selfid}"
-        rq = opts.fetch(:request, true)
-        if rq
-          raise "You're not permitting connections from #{selfid}" unless @messaging_service.is_permitted?(selfid)
-        end
-
-        req = SelfSDK::Messages::FactRequest.new(@messaging)
-        req.populate(selfid, prepare_facts(facts), opts)
-
-        body = @client.jwt.prepare(req.body)
-        return body unless rq
-
-        # when a block is given the request will always be asynchronous.
-        if block_given?
-          @messaging.set_observer(req, timeout: req.exp_timeout, &block)
-          return req.send_message
-        end
-
-        if opts[:async] == true
-          return req.send_message
-        end
-
-        # Otherwise the request is synchronous
-        req.request
+        opts[:auth] = false # force auth to false as you have auth service to make auth requests
+        @requester.request(selfid, facts, opts, &block)
       end
 
       # Sends a request through an intermediary.
@@ -81,8 +58,7 @@ module SelfSDK
       #  @option opts [String] intermediary an intermediary identity to be used.
       #  @return [Object] SelfSDK:::Messages::FactRequest
       def request_via_intermediary(selfid, facts, opts = {}, &block)
-        opts[:intermediary] = opts.fetch(:intermediary, DEFAULT_INTERMEDIARY)
-        request(selfid, facts, opts, &block)
+        @requester.request_via_intermediary(selfid, facts, opts, &block)
       end
 
       # Adds an observer for a fact response
@@ -90,7 +66,7 @@ module SelfSDK
       #
       #  @yield [request] Invokes the block with a fact response message.
       def subscribe(&block)
-        @messaging.subscribe(:fact_response, &block)
+        @requester.subscribe(false, &block)
       end
 
       # Generates a QR code so users can send facts to your app.
@@ -101,10 +77,8 @@ module SelfSDK
       #
       # @return [String, String] conversation id or encoded body.
       def generate_qr(facts, opts = {})
-        opts[:request] = false
-        selfid = opts.fetch(:selfid, "-")
-        req = request(selfid, facts, opts)
-        ::RQRCode::QRCode.new(req, level: 'l')
+        opts[:auth] = false
+        @requester.generate_qr(facts, opts)
       end
 
       # Generates a deep link to authenticate with self app.
@@ -116,113 +90,58 @@ module SelfSDK
       #
       # @return [String, String] conversation id or encoded body.
       def generate_deep_link(facts, callback, opts = {})
-        opts[:request] = false
-        selfid = opts.fetch(:selfid, "-")
-        body = @client.jwt.encode(request(selfid, facts, opts))
-
-        if @client.env.empty?
-          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app"
-        elsif @client.env == 'development'
-          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
-        end
-        "https://#{@client.env}.links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{@client.env}"
+        opts[:auth] = false
+        @requester.generate_deep_link(facts, callback, opts)
       end
 
-      private
-
-      # As request facts can accept an array of strings this populates with necessary
-      # structure this short fact definitions.
+      # Issues a custom fact and sends it to the user.
       #
-      # @param facts [Array] an array of strings or hashes.
-      # @return [Array] a list of hashed facts.
-      def prepare_facts(facts)
-        fs = []
+      # @param selfid [String] self identifier for the message recipient.
+      # @param facts [Array<Fact>] facts to be sent to the user
+      # @option opts [String] :viewers list of self identifiers for the user that will have access to this facts.
+      def issue(selfid, facts, opts = {})
+        hased_facts = []
         facts.each do |f|
-          fact = if f.is_a?(Hash)
-                  f
-                else
-                  { fact: f }
-                end
-          # validate_fact!(fact)
-          fs << fact
-        end      
-        fs
+          hased_facts << f.to_hash
+        end
+
+        SelfSDK.logger.info "issuing facts for #{selfid}"
+        msg = SelfSDK::Messages::FactIssue.new(@requester.messaging)
+        msg.populate(selfid, hased_facts, opts)
+
+        msg.send_message
       end
 
-      def validate_fact!(f)
-        errInvalidFactToSource = 'provided source does not support given fact'
-        errInvalidSource = 'provided fact does not specify a valid source'
+      # Facts to be issued
+      class Fact
+        attr_accessor :key, :value, :group
 
-        raise 'provided fact does not specify a name' if f[:fact].empty?
-        return unless f.has_key? :sources
+        def initialize(key, value, source, group = nil)
+          @key = key
+          @value = value
+          @source = source
+          @group = group
+        end
 
-        valid_sources = [SOURCE_USER_SPECIFIED,
-                         SOURCE_PASSPORT,
-                         SOURCE_DRIVING_LICENSE,
-                         SOURCE_IDENTITY_CARD,
-                         SOURCE_TWITTER,
-                         SOURCE_LINKEDIN,
-                         SOURCE_FACEBOK]
-        fact_for_passport = [FACT_DOCUMENT_NUMBER,
-                             FACT_SURNAME,
-                             FACT_GIVEN_NAMES,
-                             FACT_DATE_OF_BIRTH,
-                             FACT_DATE_OF_EXPIRATION,
-                             FACT_SEX,
-                             FACT_NATIONALITY,
-                             FACT_COUNTRY_OF_ISSUANCE]
+        def to_hash
+          b = { key: @key, value: @value, source: @source }
+          b[:group] = @group.to_hash unless @group.nil?
+          b
+        end
+      end
 
-        facts_for_dl = [FACT_DOCUMENT_NUMBER,
-                        FACT_SURNAME,
-                        FACT_GIVEN_NAMES,
-                        FACT_DATE_OF_BIRTH,
-                        FACT_DATE_OF_ISSUANCE,
-                        FACT_DATE_OF_EXPIRATION,
-                        FACT_ADDRESS, 
-                        FACT_ISSUING_AUTHORITY,
-                        FACT_PLACE_OF_BIRTH, 
-                        FACT_COUNTRY_OF_ISSUANCE]
+      class Group
+        attr_accessor :name, :icon
 
-        facts_for_user = [FACT_DOCUMENT_NUMBER,
-                          FACT_DISPLAY_NAME,
-                          FACT_EMAIL,
-                          FACT_PHONE]
+        def initialize(name, icon = "")
+          @name = name
+          @icon = icon
+        end
 
-        facts_for_twitter = [FACT_ACCOUNT_ID, FACT_NICKNAME]
-        facts_for_linkedin = [FACT_ACCOUNT_ID, FACT_NICKNAME]
-        facts_for_facebook = [FACT_ACCOUNT_ID, FACT_NICKNAME]
-        facts_for_live = [FACT_SELFIE]
-
-        f[:sources].each do |s|
-          raise errInvalidSource unless valid_sources.include? s.to_s
-
-          if s.to_s == SOURCE_PASSPORT || s.to_s == SOURCE_IDENTITY_CARD
-            raise errInvalidFactToSource unless fact_for_passport.include? f[:fact]
-          end
-
-          if s.to_s == SOURCE_DRIVING_LICENSE
-            raise errInvalidFactToSource unless facts_for_dl.include? f[:fact]
-          end
-
-          if s.to_s == SOURCE_USER_SPECIFIED
-            raise errInvalidFactToSource unless facts_for_user.include? f[:fact].to_s
-          end
-
-          if s.to_s == SOURCE_TWITTER
-            raise errInvalidFactToSource unless facts_for_twitter.include? f[:fact].to_s
-          end
-
-          if s.to_s == SOURCE_LINKEDIN
-            raise errInvalidFactToSource unless facts_for_linkedin.include? f[:fact].to_s
-          end
-
-          if s.to_s == SOURCE_FACEBOOK
-            raise errInvalidFactToSource unless facts_for_facebook.include? f[:fact].to_s
-          end
-
-          if s.to_s == SOURCE_LIVE
-            raise errInvalidFactToSource unless facts_for_live.include? f[:fact].to_s
-          end
+        def to_hash
+          b = { name: @name }
+          b[:icon] = @icon unless @icon.empty?
+          b
         end
       end
     end

@@ -5,13 +5,14 @@
 require 'self_msgproto'
 require_relative 'base'
 require_relative '../ntptime'
-require_relative 'authentication_message'
 
 module SelfSDK
   module Messages
-    class AuthenticationReq < AuthenticationMessage
-      MSG_TYPE = "identities.authenticate.req"
-      DEFAULT_EXP_TIMEOUT = 300
+    class ConnectionRequest < Base
+      MSG_TYPE = "identities.connections.req"
+      DEFAULT_EXP_TIMEOUT = 9000
+
+      attr_accessor :facts, :options, :auth
 
       def initialize(messaging)
         @typ = MSG_TYPE
@@ -22,34 +23,42 @@ module SelfSDK
         @id = SecureRandom.uuid
         @from = @client.jwt.id
         @to = selfid
-
-        @id = opts[:cid] if opts.include?(:cid)
-        @description = opts.include?(:description) ? opts[:description] : nil
         @exp_timeout = opts.fetch(:exp_timeout, DEFAULT_EXP_TIMEOUT)
       end
 
+      def parse(input, envelope=nil)
+        super
+        @typ = MSG_TYPE
+        @body = @payload[:msg]
+      end
+
       def body
-        { typ: MSG_TYPE,
+        {
+          typ: MSG_TYPE,
           iss: @jwt.id,
-          sub: @to,
           aud: @to,
+          sub: @to,
           iat: SelfSDK::Time.now.strftime('%FT%TZ'),
           exp: (SelfSDK::Time.now + @exp_timeout).strftime('%FT%TZ'),
-          cid: @id,
-          jti: SecureRandom.uuid }
+          jti: SecureRandom.uuid,
+          require_confirmation: true,
+        }
       end
 
       protected
 
       def proto(to_device)
+        @to_device = to_device
+        recipient = "#{@to}:#{@to_device}"
+        ciphertext = encrypt_message(@jwt.prepare(body), [{id: @to, device_id: @to_device}])
+
         m = SelfMsg::Message.new
         m.id = @id
         m.sender = "#{@jwt.id}:#{@messaging.device_id}"
-        m.recipient = "#{@to}:#{to_device}"
-        m.ciphertext = encrypt_message(@jwt.prepare(body), [{ id: @to, device_id: to_device }])
+        m.recipient = recipient
+        m.ciphertext = ciphertext
         m
       end
-
     end
   end
 end
