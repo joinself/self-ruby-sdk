@@ -18,6 +18,8 @@ stages:
   cd ${tmpdir} && git clone https://github.com/google/flatbuffers.git
   cd ${tmpdir}/flatbuffers && git checkout v2.0.0 && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
   cd ${CI_PROJECT_DIR}
+  bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
+  gem install bundler:${bundler_version}
 
 .license-check: &license-check |
   bundle install
