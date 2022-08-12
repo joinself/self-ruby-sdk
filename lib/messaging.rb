@@ -17,6 +17,26 @@ module SelfSDK
     DEFAULT_STORAGE_DIR="./.self_storage"
     ON_DEMAND_CLOSE_CODE=3999
 
+    PRIORITY_VISIBLE   = 1
+    PRIORITY_INVISIBLE = 2
+
+    PRIORITIES = {
+      "chat.invite":                 PRIORITY_VISIBLE,
+      "chat.join":                   PRIORITY_INVISIBLE,
+      "chat.message":                PRIORITY_VISIBLE,
+      "chat.message.delete":         PRIORITY_INVISIBLE,
+      "chat.message.delivered":      PRIORITY_INVISIBLE,
+      "chat.message.edit":           PRIORITY_INVISIBLE,
+      "chat.message.read":           PRIORITY_INVISIBLE,
+      "chat.remove":                 PRIORITY_INVISIBLE,
+      "document.sign.req":           PRIORITY_VISIBLE,
+      "identities.authenticate.req": PRIORITY_VISIBLE,
+      "identities.connections.req":  PRIORITY_VISIBLE,
+      "identities.facts.query.req":  PRIORITY_VISIBLE,
+      "identities.facts.issue":      PRIORITY_VISIBLE,
+      "identities.notify":           PRIORITY_VISIBLE
+    }
+
     attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer, :encryption_client, :source
 
     # RestClient initializer
@@ -87,7 +107,8 @@ module SelfSDK
       m.id = SecureRandom.uuid 
       m.sender = "#{@jwt.id}:#{@device_id}"
       m.recipient = "#{recipient}:#{recipient_device}"
-      # TODO: this is unencrypted!!!
+      m.message_type = "identities.facts.query.resp"
+      m.priority = select_priority(m.message_type)
       m.ciphertext = @jwt.prepare(request)
 
       send_message m
@@ -133,6 +154,8 @@ module SelfSDK
         m.sender = current_device
         m.recipient = "#{r[:id]}:#{r[:device_id]}"
         m.ciphertext = ciphertext
+        m.message_type = r[:typ]
+        m.priority = select_priority(r[:typ])
 
         SelfSDK.logger.info " -> to #{m.recipient}"
         send_message m
@@ -513,6 +536,10 @@ module SelfSDK
         File.rename file, "#{crypto_path}/#{filename}.pickle"
       end
         
+    end
+
+    def select_priority(mtype)
+      PRIORITIES[mtype] || PRIORITY_VISIBLE
     end
   end
 end

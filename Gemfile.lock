@@ -65,6 +65,7 @@ GEM
     public_suffix (4.0.6)
     rainbow (3.0.0)
     rake (13.0.6)
+    rexml (3.2.5)
     rice (4.0.4)
     rqrcode (2.1.1)
       chunky_png (~> 1.0)
@@ -93,7 +94,7 @@ GEM
     ruby-progressbar (1.10.1)
     safe_yaml (1.0.5)
     self_crypto (0.0.8)
-    self_msgproto (0.0.8)
+    self_msgproto (0.0.9)
       rice
     semantic (1.6.1)
     simplecov (0.16.1)
@@ -120,6 +121,7 @@ DEPENDENCIES
   minitest
   pry
   rake (~> 13.0)
+  rexml (~> 3.2, >= 3.2.5)
   rspec
   rubocop (~> 0.49)
   selfsdk!

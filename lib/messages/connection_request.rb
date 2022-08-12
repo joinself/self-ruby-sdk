@@ -57,6 +57,8 @@ module SelfSDK
         m.sender = "#{@jwt.id}:#{@messaging.device_id}"
         m.recipient = recipient
         m.ciphertext = ciphertext
+        m.message_type = MSG_TYPE
+        m.priority = 1
         m
       end
     end
