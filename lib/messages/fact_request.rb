@@ -120,7 +120,7 @@ module SelfSDK
         m.recipient = recipient
         m.ciphertext = ciphertext
         m.message_type = MSG_TYPE
-        m.priority = 1
+        m.priority = SelfSDK::Messages::PRIORITY_VISIBLE
         m
       end
     end

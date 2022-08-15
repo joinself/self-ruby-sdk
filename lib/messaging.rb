@@ -17,24 +17,21 @@ module SelfSDK
     DEFAULT_STORAGE_DIR="./.self_storage"
     ON_DEMAND_CLOSE_CODE=3999
 
-    PRIORITY_VISIBLE   = 1
-    PRIORITY_INVISIBLE = 2
-
     PRIORITIES = {
-      "chat.invite":                 PRIORITY_VISIBLE,
-      "chat.join":                   PRIORITY_INVISIBLE,
-      "chat.message":                PRIORITY_VISIBLE,
-      "chat.message.delete":         PRIORITY_INVISIBLE,
-      "chat.message.delivered":      PRIORITY_INVISIBLE,
-      "chat.message.edit":           PRIORITY_INVISIBLE,
-      "chat.message.read":           PRIORITY_INVISIBLE,
-      "chat.remove":                 PRIORITY_INVISIBLE,
-      "document.sign.req":           PRIORITY_VISIBLE,
-      "identities.authenticate.req": PRIORITY_VISIBLE,
-      "identities.connections.req":  PRIORITY_VISIBLE,
-      "identities.facts.query.req":  PRIORITY_VISIBLE,
-      "identities.facts.issue":      PRIORITY_VISIBLE,
-      "identities.notify":           PRIORITY_VISIBLE
+      "chat.invite":                 SelfSDK::Messages::PRIORITY_VISIBLE,
+      "chat.join":                   SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.message":                SelfSDK::Messages::PRIORITY_VISIBLE,
+      "chat.message.delete":         SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.message.delivered":      SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.message.edit":           SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.message.read":           SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.remove":                 SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "document.sign.req":           SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.authenticate.req": SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.connections.req":  SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.facts.query.req":  SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.facts.issue":      SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.notify":           SelfSDK::Messages::PRIORITY_VISIBLE
     }
 
     attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer, :encryption_client, :source
@@ -539,7 +536,7 @@ module SelfSDK
     end
 
     def select_priority(mtype)
-      PRIORITIES[mtype] || PRIORITY_VISIBLE
+      PRIORITIES[mtype] || SelfSDK::Messages::PRIORITY_VISIBLE
     end
   end
 end
