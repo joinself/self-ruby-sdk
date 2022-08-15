@@ -17,6 +17,23 @@ module SelfSDK
     DEFAULT_STORAGE_DIR="./.self_storage"
     ON_DEMAND_CLOSE_CODE=3999
 
+    PRIORITIES = {
+      "chat.invite":                 SelfSDK::Messages::PRIORITY_VISIBLE,
+      "chat.join":                   SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.message":                SelfSDK::Messages::PRIORITY_VISIBLE,
+      "chat.message.delete":         SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.message.delivered":      SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.message.edit":           SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.message.read":           SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "chat.remove":                 SelfSDK::Messages::PRIORITY_INVISIBLE,
+      "document.sign.req":           SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.authenticate.req": SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.connections.req":  SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.facts.query.req":  SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.facts.issue":      SelfSDK::Messages::PRIORITY_VISIBLE,
+      "identities.notify":           SelfSDK::Messages::PRIORITY_VISIBLE
+    }
+
     attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer, :encryption_client, :source
 
     # RestClient initializer
@@ -87,7 +104,8 @@ module SelfSDK
       m.id = SecureRandom.uuid 
       m.sender = "#{@jwt.id}:#{@device_id}"
       m.recipient = "#{recipient}:#{recipient_device}"
-      # TODO: this is unencrypted!!!
+      m.message_type = "identities.facts.query.resp"
+      m.priority = select_priority(m.message_type)
       m.ciphertext = @jwt.prepare(request)
 
       send_message m
@@ -133,6 +151,8 @@ module SelfSDK
         m.sender = current_device
         m.recipient = "#{r[:id]}:#{r[:device_id]}"
         m.ciphertext = ciphertext
+        m.message_type = r[:typ]
+        m.priority = select_priority(r[:typ])
 
         SelfSDK.logger.info " -> to #{m.recipient}"
         send_message m
@@ -513,6 +533,10 @@ module SelfSDK
         File.rename file, "#{crypto_path}/#{filename}.pickle"
       end
         
+    end
+
+    def select_priority(mtype)
+      PRIORITIES[mtype] || SelfSDK::Messages::PRIORITY_VISIBLE
     end
   end
 end

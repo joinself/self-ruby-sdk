@@ -4,6 +4,10 @@
 
 module SelfSDK
   module Messages
+
+    PRIORITY_VISIBLE   = 1
+    PRIORITY_INVISIBLE = 2
+
     class Base
       attr_accessor :from, :from_device, :to, :to_device, :expires, :id,
                     :fields, :typ, :payload, :status, :input, :intermediary,

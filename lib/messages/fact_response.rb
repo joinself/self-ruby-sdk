@@ -92,19 +92,6 @@ module SelfSDK
       def auth_response?
         @auth == true
       end
-
-      protected
-
-      def proto(to_device)
-        @to_device = to_device
-        Msgproto::Message.new(
-          type: Msgproto::MsgType::MSG,
-          id: SecureRandom.uuid,
-          sender: "#{@jwt.id}:#{@messaging.device_id}",
-          recipient: "#{@to}:#{@to_device}",
-          ciphertext: encrypt_message(@jwt.prepare(body), [{id: @to, device_id: @to_device}])
-        )
-      end
     end
   end
 end
