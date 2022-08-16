@@ -31,7 +31,7 @@ $ rpm -Uvh http://download.joinself.com/omemo/libself-omemo-0.1.2-1.x86_64.rpm
 #### Mac
 ```sh
 $ brew tap joinself/crypto
-$ brew install libself_olm libself_omemo
+$ brew install joinself/crypto/libself_olm joinself/crypto/libself_omemo joinself/crypto/flatbuffers
 ```
 
 ## Usage
