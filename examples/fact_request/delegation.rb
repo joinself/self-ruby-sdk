@@ -21,25 +21,30 @@ puts 'connecting...'
 @app = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_DEVICE_SECRET"], ENV["STORAGE_KEY"], storage_dir, opts)
 
 # Create a custom fact and send it to the user.
-puts 'issuing custom facts'
-my_group = SelfSDK::Services::Facts::Group.new("Trip to Venice", "plane") 
+puts 'issuing a delegation certificate to allow authentication'
+my_group = SelfSDK::Services::Facts::Group.new("Delegated actions", "plane") 
+cert = SelfSDK::Services::Facts::Delegation.new(
+  [ user ],
+  ['authenticate'],
+  "allow",
+  ['resources:appID2:authentication'],
+).encode
+
 my_fact = SelfSDK::Services::Facts::Fact.new(
-  "confirmation_code",
-  "CD128763",
-  "source12",
-  group: my_group)
+  "authentication2",
+  cert,
+  "authentication",
+  display_name: "Delegated authentication",
+  group: my_group,
+  type: SelfSDK::Services::Facts::Delegation::TYPE
+)
 
-my_fact_2 = SelfSDK::Services::Facts::Fact.new(
-  "confirmation_code_2",
-  "CD128763_2",
-  "source11",
-  group: my_group)
-
-@app.facts.issue(user, [my_fact, my_fact_2])
+@app.facts.issue(user, [my_fact])
 sleep 5
 
 # Request the custom fact
 begin
+  puts "requesting auth delegation "
   @app.facts.request(user, [{ fact: my_fact.key, issuers: [ENV["SELF_APP_ID"]] }]) do |res|
     # Information request has been rejected by the user
     if res.status == "rejected"
@@ -48,8 +53,10 @@ begin
     end
 
     # Response comes in form of facts easy to access with facts method
-    attestations = res.attestation_values_for(my_fact.key.to_sym).join(", ")
-    puts "Your stored fact is #{attestations}!"
+    attestation = res.attestations_for(my_fact.key.to_sym).first
+    att = SelfSDK::Services::Facts::Delegation.parse(attestation.value)
+
+    puts "User '#{att.subjects.join(',')}' sent a proof he's '#{att.effect}ed' to '#{att.actions.join(",")}' on behalf of '#{attestation.origin}'!"
     exit!
   end
 rescue => e

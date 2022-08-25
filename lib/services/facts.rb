@@ -116,16 +116,20 @@ module SelfSDK
       class Fact
         attr_accessor :key, :value, :group
 
-        def initialize(key, value, source, group = nil)
+
+        def initialize(key, value, source, opts = {})
           @key = key
           @value = value
           @source = source
-          @group = group
+          @display_name = opts.fetch(:display_name, "")
+          @group = opts.fetch(:group, nil)
+          @type = opts.fetch(:type, nil)
         end
 
         def to_hash
           b = { key: @key, value: @value, source: @source }
           b[:group] = @group.to_hash unless @group.nil?
+          b[:type] = @type unless @type.nil?
           b
         end
       end
@@ -142,6 +146,42 @@ module SelfSDK
           b = { name: @name }
           b[:icon] = @icon unless @icon.empty?
           b
+        end
+      end
+
+      class Delegation
+        TYPE = 'delegation_certificate'
+        attr_accessor :subjects, :actions, :effect, :resources, :conditions, :description
+
+        def initialize(subjects, actions, effect, resources, opts = {})
+          @subjects = subjects
+          @actions = actions
+          @effect = effect
+          @resources = resources
+          @conditions = opts.fetch(:conditions, nil)
+          @description = opts.fetch(:description, nil)
+        end
+
+        def encode
+          cert = {
+            subjects: @subjects,
+            actions: @actions,
+            effect: @effect,
+            resources: @resources,
+          }.to_json
+
+          Base64.urlsafe_encode64(cert, padding: false)
+        end
+
+        def self.parse(input)
+          b = JSON.parse(Base64.urlsafe_decode64(input))
+          Delegation.new(
+            b['subjects'],
+            b['actions'],
+            b['effect'],
+            b['resources'],
+            conditions: b['conditions'],
+            description: b['description'])
         end
       end
     end
