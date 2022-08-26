@@ -55,6 +55,7 @@ Gem::Specification.new do |s|
     "lib/services/messaging.rb",
     "lib/services/chat.rb",
     "lib/services/docs.rb",
+    "lib/services/voice.rb",
     "lib/chat/file_object.rb",
     "lib/chat/group.rb",
     "lib/chat/message.rb"
