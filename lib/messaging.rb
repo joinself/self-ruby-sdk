@@ -414,6 +414,8 @@ module SelfSDK
         SelfSDK.logger.warn "error on #{hdr.id}"
         e = SelfMsg::Notification.new(data: data)
         SelfSDK.logger.warn "#{e.error}"
+        @messages[hdr.id][:response] = {error: e.error}
+        mark_as_acknowledged(hdr.id)
         mark_as_arrived(hdr.id)
       when SelfMsg::MsgTypeACL
         SelfSDK.logger.info "ACL received"

@@ -10,6 +10,12 @@ require_relative "chat_message_delivered"
 require_relative "chat_invite"
 require_relative "chat_join"
 require_relative "chat_remove"
+require_relative "voice_setup"
+require_relative "voice_start"
+require_relative "voice_accept"
+require_relative "voice_stop"
+require_relative "voice_busy"
+require_relative "voice_summary"
 require_relative "document_sign_resp"
 require_relative "connection_response"
 
@@ -58,6 +64,24 @@ module SelfSDK
         m.parse(body, envelope)
       when SelfSDK::Messages::ConnectionResponse::MSG_TYPE
         m = ConnectionResponse.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::VoiceSetup::MSG_TYPE
+        m = VoiceSetup.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::VoiceStart::MSG_TYPE
+        m = VoiceStart.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::VoiceAccept::MSG_TYPE
+        m = VoiceAccept.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::VoiceBusy::MSG_TYPE
+        m = VoiceBusy.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::VoiceStop::MSG_TYPE
+        m = VoiceStop.new(messaging)
+        m.parse(body, envelope)
+      when SelfSDK::Messages::VoiceSummary::MSG_TYPE
+        m = VoiceSummary.new(messaging)
         m.parse(body, envelope)
       else
         raise StandardError.new("Invalid message type #{payload[:typ]}.")

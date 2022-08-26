@@ -56,6 +56,12 @@ module SelfSDK
                 chat_remove: SelfSDK::Messages::ChatRemove::MSG_TYPE,
                 document_sign_response: SelfSDK::Messages::DocumentSignResponse::MSG_TYPE,
                 connection_response: SelfSDK::Messages::ConnectionResponse::MSG_TYPE,
+                voice_setup: SelfSDK::Messages::VoiceSetup::MSG_TYPE,
+                voice_start: SelfSDK::Messages::VoiceStart::MSG_TYPE,
+                voice_accept: SelfSDK::Messages::VoiceAccept::MSG_TYPE,
+                voice_busy: SelfSDK::Messages::VoiceBusy::MSG_TYPE,
+                voice_stop: SelfSDK::Messages::VoiceStop::MSG_TYPE,
+                voice_summary: SelfSDK::Messages::VoiceSummary::MSG_TYPE,
                }
       raise "invalid message type '#{s}'" unless types.key? s
       return types[s]
