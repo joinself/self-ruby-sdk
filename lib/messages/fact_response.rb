@@ -63,6 +63,19 @@ module SelfSDK
         a.map{|a| a.value}
       end
 
+      def attested_objects_for(name)
+        a = attestations_for(name)
+        auth_token = @messaging.jwt.auth_token
+        self_url = @messaging.client.self_url
+        objects = []
+        a.each do |at|
+          at.objects.each do |o|
+            objects << SelfSDK::Chat::FileObject.new(auth_token, self_url).build_from_object(o)
+          end
+        end
+        objects
+      end
+
       def validate!(original)
         super
         @facts.each do |f|
