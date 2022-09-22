@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.204)
+    selfsdk (0.0.205)
       async
       ed25519
       eventmachine
@@ -39,14 +39,14 @@ GEM
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
     fiber-local (1.0.0)
-    google-protobuf (3.21.5)
+    google-protobuf (3.21.6)
     hashdiff (1.0.0)
     httparty (0.20.0)
       mime-types (~> 3.0)
       multi_xml (>= 0.5.2)
     jaro_winkler (1.5.3)
     json (2.3.1)
-    jwt (2.4.1)
+    jwt (2.5.0)
     logger (1.5.1)
     method_source (0.9.2)
     mime-types (3.4.1)
@@ -94,7 +94,7 @@ GEM
     ruby-progressbar (1.10.1)
     safe_yaml (1.0.5)
     self_crypto (0.0.8)
-    self_msgproto (0.0.9)
+    self_msgproto (0.0.10)
       rice
     semantic (1.6.1)
     simplecov (0.16.1)
@@ -103,7 +103,7 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
     timecop (0.9.1)
-    timers (4.3.3)
+    timers (4.3.4)
     unicode-display_width (1.6.0)
     webmock (3.7.6)
       addressable (>= 2.3.6)
