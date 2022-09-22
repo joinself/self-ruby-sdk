@@ -51,6 +51,8 @@ module SelfSDK
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [Symbol] :env The environment to be used, defaults to ":production".
     def initialize(app_id, app_key, storage_key, storage_dir, opts = {})
+      app_key = cleanup_key(app_key)
+
       SelfSDK.logger.debug "syncing ntp times #{SelfSDK::Time.now}"
       env = opts.fetch(:env, "")
 
@@ -132,5 +134,11 @@ module SelfSDK
         MESSAGING_URL
       end
 
+      def cleanup_key(key)
+        return key unless key.include? '_'
+  
+        key.split('_').last
+      end
+    
   end
 end
