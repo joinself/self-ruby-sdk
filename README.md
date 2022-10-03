@@ -1,6 +1,6 @@
 ![Self logo](https://media-exp1.licdn.com/dms/image/C4E0BAQHiKfIfzq6P0w/company-logo_200_200/0?e=2159024400&v=beta&t=JDd8UXJlMG7AKpLNAP5nDYd75gQZT8E8s98xSc0jRO0)
 
-By [Self ID](https://www.joinself.com/).
+By [Self](https://www.joinself.com/).
 
 ![Build Status](https://github.com/joinself/self-ruby-sdk/actions/workflows/ci.yml/badge.svg?branch=main)
 [![Gem Version](https://badge.fury.io/rb/selfsdk.svg)](https://badge.fury.io/rb/selfsdk)
