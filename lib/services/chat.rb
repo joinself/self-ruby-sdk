@@ -184,13 +184,7 @@ module SelfSDK
         body = @jwt.encode(body)
 
         env = @messaging.client.client.env
-        if env.empty?
-          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app"
-        elsif env == 'development'
-          return "https://links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.dev"
-        end
-
-        "https://#{env}.links.joinself.com/?link=#{callback}%3Fqr=#{body}&apn=com.joinself.app.#{env}"
+        @jwt.build_dynamic_link(body, env, callback)
       end
 
       # Subscribes to a connection response

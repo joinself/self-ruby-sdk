@@ -93,6 +93,21 @@ module SelfSDK
       "#{payload}.#{signature}"
     end
 
+    def build_dynamic_link(body, env, callback)
+      base_url = "https://#{env}.links.joinself.com"
+      portal_url = "https://developer.#{env}.joinself.com"
+      apn = "com.joinself.app.#{env}"
+
+      if env.empty? || env == 'development'
+        base_url = "https://links.joinself.com"
+        portal_url = "https://developer.joinself.com"
+        apn = "com.joinself.app"
+      end
+      apn = "com.joinself.app.dev" if env == 'development'
+
+      "#{base_url}?link=#{portal_url}/callback/#{callback}%3Fqr=#{body}&apn=#{apn}"
+    end
+
     private
 
     def header
