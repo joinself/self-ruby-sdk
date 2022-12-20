@@ -84,7 +84,7 @@ module SelfSDK
       # Generates a deep link to authenticate with self app.
       #
       # @param facts [Array] a list of facts to be requested.
-      # @param callback [String] the url you'll be redirected if the app is not installed.
+      # @param callback [String] the callback identifier you'll be redirected to if the app is not installed.
       # @option opts [String] :selfid the user selfid you want to authenticate.
       # @option opts [String] :cid The unique identifier of the authentication request.
       #

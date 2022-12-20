@@ -29,8 +29,12 @@ storage_dir = "#{File.expand_path("..", File.dirname(__FILE__))}/self_storage"
   exit
 end
 
+# You can manage your redirection codes on your app management on the
+# developer portal
+redirection_code = "90d017d1"
+
 # Generate a DL code to authenticate
-url = @app.authentication.generate_deep_link("https://my.test.com")
+url = @app.authentication.generate_deep_link(redirection_code)
 p "Authenticate with selfsdk through #{url}"
 
 # Wait for some time

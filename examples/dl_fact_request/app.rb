@@ -31,8 +31,12 @@ storage_dir = "#{File.expand_path("..", File.dirname(__FILE__))}/self_storage"
   exit!
 end
 
-# Generate a DL code to authenticate
-url = @app.facts.generate_deep_link([:display_name], "https://my.test.com")
+# You can manage your redirection codes on your app management on the
+# developer portal
+redirection_code = "90d017d1"
+
+# Generate a DL code for a fact request
+url = @app.facts.generate_deep_link([:display_name], redirection_code)
 p "Request display name through #{url}"
 
 # Wait for some time

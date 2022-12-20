@@ -34,7 +34,11 @@ end
 # This will open the exported qr.png with your default software,
 # manually open /tmp/qr.png and scan it with your device if it
 # does not work
-link = @app.chat.generate_connection_deep_link("https://www.google.com")
+
+# You can manage your redirection codes on your app management on the
+# developer portal
+redirection_code = "90d017d1"
+link = @app.chat.generate_connection_deep_link(redirection_code)
 p "Scan /tmp/qr.png with your device"
 `open /tmp/qr.png`
 p "or click this link \n\n #{link} \n\non your mobile phone"

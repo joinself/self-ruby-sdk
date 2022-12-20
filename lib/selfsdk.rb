@@ -55,6 +55,7 @@ module SelfSDK
 
       SelfSDK.logger.debug "syncing ntp times #{SelfSDK::Time.now}"
       env = opts.fetch(:env, "")
+      env = "" if env == "production"
 
       @client = RestClient.new(base_url(opts), app_id, app_key, env)
       messaging_url = messaging_url(opts)
