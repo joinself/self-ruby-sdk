@@ -36,12 +36,14 @@ module SelfSDK
       def build_from_object(input)
         # Download from CDN
         ciphertext = ""
+        link = input[:link]
         5.times do
           begin
-            ciphertext = URI.open(input[:link], "Authorization" => "Bearer #{@token}").read
+            ciphertext = URI.open(link, "Authorization" => "Bearer #{@token}").read
             break
           rescue => e
             SelfSDK.logger.info "error fetching #{input[:link]} : #{e.message}"
+            link = link.replace("localhost:8080", "api:8080")
             sleep 1
           end
         end
