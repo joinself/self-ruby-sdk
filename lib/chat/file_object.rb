@@ -43,7 +43,7 @@ module SelfSDK
             break
           rescue => e
             SelfSDK.logger.info "error fetching #{input[:link]} : #{e.message}"
-            link = link.replace("localhost:8080", "api:8080")
+            link = link.sub("localhost:8080", "api:8080")
             sleep 1
           end
         end
