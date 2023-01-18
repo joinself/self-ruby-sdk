@@ -439,9 +439,7 @@ module SelfSDK
     end
 
     def process_incomming_message(input)
-      message = SelfSDK::Messages.parse(input, self)
-      @offset = input.offset
-      write_offset(@offset)
+      message = parse_and_write_offset(input)
 
       if @messages.include? message.id
         message.validate! @messages[message.id][:original_message]
@@ -457,6 +455,12 @@ module SelfSDK
       SelfSDK.logger.info e
       # p e.backtrace
       nil
+    end
+
+    def parse_and_write_offset(input)
+      SelfSDK::Messages.parse(input, self)
+    ensure
+      write_offset(input.offset)
     end
 
     # Authenticates current client on the websocket server.
