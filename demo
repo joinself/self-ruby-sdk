@@ -1,0 +1,33 @@
+up() {
+	docker build --platform linux/amd64 -t rubysdk .
+	docker run --platform linux/amd64 --name rubysdk -t -d --env-file examples/.env -v $PWD:/sdk -w /sdk rubysdk
+	docker exec -w /sdk/examples/ rubysdk bundle install
+}
+
+run() {
+    docker exec -it -w /sdk/examples/ rubysdk bundle exec ruby quickstart.rb
+}
+
+down() {
+    docker rm $(docker stop $(docker ps -a -q --filter ancestor=rubysdk --format="{{.ID}}"))
+}
+
+
+main() {
+  subcommand=$1
+  shift
+
+  case ${subcommand} in
+    up)
+      up
+      ;;
+    down)
+      down
+      ;;
+    run)
+      run
+      ;;
+  esac
+}
+
+main $@

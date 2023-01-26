@@ -1,0 +1,101 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    async (1.30.3)
+      console (~> 1.10)
+      nio4r (~> 2.3)
+      timers (~> 4.1)
+    chunky_png (1.4.0)
+    coderay (1.1.3)
+    colorize (0.8.1)
+    console (1.16.2)
+      fiber-local
+    dotenv (2.7.6)
+    ed25519 (1.3.0)
+    eventmachine (1.2.7)
+    faye-websocket (0.11.1)
+      eventmachine (>= 0.12.0)
+      websocket-driver (>= 0.5.1)
+    fiber-local (1.0.0)
+    google-protobuf (3.21.12)
+    httparty (0.21.0)
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
+    jwt (2.6.0)
+    logger (1.5.3)
+    method_source (1.0.0)
+    mini_mime (1.1.2)
+    multi_xml (0.6.0)
+    net-ntp (2.1.3)
+    nio4r (2.5.8)
+    pastel (0.8.0)
+      tty-color (~> 0.5)
+    pry (0.14.1)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
+    rice (4.0.4)
+    rouge (4.0.1)
+    rqrcode (2.1.2)
+      chunky_png (~> 1.0)
+      rqrcode_core (~> 1.0)
+    rqrcode_core (1.2.0)
+    self_crypto (0.0.8)
+    self_msgproto (0.0.10)
+      rice
+    selfsdk (0.0.209)
+      async
+      ed25519
+      eventmachine
+      faye-websocket
+      google-protobuf (~> 3.19)
+      httparty
+      jwt
+      logger
+      net-ntp
+      rqrcode
+      self_crypto
+      self_msgproto
+    strings (0.2.1)
+      strings-ansi (~> 0.2)
+      unicode-display_width (>= 1.5, < 3.0)
+      unicode_utils (~> 1.4)
+    strings-ansi (0.2.0)
+    timers (4.3.5)
+    tty-box (0.7.0)
+      pastel (~> 0.8)
+      strings (~> 0.2.0)
+      tty-cursor (~> 0.7)
+    tty-color (0.6.0)
+    tty-cursor (0.7.1)
+    tty-font (0.5.0)
+    tty-prompt (0.23.1)
+      pastel (~> 0.8)
+      tty-reader (~> 0.8)
+    tty-reader (0.9.0)
+      tty-cursor (~> 0.7)
+      tty-screen (~> 0.8)
+      wisper (~> 2.0)
+    tty-screen (0.8.1)
+    unicode-display_width (2.4.2)
+    unicode_utils (1.4.0)
+    websocket-driver (0.7.5)
+      websocket-extensions (>= 0.1.0)
+    websocket-extensions (0.1.5)
+    wisper (2.0.1)
+
+PLATFORMS
+  arm64-darwin-21
+  ruby
+
+DEPENDENCIES
+  colorize
+  dotenv
+  pry
+  rouge
+  selfsdk
+  tty-box
+  tty-font
+  tty-prompt
+
+BUNDLED WITH
+   2.3.13
