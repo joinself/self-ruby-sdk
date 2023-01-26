@@ -9,7 +9,7 @@ jobs:
     name: Docker
     runs-on: ubuntu-latest
     env:
-      IMAGE_TAG: ghcr.io/${{ github.respository_owner }}/${{ github.event.repository.name }}
+      IMAGE_TAG: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
