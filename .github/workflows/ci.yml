@@ -26,5 +26,6 @@ jobs:
           apt-get -y install /tmp/libself-olm_0.1.17_amd64.deb /tmp/libself-omemo_0.1.3_amd64.deb
           cd /tmp && git clone https://github.com/google/flatbuffers.git
           cd /tmp/flatbuffers && git checkout v2.0.0 && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
+          cd ${GITHUB_WORKSPACE}
           bundle install
           rake test
