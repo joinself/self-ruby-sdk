@@ -1,15 +1,14 @@
 up() {
-	docker build --platform linux/amd64 -t rubysdk .
-	docker run --platform linux/amd64 --name rubysdk -t -d --env-file examples/.env -v $PWD:/sdk -w /sdk rubysdk
-	docker exec -w /sdk/examples/ rubysdk bundle install
+	docker run --name self-ruby-sdk -t -d --env-file examples/.env -v $PWD:/sdk -w /sdk/examples ghcr.io/joinself/self-ruby-sdk
+	docker exec self-ruby-sdk bundle install
 }
 
 run() {
-    docker exec -it -w /sdk/examples/ rubysdk bundle exec ruby quickstart.rb
+    docker exec -it self-ruby-sdk bundle exec ruby quickstart.rb
 }
 
 down() {
-    docker rm $(docker stop $(docker ps -a -q --filter ancestor=rubysdk --format="{{.ID}}"))
+    docker rm $(docker stop $(docker ps -a -q --filter ancestor=ghcr.io/joinself/self-ruby-sdk --format="{{.ID}}"))
 }
 
 
