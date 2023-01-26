@@ -41,8 +41,7 @@ module Connection
       # This will open the exported qr.png with your default software,
       # manually open /tmp/qr.png and scan it with your device if it
       # does not work
-      puts "Scan /tmp/qr.png with your device"
-      `open qr.png`
+      puts "Open and scan ./examples/qr.png with your device"
 
       mutex.synchronize do
         condvar.wait(mutex)

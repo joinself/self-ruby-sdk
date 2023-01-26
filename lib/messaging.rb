@@ -414,6 +414,9 @@ module SelfSDK
         SelfSDK.logger.warn "error on #{hdr.id}"
         e = SelfMsg::Notification.new(data: data)
         SelfSDK.logger.warn "#{e.error}"
+        # TODO control @messages[hdr.id] being nil
+        raise "ERROR : #{e.error}" if @messages[hdr.id].nil?
+
         @messages[hdr.id][:response] = {error: e.error}
         mark_as_acknowledged(hdr.id)
         mark_as_arrived(hdr.id)

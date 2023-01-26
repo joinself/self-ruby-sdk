@@ -4,11 +4,7 @@ end
 
 def load_main_menu
   multiline_text = <<-MSG
-  This quick start cli tool will guide you through
-  a demonstration of the different features you can
-  build with Self.
-
-  Select one feature you want to try.
+Select the feature you want to try.
   MSG
 
   @prompt.select(multiline_text) do |menu|
