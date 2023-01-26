@@ -1,30 +1,31 @@
 name: CI
 
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
     container:
       image: ruby:2.7.3
-
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup environment
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Test
         run: |
           apt-get update
-          apt-get -y install curl libsodium-dev cmake build-essential
-          curl https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb -o /tmp/libself-olm_0.1.17_amd64.deb
-          curl https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb -o /tmp/libself-omemo_0.1.3_amd64.deb
-          apt-get -y install /tmp/libself-olm_0.1.17_amd64.deb
-          apt-get -y install /tmp/libself-omemo_0.1.3_amd64.deb
+          apt-get install -y curl libsodium-dev cmake build-essential
+          curl -o /tmp/libself-olm_0.1.17_amd64.deb https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb
+          curl -o /tmp/libself-omemo_0.1.3_amd64.deb https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb
+          apt-get -y install /tmp/libself-olm_0.1.17_amd64.deb /tmp/libself-omemo_0.1.3_amd64.deb
           cd /tmp && git clone https://github.com/google/flatbuffers.git
           cd /tmp/flatbuffers && git checkout v2.0.0 && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
-
-      - name: Install dependencies
-        run: bundle install
-
-      - name: Test Package
-        run: rake test
+          cd ${GITHUB_WORKSPACE}
+          bundle install
+          rake test
