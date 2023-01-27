@@ -1,4 +1,5 @@
 FROM ruby:2.7.3-slim-buster
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git cmake build-essential && \
     cd /tmp && \
@@ -8,6 +9,7 @@ RUN apt-get update && \
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && \
     make install && \
     rm -rf /var/lib/apt/lists/* /tmp/*
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl libsodium-dev netbase && \
     curl https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb -o /tmp/libself-olm_0.1.17_amd64.deb && \
