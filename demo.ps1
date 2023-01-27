@@ -1,6 +1,6 @@
 function up {
     docker build --platform linux/amd64 -t rubysdk .
-    docker run --platform linux/amd64 --name rubysdk -t -d --env-file examples/.env -v $PWD:/sdk -w /sdk rubysdk
+    docker run --platform linux/amd64 --name rubysdk -t -d --env-file examples/.env -v ${PWD}:/sdk -w /sdk rubysdk
     docker exec -w /sdk/examples/ rubysdk bundle install
 }
 
