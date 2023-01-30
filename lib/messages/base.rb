@@ -79,7 +79,7 @@ module SelfSDK
           end
         end
         raise ::StandardError.new("expired message") if @expires < SelfSDK::Time.now
-        raise ::StandardError.new("issued too soon") if @issued > SelfSDK::Time.now
+        raise ::StandardError.new("issued too soon") if @issued.round > (SelfSDK::Time.now + 1).round
       end
 
       protected

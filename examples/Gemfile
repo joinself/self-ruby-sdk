@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+gem "tty-prompt"
+gem "tty-font"
+gem "tty-box"
+gem "colorize"
+gem "pry"
+gem 'selfsdk'
+gem 'dotenv'
+gem 'rouge'
