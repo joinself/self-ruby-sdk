@@ -1,4 +1,5 @@
 # Copyright 2020 Self Group Ltd. All Rights Reserved.
+# frozen_string_literal: true
 
 module Authentication
   class Runner
@@ -17,7 +18,6 @@ module Authentication
       MSG
     end
 
-    # frozen_string_literal: true
     def run
       # printexample
       begin

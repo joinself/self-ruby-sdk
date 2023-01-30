@@ -1,7 +1,7 @@
 # Copyright 2020 Self Group Ltd. All Rights Reserved.
 # frozen_string_literal: true
 
-module DlAuthentication
+module DlFactRequest
   class Runner
     def initialize(client, prompt)
       @client = client
@@ -10,11 +10,10 @@ module DlAuthentication
 
     def help
       <<-MSG
-A Self user will be authenticated on your platform by clicking a 
-link and accepting the authentication request on his phone.
-
-As part of this process, you have to share the generated link 
-with your users, and wait for a response
+Your app can request certain bits of information to your connected 
+users via Deep Link. To do this, you'll only need its _SelfID_ and 
+the fields you want to request you can find a list of updated valid 
+fields
       MSG
     end
 
@@ -38,12 +37,14 @@ with your users, and wait for a response
       # Register an observer for an authentication response
       puts ""
       puts "setting up a subscription for authentications"
-      @client.authentication.subscribe do |auth|
-        # The user has rejected the authentication
-        if auth.accepted?
-          puts "User is now authenticated 🤘"
+      @client.messaging.subscribe :fact_response do |res|
+        # Information request has been rejected by the user
+        if res.status == "accepted"
+          # Response comes in form of facts easy to access with facts method
+          attestations = res.attestation_values_for(:display_name).join(", ")
+          puts "Retrieved facts : #{attestations}!"
         else
-          puts "Authentication request has been rejected"
+          puts 'Information request rejected'
         end
 
         mutex.synchronize do
@@ -51,9 +52,9 @@ with your users, and wait for a response
         end
       end
 
-      # Generate a DL code to authenticate
+      # Generate a DL code to share facts
       url = @client.authentication.generate_deep_link(redirection_code)
-      puts "All done, please authenticate through this link: "
+      puts "All setup, please share facts through this link: "
       puts url
 
       mutex.synchronize do
