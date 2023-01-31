@@ -1,16 +1,19 @@
 function up {
-    docker build --platform linux/amd64 -t rubysdk .
-    docker run --platform linux/amd64 --name rubysdk -t -d --env-file examples/.env -v ${PWD}:/sdk -w /sdk rubysdk
-    docker exec -w /sdk/examples/ rubysdk bundle install
+    docker run --name self-ruby-sdk -t -d --env-file examples/.env -v ${PWD}:/sdk -w /sdk/examples ghcr.io/joinself/self-ruby-sdk
+    docker exec self-ruby-sdk bundle install
 }
 
 function run {
-    docker exec -it -w /sdk/examples/ rubysdk bundle exec ruby quickstart.rb
+    docker exec -it self-ruby-sdk bundle exec ruby quickstart.rb
 }
 
 function down {
-    docker stop rubysdk
-    docker rm rubysdk
+    docker stop self-ruby-sdk
+    docker rm self-ruby-sdk
+}
+
+function install {
+    docker exec -it self-ruby-sdk bundle install
 }
 
 function main {
@@ -18,6 +21,7 @@ function main {
         "up" { up }
         "down" { down }
         "run" { run }
+        "install" { install }
     }
 }
 
