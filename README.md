@@ -62,6 +62,8 @@ You can instantiate an app with the command above.
 require 'selfsdk'
 # setup client connection
 @client = SelfSDK::App.new(ENV['SELF_APP_ID'], ENV['SELF_APP_DEVICE_SECRET'], ENV['STORAGE_KEY'], ENV['STORAGE_DIR'])
+# start the client
+@client.start
 ```
 
 At this point your app will be able to interact with self network, find below some useful features.
