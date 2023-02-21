@@ -9,6 +9,8 @@ module SelfSDK
       @device = device
       @storage_key = storage_key
       @storage_folder = "#{storage_folder}/#{@client.jwt.key_id}"
+      @lock_strategy = true
+      @mode = "r+"
 
       if File.exist?(account_path)
         # 1a) if alice's account file exists load the pickle from the file
@@ -40,14 +42,25 @@ module SelfSDK
       gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
 
       sessions = {}
+      locks = {}
       ::SelfSDK.logger.debug('managing sessions with all recipients')
+
       recipients.each do |r|
+        f = nil
+        next if r[:id] == @client.jwt.id && r[:device_id] == @device
+
         session_file_name = session_path(r[:id], r[:device_id])
         session_with_bob = nil
 
         begin
-          session_with_bob = get_outbound_session_with_bob(r[:id], r[:device_id], session_file_name)
+          if File.exist?(session_file_name)
+            # Lock the session file
+            locks[session_file_name] = File.open(session_file_name, @mode)
+            locks[session_file_name].flock(File::LOCK_EX)
+          end
+          session_with_bob = get_outbound_session_with_bob(locks[session_file_name], r[:id], r[:device_id])
         rescue => e
+          require 'pry'; binding.pry
           ::SelfSDK.logger.warn("  there is a problem adding group participant #{r[:id]}:#{r[:device_id]}, skipping...")
           ::SelfSDK.logger.warn(e)
           next
@@ -65,18 +78,39 @@ module SelfSDK
       # 6) store the session to a file
       ::SelfSDK.logger.debug("storing sessions")
       sessions.each do |session_file_name, session_with_bob|
-        File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
+        pickle = session_with_bob.to_pickle(@storage_key)
+        if locks[session_file_name]
+          locks[session_file_name].rewind
+          locks[session_file_name].write(pickle)
+          locks[session_file_name].truncate(locks[session_file_name].pos)
+        else
+          File.write(session_file_name, pickle)
+        end
       end
 
       ct
+    ensure
+      locks.each do |session_file_name, lock|
+        # Unlock the file
+        if lock
+          lock.flock(File::LOCK_UN)
+        end
+      end
     end
 
     def decrypt(message, sender, sender_device)
+      f = nil
       ::SelfSDK.logger.debug("decrypting a message")
       session_file_name = session_path(sender, sender_device)
 
+      if File.exist?(session_file_name)
+        # Lock the session file
+        f = File.open(session_file_name, @mode)
+        f.flock(File::LOCK_EX)
+      end
+
       ::SelfSDK.logger.debug("loading sessions")
-      session_with_bob = get_inbound_session_with_bob(message, session_file_name)
+      session_with_bob = get_inbound_session_with_bob(f, message)
 
       # 8) create a group session and set the identity of the account you're using
       ::SelfSDK.logger.debug("create a group session and set the identity of the account #{@client.jwt.id}:#{@device}")
@@ -92,9 +126,21 @@ module SelfSDK
 
       # 11) store the session to a file
       ::SelfSDK.logger.debug("store the session to a file")
-      File.write(session_file_name, session_with_bob.to_pickle(@storage_key))
+
+      pickle = session_with_bob.to_pickle(@storage_key)
+      if !f.nil?
+        f.rewind
+        f.write(pickle)
+        f.truncate(f.pos)
+      else
+        File.write(session_file_name, pickle)
+      end
 
       pt
+    ensure
+      # Unlock the session file
+      f&.flock(File::LOCK_UN)
+      f&.close
     end
 
     private
@@ -107,10 +153,11 @@ module SelfSDK
       "#{@storage_folder}/#{selfid}:#{device}-session.pickle"
     end
 
-    def get_outbound_session_with_bob(recipient, recipient_device, session_file_name)
-      if File.exist?(session_file_name)
+    def get_outbound_session_with_bob(f, recipient, recipient_device)
+      if !f.nil?
+        pickle = f.read
         # 2a) if bob's session file exists load the pickle from the file
-        session_with_bob = SelfCrypto::Session.from_pickle(File.read(session_file_name), @storage_key)
+        session_with_bob = SelfCrypto::Session.from_pickle(pickle, @storage_key)
       else
         # 2b-i) if you have not previously sent or recevied a message to/from bob,
         #       you must get his identity key from GET /v1/identities/bob/
@@ -137,10 +184,11 @@ module SelfSDK
       session_with_bob
     end
 
-    def get_inbound_session_with_bob(message, session_file_name)
-      if File.exist?(session_file_name)
+    def get_inbound_session_with_bob(f, message)
+      if !f.nil?
+        pickle = f.read
         # 7a) if carol's session file exists load the pickle from the file
-        session_with_bob = SelfCrypto::Session.from_pickle(File.read(session_file_name), @storage_key)
+        session_with_bob = SelfCrypto::Session.from_pickle(pickle, @storage_key)
       end
 
       # 7b-i) if you have not previously sent or received a message to/from bob,
