@@ -14,7 +14,11 @@ def setup_sdk
 
   # Connect your app to Self network, get your connection details creating a new
   # app on https://developer.selfsdk.net/
-  app = SelfSDK::App.new(ENV["SELF_APP_ID"], ENV["SELF_APP_DEVICE_SECRET"], ENV["STORAGE_KEY"], storage_dir, opts)
+  app = SelfSDK::App.new(ENV["SELF_APP_ID"], 
+                         ENV["SELF_APP_DEVICE_SECRET"], 
+                         ENV["STORAGE_KEY"], 
+                         storage_dir,
+                         opts).start
 
   app.messaging.permit_connection("*")
 

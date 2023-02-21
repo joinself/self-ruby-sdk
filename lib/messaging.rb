@@ -75,8 +75,6 @@ module SelfSDK
 
       if options.include? :ws
         @ws = options[:ws]
-      else
-        start
       end
     end
 
@@ -92,6 +90,10 @@ module SelfSDK
 
     def close
       @ws.close(ON_DEMAND_CLOSE_CODE, "connection closed by the client")
+    end
+
+    def start
+      start_ws_listener
     end
 
     # Responds a request information request
@@ -311,7 +313,7 @@ module SelfSDK
     private
 
     # Start sthe websocket listener
-    def start
+    def start_ws_listener
       SelfSDK.logger.info "starting"
       auth_id = @auth_id.dup
 

@@ -36,7 +36,7 @@ module SelfSDK
     BASE_URL = "https://api.joinself.com".freeze
     MESSAGING_URL = "wss://messaging.joinself.com/v2/messaging".freeze
 
-    attr_reader :client
+    attr_reader :client, :started
     attr_accessor :messaging_client
 
     # Initializes a SelfSDK App
@@ -59,6 +59,7 @@ module SelfSDK
 
       @client = RestClient.new(base_url(opts), app_id, app_key, env)
       messaging_url = messaging_url(opts)
+      @started = false
       unless messaging_url.nil?
         @messaging_client = MessagingClient.new(messaging_url,
                                                 @client,
@@ -67,6 +68,17 @@ module SelfSDK
                                                 auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
                                                 device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE))
       end
+    end
+
+    # Starts the websockets connection and processes incoming messages in case the client
+    # is initialized with auto_start set to false.
+    def start
+      return self if @started
+
+      @messaging_client.start
+      @started = true
+
+      self
     end
 
     # Provides access to SelfSDK::Services::Facts service
