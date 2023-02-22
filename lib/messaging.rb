@@ -463,14 +463,20 @@ module SelfSDK
     end
 
     def parse_and_write_offset(input)
-      SelfSDK::Messages.parse(input, self)
-    ensure
+      msg = SelfSDK::Messages.parse(input, self)
       write_offset(input.offset)
+      # Avoid catching any other decryption errors.
+      msg
+    rescue SelfSDK::Messages::UnmappedMessage => e
+      # this is an ummapped message, let's ignore it but write the offset.
+      write_offset(input.offset)
+      nil
     end
 
     # Authenticates current client on the websocket server.
     def authenticate
       @auth_id = SecureRandom.uuid if @auth_id.nil?
+      @offset = read_offset
 
       SelfSDK.logger.info "authenticating"
 
