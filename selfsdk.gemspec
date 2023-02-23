@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
   s.date = '2011-09-29'
   s.summary = 'joinself sdk'
-  s.authors = ["Aldgate Ventures"]
+  s.authors = ["Self Group Ltd."]
   s.homepage = "https://www.joinself.com/"
   s.files = [
     "lib/selfsdk.rb",
