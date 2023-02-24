@@ -1,4 +1,4 @@
-FROM ruby:2.7.3-slim-buster
+FROM ruby:3.2.1-slim-buster
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git cmake build-essential && \
