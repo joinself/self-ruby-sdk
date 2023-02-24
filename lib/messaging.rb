@@ -257,6 +257,13 @@ module SelfSDK
           @acks[uuid][:waiting]
         end
       end
+
+      # response has timed out
+      if @acks[uuid][:timed_out]
+        SelfSDK.logger.info "acknowledgement response timed out re-sending message #{uuid}"
+        return send_message(msg)
+      end
+
       SelfSDK.logger.info "acknowledged #{uuid}"
       true
     ensure
@@ -378,6 +385,7 @@ module SelfSDK
           SelfSDK.logger.info "[#{uuid}] message response timed out"
           list[uuid][:waiting] = false
           list[uuid][:waiting_cond].broadcast
+          list[uuid][:timed_out] = true
         end
       end
     end
