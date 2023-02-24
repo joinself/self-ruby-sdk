@@ -156,7 +156,7 @@ module SelfSDK
         m.message_type = r[:typ]
         m.priority = select_priority(r[:typ])
 
-        SelfSDK.logger.info " -> to #{m.recipient}"
+        SelfSDK.logger.info "[#{m.id}] -> to #{m.recipient}"
         send_message m
       end
     end
@@ -283,6 +283,7 @@ module SelfSDK
     # Notify the type observer for the given message
     def notify_observer(message)
       if @uuid_observer.include? message.id
+        SelfSDK.logger.debug " - notifying by id"
         observer = @uuid_observer[message.id]
         message.validate!(observer[:original_message]) if observer.include?(:original_message)
         Thread.new do
@@ -292,9 +293,15 @@ module SelfSDK
         return
       end
 
+      SelfSDK.logger.debug " - notifying by type"
+      SelfSDK.logger.debug " - #{message.typ}"
+      SelfSDK.logger.debug " - #{message}"
+      SelfSDK.logger.debug " - #{@type_observer.keys.join(',')}"
+
       # Return if there is no observer setup for this kind of message
       return unless @type_observer.include? message.typ
 
+      SelfSDK.logger.debug " - notifying by type (Y)"
       Thread.new do
         @type_observer[message.typ][:block].call(message)
       end
@@ -312,6 +319,13 @@ module SelfSDK
 
     private
 
+    def ping
+      SelfSDK.logger.info "ping"
+      @ws.ping 'ping' do |msg|
+        puts 'pong'
+      end
+    end
+
     # Start sthe websocket listener
     def start_ws_listener
       SelfSDK.logger.info "starting"
@@ -328,7 +342,11 @@ module SelfSDK
       end
 
       Thread.new do
-        loop { sleep 10; clean_timeouts }
+        loop do
+           sleep 10
+           clean_timeouts 
+           ping
+        end
       end
 
       @mon.synchronize do
@@ -357,7 +375,7 @@ module SelfSDK
         next unless list[uuid][:timeout] < SelfSDK::Time.now
 
         @mon.synchronize do
-          SelfSDK.logger.info "message response timed out #{uuid}"
+          SelfSDK.logger.info "[#{uuid}] message response timed out"
           list[uuid][:waiting] = false
           list[uuid][:waiting_cond].broadcast
         end
@@ -380,17 +398,18 @@ module SelfSDK
       end
 
       @ws.on :close do |event|
+        SelfSDK.logger.info "connection closed detected : #{event.code} #{event.reason}"
         if event.code == ON_DEMAND_CLOSE_CODE
-          puts "client closed connection"
+          SelfSDK.logger.info "client closed connection"
         else
-          if !@auto_reconnect
-            raise StandardError "websocket connection closed"
-          end
+          raise StandardError('websocket connection closed') if !@auto_reconnect
+
           if !@reconnection_delay.nil?
             SelfSDK.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
             sleep @reconnection_delay
             SelfSDK.logger.info "reconnecting..."
           end
+
           @reconnection_delay = 3
           start_connection
         end
@@ -406,11 +425,11 @@ module SelfSDK
       SelfSDK.logger.info " - received #{hdr.id} (#{hdr.type})"
       case hdr.type
       when SelfMsg::MsgTypeMSG
-        SelfSDK.logger.info "Message #{hdr.id} received"
+        SelfSDK.logger.info "[#{hdr.id}] message received"
         m = SelfMsg::Message.new(data: data)
         process_incomming_message m
       when SelfMsg::MsgTypeACK
-        SelfSDK.logger.info "#{hdr.id} acknowledged"
+        SelfSDK.logger.info "[#{hdr.id}] acknowledged"
         mark_as_acknowledged hdr.id
       when SelfMsg::MsgTypeERR
         SelfSDK.logger.warn "error on #{hdr.id}"
@@ -423,7 +442,7 @@ module SelfSDK
         mark_as_acknowledged(hdr.id)
         mark_as_arrived(hdr.id)
       when SelfMsg::MsgTypeACL
-        SelfSDK.logger.info "ACL received"
+        SelfSDK.logger.info "#{hdr.id} ACL received"
         a = SelfMsg::Acl.new(data: data)
         process_incomming_acl a
       end
@@ -453,6 +472,7 @@ module SelfSDK
       else
         SelfSDK.logger.info "Received async message #{input.id}"
         message.validate! @uuid_observer[message.id][:original_message] if @uuid_observer.include? message.id
+        SelfSDK.logger.info "[#{input.id}] is valid, notifying observer"
         notify_observer(message)
       end
     rescue StandardError => e
@@ -478,7 +498,7 @@ module SelfSDK
       @auth_id = SecureRandom.uuid if @auth_id.nil?
       @offset = read_offset
 
-      SelfSDK.logger.info "authenticating"
+      SelfSDK.logger.info "authenticating with offset (#{@offset})"
 
       a = SelfMsg::Auth.new
       a.id = @auth_id
@@ -529,6 +549,8 @@ module SelfSDK
         f.flock(File::LOCK_EX)
         f.write(offset.to_s.rjust(19, "0"))
       end
+      SelfSDK.logger.info "offset written #{offset}"
+      @offset = offset
     end
 
     def migrate_old_storage_format
