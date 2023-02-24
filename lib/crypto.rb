@@ -35,15 +35,15 @@ module SelfSDK
     end
 
     def encrypt(message, recipients)
-      ::SelfSDK.logger.debug('encrypting a message')
+      ::SelfSDK.logger.debug('- [crypto] encrypting a message')
 
       # create a group session and set the identity of the account youre using
-      ::SelfSDK.logger.debug('create a group session and set the identity of the account youre using')
+      ::SelfSDK.logger.debug('- [crypto] create a group session and set the identity of the account youre using')
       gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
 
       sessions = {}
       locks = {}
-      ::SelfSDK.logger.debug('managing sessions with all recipients')
+      ::SelfSDK.logger.debug('- [crypto] managing sessions with all recipients')
 
       recipients.each do |r|
         f = nil
@@ -60,22 +60,22 @@ module SelfSDK
           end
           session_with_bob = get_outbound_session_with_bob(locks[session_file_name], r[:id], r[:device_id])
         rescue => e
-          ::SelfSDK.logger.warn("  there is a problem adding group participant #{r[:id]}:#{r[:device_id]}, skipping...")
-          ::SelfSDK.logger.warn(e)
+          ::SelfSDK.logger.warn("- [crypto]   there is a problem adding group participant #{r[:id]}:#{r[:device_id]}, skipping...")
+          ::SelfSDK.logger.warn("- [crypto] #{e}")
           next
         end
 
-        ::SelfSDK.logger.debug("  adding group participant #{r[:id]}:#{r[:device_id]}")
+        ::SelfSDK.logger.debug("- [crypto]   adding group participant #{r[:id]}:#{r[:device_id]}")
         gs.add_participant("#{r[:id]}:#{r[:device_id]}", session_with_bob)
         sessions[session_file_name] = session_with_bob
       end
 
       # 5) encrypt a message
-      ::SelfSDK.logger.debug("group encrypting message")
+      ::SelfSDK.logger.debug("- [crypto] group encrypting message")
       ct = gs.encrypt(message).to_s
 
       # 6) store the session to a file
-      ::SelfSDK.logger.debug("storing sessions")
+      ::SelfSDK.logger.debug("- [crypto] storing sessions")
       sessions.each do |session_file_name, session_with_bob|
         pickle = session_with_bob.to_pickle(@storage_key)
         if locks[session_file_name]
@@ -99,7 +99,7 @@ module SelfSDK
 
     def decrypt(message, sender, sender_device)
       f = nil
-      ::SelfSDK.logger.debug("decrypting a message")
+      ::SelfSDK.logger.debug("- [crypto] decrypting a message")
       session_file_name = session_path(sender, sender_device)
 
       if File.exist?(session_file_name)
@@ -108,23 +108,23 @@ module SelfSDK
         f.flock(File::LOCK_EX)
       end
 
-      ::SelfSDK.logger.debug("loading sessions")
+      ::SelfSDK.logger.debug("- [crypto] loading sessions")
       session_with_bob = get_inbound_session_with_bob(f, message)
 
       # 8) create a group session and set the identity of the account you're using
-      ::SelfSDK.logger.debug("create a group session and set the identity of the account #{@client.jwt.id}:#{@device}")
+      ::SelfSDK.logger.debug("- [crypto] create a group session and set the identity of the account #{@client.jwt.id}:#{@device}")
       gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
 
       # 9) add all recipients and their sessions
-      ::SelfSDK.logger.debug("add all recipients and their sessions #{@sender}:#{@sender_device}")
+      ::SelfSDK.logger.debug("- [crypto] add all recipients and their sessions #{@sender}:#{@sender_device}")
       gs.add_participant("#{sender}:#{sender_device}", session_with_bob)
 
       # 10) decrypt the message ciphertext
-      ::SelfSDK.logger.debug("decrypt the message ciphertext")
+      ::SelfSDK.logger.debug("- [crypto] decrypt the message ciphertext")
       pt = gs.decrypt("#{sender}:#{sender_device}", message).to_s
 
       # 11) store the session to a file
-      ::SelfSDK.logger.debug("store the session to a file")
+      ::SelfSDK.logger.debug("- [crypto] store the session to a file")
 
       pickle = session_with_bob.to_pickle(@storage_key)
       if !f.nil?
@@ -167,7 +167,7 @@ module SelfSDK
 
         if res.code != 200
           b = JSON.parse(res.body)
-          ::SelfSDK.logger.error "identity response : #{b['message']}"
+          ::SelfSDK.logger.error "- [crypto] identity response : #{b['message']}"
           raise "could not get identity pre_keys"
         end
 
