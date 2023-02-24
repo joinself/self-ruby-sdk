@@ -52,7 +52,7 @@ module SelfSDK
       res = get "/v1/identities/#{id}/devices"
       body = JSON.parse(res.body, symbolize_names: true)
       if res.code != 200
-        SelfSDK.logger.error "identity response : #{body[:message]}"
+        SelfSDK.logger.debug "getting devices response : #{body[:message]}"
         raise "you need connection permissions"
       end
       body
@@ -68,30 +68,39 @@ module SelfSDK
     end
 
     def post(endpoint, body)
-      res = nil
-      loop do
-        res = HTTParty.post("#{@self_url}#{endpoint}",
+      safe_request do
+        HTTParty.post("#{@self_url}#{endpoint}",
                       headers: {
-                          'Content-Type' => 'application/json',
-                          'Authorization' => "Bearer #{@jwt.auth_token}"
+                        'Content-Type' => 'application/json',
+                        'Authorization' => "Bearer #{@jwt.auth_token}"
                       },
                       body: body)
-        break if res.code != 503
-        sleep 2
       end
-      return res
     end
 
     def get(endpoint)
+      safe_request do
+        HTTParty.get("#{@self_url}#{endpoint}", 
+                     headers: {
+                        'Content-Type'  => 'application/json',
+                        'Authorization' => "Bearer #{@jwt.auth_token}"
+                      })
+      end
+    end
+
+    def safe_request(&block)
       res = nil
       loop do
         begin
-          res = HTTParty.get("#{@self_url}#{endpoint}", headers: {
-            'Content-Type' => 'application/json',
-            'Authorization' => "Bearer #{@jwt.auth_token}"
-          })
-          break if res.code != 503
+          res = block.call
+
+          break if res.code == 200
+          next if res.code == 503
+          next if body[:error_id] == 'token_expired'
+
+          break
         rescue StandardError => e
+          # retry if the server is down
         end
         sleep 2
       end
