@@ -138,7 +138,7 @@ module SelfSDK
         end
       end
 
-      SelfSDK.logger.info "sending custom message #{request_body.to_json}"
+      SelfSDK.logger.debug "sending custom message #{request_body.to_json}"
       current_device = "#{@jwt.id}:#{@device_id}"
 
       recs.each do |r|
@@ -156,7 +156,7 @@ module SelfSDK
         m.message_type = r[:typ]
         m.priority = select_priority(r[:typ])
 
-        SelfSDK.logger.info "[#{m.id}] -> to #{m.recipient}"
+        SelfSDK.logger.debug "[#{m.id}] -> to #{m.recipient}"
         send_message m
       end
     end
@@ -200,7 +200,7 @@ module SelfSDK
     #
     # @params msg [SelfMsg::Message] message object to be sent
     def send_and_wait_for_response(msgs, original)
-      SelfSDK.logger.info "sending/wait for #{msgs.first.id}"
+      SelfSDK.logger.debug "sending/wait for #{msgs.first.id}"
       wait_for msgs.first.id, original do
         msgs.each do |msg|
           send_message msg
@@ -213,7 +213,7 @@ module SelfSDK
     #
     # @params uuid [string] unique identifier for a conversation
     def wait_for(uuid, msg = nil)
-      SelfSDK.logger.info "sending #{uuid}"
+      SelfSDK.logger.debug "sending #{uuid}"
       @mon.synchronize do
         @messages[uuid] = {
           waiting_cond: @mon.new_cond,
@@ -225,14 +225,14 @@ module SelfSDK
 
       yield
 
-      SelfSDK.logger.info "waiting for client to respond #{uuid}"
+      SelfSDK.logger.debug "waiting for client to respond #{uuid}"
       @mon.synchronize do
         @messages[uuid][:waiting_cond].wait_while do
           @messages[uuid][:waiting]
         end
       end
 
-      SelfSDK.logger.info "response received for #{uuid}"
+      SelfSDK.logger.debug "response received for #{uuid}"
       @messages[uuid][:response]
     ensure
       @messages.delete(uuid)
@@ -251,7 +251,7 @@ module SelfSDK
         }
       end
       send_raw(msg)
-      SelfSDK.logger.info "waiting for acknowledgement #{uuid}"
+      SelfSDK.logger.debug "waiting for acknowledgement #{uuid}"
       @mon.synchronize do
         @acks[uuid][:waiting_cond].wait_while do
           @acks[uuid][:waiting]
@@ -260,11 +260,11 @@ module SelfSDK
 
       # response has timed out
       if @acks[uuid][:timed_out]
-        SelfSDK.logger.info "acknowledgement response timed out re-sending message #{uuid}"
+        SelfSDK.logger.debug "acknowledgement response timed out re-sending message #{uuid}"
         return send_message(msg)
       end
 
-      SelfSDK.logger.info "acknowledged #{uuid}"
+      SelfSDK.logger.debug "acknowledged #{uuid}"
       true
     ensure
       @acks.delete(uuid)
@@ -327,7 +327,7 @@ module SelfSDK
     private
 
     def ping
-      SelfSDK.logger.info "ping"
+      SelfSDK.logger.debug "ping"
       @ws.ping 'ping' do |msg|
         puts 'pong'
       end
@@ -335,7 +335,7 @@ module SelfSDK
 
     # Start sthe websocket listener
     def start_ws_listener
-      SelfSDK.logger.info "starting"
+      SelfSDK.logger.debug "starting"
       auth_id = @auth_id.dup
 
       @mon.synchronize do
@@ -382,7 +382,7 @@ module SelfSDK
         next unless list[uuid][:timeout] < SelfSDK::Time.now
 
         @mon.synchronize do
-          SelfSDK.logger.info "[#{uuid}] message response timed out"
+          SelfSDK.logger.debug "[#{uuid}] message response timed out"
           list[uuid][:waiting] = false
           list[uuid][:waiting_cond].broadcast
           list[uuid][:timed_out] = true
@@ -392,12 +392,12 @@ module SelfSDK
 
     # Creates a websocket connection and sets up its callbacks.
     def start_connection
-      SelfSDK.logger.info "starting listener"
+      SelfSDK.logger.debug "starting listener"
       @ws = Faye::WebSocket::Client.new(@url)
-      SelfSDK.logger.info "initialized"
+      SelfSDK.logger.debug "initialized"
 
       @ws.on :open do |_event|
-        SelfSDK.logger.info "websocket connection established"
+        SelfSDK.logger.debug "websocket connection established"
         authenticate
       end
 
@@ -406,16 +406,16 @@ module SelfSDK
       end
 
       @ws.on :close do |event|
-        SelfSDK.logger.info "connection closed detected : #{event.code} #{event.reason}"
+        SelfSDK.logger.debug "connection closed detected : #{event.code} #{event.reason}"
         if event.code == ON_DEMAND_CLOSE_CODE
-          SelfSDK.logger.info "client closed connection"
+          SelfSDK.logger.debug "client closed connection"
         else
           raise StandardError('websocket connection closed') if !@auto_reconnect
 
           if !@reconnection_delay.nil?
-            SelfSDK.logger.info "websocket connection closed (#{event.code}) #{event.reason}"
+            SelfSDK.logger.debug "websocket connection closed (#{event.code}) #{event.reason}"
             sleep @reconnection_delay
-            SelfSDK.logger.info "reconnecting..."
+            SelfSDK.logger.debug "reconnecting..."
           end
 
           @reconnection_delay = 3
@@ -430,14 +430,14 @@ module SelfSDK
       data = event.data.pack('c*')
       hdr = SelfMsg::Header.new(data: data)
 
-      SelfSDK.logger.info " - received #{hdr.id} (#{hdr.type})"
+      SelfSDK.logger.debug " - received #{hdr.id} (#{hdr.type})"
       case hdr.type
       when SelfMsg::MsgTypeMSG
-        SelfSDK.logger.info "[#{hdr.id}] message received"
+        SelfSDK.logger.debug "[#{hdr.id}] message received"
         m = SelfMsg::Message.new(data: data)
         process_incomming_message m
       when SelfMsg::MsgTypeACK
-        SelfSDK.logger.info "[#{hdr.id}] acknowledged"
+        SelfSDK.logger.debug "[#{hdr.id}] acknowledged"
         mark_as_acknowledged hdr.id
       when SelfMsg::MsgTypeERR
         SelfSDK.logger.warn "error on #{hdr.id}"
@@ -450,12 +450,12 @@ module SelfSDK
         mark_as_acknowledged(hdr.id)
         mark_as_arrived(hdr.id)
       when SelfMsg::MsgTypeACL
-        SelfSDK.logger.info "#{hdr.id} ACL received"
+        SelfSDK.logger.debug "#{hdr.id} ACL received"
         a = SelfMsg::Acl.new(data: data)
         process_incomming_acl a
       end
     rescue TypeError
-      SelfSDK.logger.info "invalid array message"
+      SelfSDK.logger.debug "invalid array message"
     end
 
     def process_incomming_acl(input)
@@ -465,8 +465,8 @@ module SelfSDK
       mark_as_arrived 'acl_list'
     rescue StandardError => e
       p "Error processing incoming ACL #{input.id} #{input.payload}"
-      SelfSDK.logger.info e
-      SelfSDK.logger.info e.backtrace
+      SelfSDK.logger.debug e
+      SelfSDK.logger.debug e.backtrace
       nil
     end
 
@@ -478,14 +478,14 @@ module SelfSDK
         @messages[message.id][:response] = message
         mark_as_arrived message.id
       else
-        SelfSDK.logger.info "Received async message #{input.id}"
+        SelfSDK.logger.debug "Received async message #{input.id}"
         message.validate! @uuid_observer[message.id][:original_message] if @uuid_observer.include? message.id
-        SelfSDK.logger.info "[#{input.id}] is valid, notifying observer"
+        SelfSDK.logger.debug "[#{input.id}] is valid, notifying observer"
         notify_observer(message)
       end
     rescue StandardError => e
       p "Error processing incoming message #{e.message}"
-      SelfSDK.logger.info e
+      SelfSDK.logger.debug e
       # p e.backtrace
       nil
     end
@@ -506,7 +506,7 @@ module SelfSDK
       @auth_id = SecureRandom.uuid if @auth_id.nil?
       @offset = read_offset
 
-      SelfSDK.logger.info "authenticating with offset (#{@offset})"
+      SelfSDK.logger.debug "authenticating with offset (#{@offset})"
 
       a = SelfMsg::Auth.new
       a.id = @auth_id
@@ -557,7 +557,7 @@ module SelfSDK
         f.flock(File::LOCK_EX)
         f.write(offset.to_s.rjust(19, "0"))
       end
-      SelfSDK.logger.info "offset written #{offset}"
+      SelfSDK.logger.debug "offset written #{offset}"
       @offset = offset
     end
 
