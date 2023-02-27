@@ -28,23 +28,36 @@ class SelfSDKTest < Minitest::Test
       let(:devices) { ["1", "2"]}
 
       def test_permit_connection
+        allow(SecureRandom).to receive(:uuid).and_return('uuid') 
         expect(jwt).to receive(:id).and_return(appid).at_least(:once)
         expect(jwt).to receive(:prepare).at_least(:once) do |arg|
           assert_equal arg[:iss], appid
           assert_equal arg[:acl_source], selfid
         end.and_return(json_body)
-        expect(messaging).to receive(:add_acl_rule).with(json_body).and_return(true).once
+
+        expect(messaging).to receive(:send_message).with(->(input) {
+          input.id == "uuid" &&
+          input.command == SelfMsg::AclCommandPERMIT &&
+          input.payload == json_body
+        }).and_return(true).once
         req = service.permit_connection(selfid)
         assert_equal true, req
       end
 
       def test_revoke_connection
+        allow(SecureRandom).to receive(:uuid).and_return('uuid') 
+
         expect(jwt).to receive(:id).and_return(appid).at_least(:once)
         expect(jwt).to receive(:prepare).at_least(:once) do |arg|
           assert_equal arg[:iss], appid
           assert_equal arg[:acl_source], selfid
         end.and_return(json_body)
-        expect(messaging).to receive(:remove_acl_rule).with(json_body).and_return(true).once
+
+        expect(messaging).to receive(:send_message).with(->(input) {
+          input.id == "uuid" &&
+          input.command == SelfMsg::AclCommandREVOKE &&
+          input.payload == json_body
+        }).and_return(true).once
         req = service.revoke_connection(selfid)
         assert_equal true, req
       end

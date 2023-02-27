@@ -22,18 +22,6 @@ class SelfSDKTest < Minitest::Test
       SelfSDK::MessagingClient.new("", client, "", storage_dir: storage_dir, ws: ws, no_crypto: true)
     end
 
-    def test_share_information
-      expect(ws).to receive(:send) do |msg|
-        input = SelfMsg::Message.new(data: msg.pack('c*'))
-        jwt = JSON.parse(input.ciphertext, symbolize_names: true)
-        payload = JSON.parse(messaging_client.jwt.decode(jwt[:payload]), symbolize_names: true)
-        assert_equal body, payload
-        messaging_client.stop
-      end
-
-      messaging_client.share_information("john", "john_device", body)
-    end
-
     def test_notify_observer_type
       messaging_client.type_observer[SelfSDK::Messages::FactResponse::MSG_TYPE] = {block: Proc.new do |res|
         assert_equal res.typ, SelfSDK::Messages::FactResponse::MSG_TYPE

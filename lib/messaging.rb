@@ -11,28 +11,91 @@ require_relative 'crypto'
 require_relative 'messages/message'
 
 module SelfSDK
+  class WebsocketClient
+    ON_DEMAND_CLOSE_CODE=3999
+
+    attr_accessor :ws
+
+    def initialize(url, auto_reconnect, authentication_hook, process_message_hook)
+      @url = url
+      @reconnection_delay = nil
+      @auto_reconnect = auto_reconnect
+      @authentication_hook = authentication_hook
+      @process_message_hook = process_message_hook
+    end
+
+    # Creates a websocket connection and sets up its callbacks.
+    def start
+      SelfSDK.logger.debug "starting listener"
+      @ws = Faye::WebSocket::Client.new(@url)
+      SelfSDK.logger.debug "initialized"
+
+      @ws.on :open do |_event|
+        SelfSDK.logger.debug "websocket connection established"
+        @authentication_hook.call
+      end
+
+      @ws.on :message do |event|
+        @process_message_hook.call(event)
+      end
+
+      @ws.on :close do |event|
+        SelfSDK.logger.debug "connection closed detected : #{event.code} #{event.reason}"
+
+        if event.code != ON_DEMAND_CLOSE_CODE
+          raise StandardError('websocket connection closed') if !@auto_reconnect
+
+          if !@reconnection_delay.nil?
+            SelfSDK.logger.debug "websocket connection closed (#{event.code}) #{event.reason}"
+            sleep @reconnection_delay
+            SelfSDK.logger.debug "reconnecting..."
+          end
+
+          @reconnection_delay = 3
+          start
+        end
+      end
+    end
+
+    # Sends a closing message to the websocket client.
+    def close
+      @ws.close(ON_DEMAND_CLOSE_CODE, "connection closed by the client")
+    end
+
+    # Sends a ping message to the websocket server, but does 
+    # not expect response.
+    # This is kind of a hack to catch some corner cases where
+    # the websocket client is not aware it has been disconnected.
+    def ping
+      SelfSDK.logger.debug "ping"
+      @ws.ping 'ping'
+    end
+
+    def send(message)
+      @ws.send(message.to_fb.bytes)
+    end
+  end
+
   class MessagingClient
     DEFAULT_DEVICE="1"
     DEFAULT_AUTO_RECONNECT=true
     DEFAULT_STORAGE_DIR="./.self_storage"
-    ON_DEMAND_CLOSE_CODE=3999
 
-    PRIORITIES = {
-      "chat.invite":                 SelfSDK::Messages::PRIORITY_VISIBLE,
-      "chat.join":                   SelfSDK::Messages::PRIORITY_INVISIBLE,
-      "chat.message":                SelfSDK::Messages::PRIORITY_VISIBLE,
-      "chat.message.delete":         SelfSDK::Messages::PRIORITY_INVISIBLE,
-      "chat.message.delivered":      SelfSDK::Messages::PRIORITY_INVISIBLE,
-      "chat.message.edit":           SelfSDK::Messages::PRIORITY_INVISIBLE,
-      "chat.message.read":           SelfSDK::Messages::PRIORITY_INVISIBLE,
-      "chat.remove":                 SelfSDK::Messages::PRIORITY_INVISIBLE,
-      "document.sign.req":           SelfSDK::Messages::PRIORITY_VISIBLE,
-      "identities.authenticate.req": SelfSDK::Messages::PRIORITY_VISIBLE,
-      "identities.connections.req":  SelfSDK::Messages::PRIORITY_VISIBLE,
-      "identities.facts.query.req":  SelfSDK::Messages::PRIORITY_VISIBLE,
-      "identities.facts.issue":      SelfSDK::Messages::PRIORITY_VISIBLE,
-      "identities.notify":           SelfSDK::Messages::PRIORITY_VISIBLE
-    }
+    PRIORITIES = { 
+      'chat.invite':                 SelfSDK::Messages::PRIORITY_VISIBLE,
+      'chat.join':                   SelfSDK::Messages::PRIORITY_INVISIBLE,
+      'chat.message':                SelfSDK::Messages::PRIORITY_VISIBLE,
+      'chat.message.delete':         SelfSDK::Messages::PRIORITY_INVISIBLE,
+      'chat.message.delivered':      SelfSDK::Messages::PRIORITY_INVISIBLE,
+      'chat.message.edit':           SelfSDK::Messages::PRIORITY_INVISIBLE,
+      'chat.message.read':           SelfSDK::Messages::PRIORITY_INVISIBLE,
+      'chat.remove':                 SelfSDK::Messages::PRIORITY_INVISIBLE,
+      'document.sign.req':           SelfSDK::Messages::PRIORITY_VISIBLE,
+      'identities.authenticate.req': SelfSDK::Messages::PRIORITY_VISIBLE,
+      'identities.connections.req':  SelfSDK::Messages::PRIORITY_VISIBLE,
+      'identities.facts.query.req':  SelfSDK::Messages::PRIORITY_VISIBLE,
+      'identities.facts.issue':      SelfSDK::Messages::PRIORITY_VISIBLE,
+      'identities.notify':           SelfSDK::Messages::PRIORITY_VISIBLE }.freeze
 
     attr_accessor :client, :jwt, :device_id, :ack_timeout, :timeout, :type_observer, :uuid_observer, :encryption_client, :source
 
@@ -47,7 +110,6 @@ module SelfSDK
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
     def initialize(url, client, storage_key, options = {})
       @mon = Monitor.new
-      @url = url
       @messages = {}
       @acks = {}
       @type_observer = {}
@@ -58,14 +120,12 @@ module SelfSDK
       @timeout = 120 # seconds
       @auth_id = SecureRandom.uuid
       @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
-      @auto_reconnect = options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT)
       @raw_storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
       @storage_dir = "#{@raw_storage_dir}/apps/#{@jwt.id}/devices/#{@device_id}"
       FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
       @offset_file = "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
       @offset = read_offset
       @source = SelfSDK::Sources.new("#{__dir__}/sources.json")
-      migrate_old_storage_format
 
       unless options.include? :no_crypto
         crypto_path = "#{@storage_dir}/keys"
@@ -73,11 +133,55 @@ module SelfSDK
         @encryption_client = Crypto.new(@client, @device_id, crypto_path, storage_key)
       end
 
-      if options.include? :ws
-        @ws = options[:ws]
-      end
+      @ws = if options.include? :ws
+              options[:ws]
+            else
+              WebsocketClient.new(url,
+                                  options.fetch(:auto_reconnect, DEFAULT_AUTO_RECONNECT),
+                                  -> { authenticate },
+                                  ->(event) { on_message(event) })
+            end
     end
 
+    # Starts the underlying websocket connection.
+    def start
+      SelfSDK.logger.debug "starting"
+      auth_id = @auth_id.dup
+
+      @mon.synchronize do
+        @acks[auth_id] = { waiting_cond: @mon.new_cond,
+                           waiting: true,
+                           timeout: SelfSDK::Time.now + @ack_timeout }
+      end
+
+      Thread.new do
+        EM.run start_connection
+      end
+
+      Thread.new do
+        loop do
+          sleep 10
+          clean_timeouts
+          @ws.ping
+        end
+      end
+
+      @mon.synchronize do
+        @acks[auth_id][:waiting_cond].wait_while { @acks[auth_id][:waiting] }
+        @acks.delete(auth_id)
+      end
+
+      return unless @acks.include? auth_id
+
+      # In case this does not succeed start the process again.
+      if @acks[auth_id][:waiting]
+        close
+        start_connection
+      end
+      @acks.delete(auth_id)
+    end
+
+    # Stops the underlying websocket connection.
     def stop
       @acks.each do |k, _v|
         mark_as_acknowledged(k)
@@ -88,31 +192,7 @@ module SelfSDK
       end
     end
 
-    def close
-      @ws.close(ON_DEMAND_CLOSE_CODE, "connection closed by the client")
-    end
-
-    def start
-      start_ws_listener
-    end
-
-    # Responds a request information request
-    #
-    # @param recipient [string] selfID to be requested
-    # @param recipient_device [string] device id for the selfID to be requested
-    # @param request [string] original message requesing information
-    def share_information(recipient, recipient_device, request)
-      m = SelfMsg::Message.new
-      m.id = SecureRandom.uuid 
-      m.sender = "#{@jwt.id}:#{@device_id}"
-      m.recipient = "#{recipient}:#{recipient_device}"
-      m.message_type = "identities.facts.query.resp"
-      m.priority = select_priority(m.message_type)
-      m.ciphertext = @jwt.prepare(request)
-
-      send_message m
-    end
-
+    # Checks if the session with a specified identity / device is already created.
     def session?(identifier, device)
       path = @encryption_client.session_path(identifier, device)
       File.file?(path)
@@ -161,38 +241,14 @@ module SelfSDK
       end
     end
 
-    # Allows incomming messages from the given identity
-    #
-    # @params payload [string] base64 encoded payload to be sent
-    def add_acl_rule(payload)
-      a = SelfMsg::Acl.new
-      a.id = SecureRandom.uuid
-      a.command = SelfMsg::AclCommandPERMIT
-      a.payload = payload
-
-      send_message a
-    end
-
-    # Blocks incoming messages from specified identities
-    #
-    # @params payload [string] base64 encoded payload to be sent
-    def remove_acl_rule(payload)
-      a = SelfMsg::Acl.new
-      a.id = SecureRandom.uuid
-      a.command = SelfMsg::AclCommandREVOKE
-      a.payload = payload
-
-      send_message a
-    end
-
-    # Lists acl rules
+    # Sends a command to list ACL rules.
     def list_acl_rules
       wait_for 'acl_list' do
         a = SelfMsg::Acl.new
         a.id = SecureRandom.uuid
         a.command = SelfMsg::AclCommandLIST
 
-        send_raw a
+        @ws.send a
       end
     end
 
@@ -250,7 +306,7 @@ module SelfSDK
           timeout: SelfSDK::Time.now + @ack_timeout,
         }
       end
-      send_raw(msg)
+      @ws.send msg
       SelfSDK.logger.debug "waiting for acknowledgement #{uuid}"
       @mon.synchronize do
         @acks[uuid][:waiting_cond].wait_while do
@@ -326,49 +382,6 @@ module SelfSDK
 
     private
 
-    def ping
-      SelfSDK.logger.debug "ping"
-      @ws.ping 'ping' do |msg|
-        puts 'pong'
-      end
-    end
-
-    # Start sthe websocket listener
-    def start_ws_listener
-      SelfSDK.logger.debug "starting"
-      auth_id = @auth_id.dup
-
-      @mon.synchronize do
-        @acks[auth_id] = { waiting_cond: @mon.new_cond,
-                                    waiting: true,
-                                    timeout: SelfSDK::Time.now + @ack_timeout }
-      end
-
-      Thread.new do
-        EM.run start_connection
-      end
-
-      Thread.new do
-        loop do
-           sleep 10
-           clean_timeouts 
-           ping
-        end
-      end
-
-      @mon.synchronize do
-        @acks[auth_id][:waiting_cond].wait_while { @acks[auth_id][:waiting] }
-        @acks.delete(auth_id)
-      end
-      # In case this does not succeed start the process again.
-      if @acks.include? auth_id
-        if @acks[auth_id][:waiting]
-          close
-          start_connection
-        end
-        @acks.delete(auth_id)
-      end
-    end
 
     # Cleans expired messages
     def clean_timeouts
@@ -392,36 +405,7 @@ module SelfSDK
 
     # Creates a websocket connection and sets up its callbacks.
     def start_connection
-      SelfSDK.logger.debug "starting listener"
-      @ws = Faye::WebSocket::Client.new(@url)
-      SelfSDK.logger.debug "initialized"
-
-      @ws.on :open do |_event|
-        SelfSDK.logger.debug "websocket connection established"
-        authenticate
-      end
-
-      @ws.on :message do |event|
-        on_message(event)
-      end
-
-      @ws.on :close do |event|
-        SelfSDK.logger.debug "connection closed detected : #{event.code} #{event.reason}"
-        if event.code == ON_DEMAND_CLOSE_CODE
-          SelfSDK.logger.debug "client closed connection"
-        else
-          raise StandardError('websocket connection closed') if !@auto_reconnect
-
-          if !@reconnection_delay.nil?
-            SelfSDK.logger.debug "websocket connection closed (#{event.code}) #{event.reason}"
-            sleep @reconnection_delay
-            SelfSDK.logger.debug "reconnecting..."
-          end
-
-          @reconnection_delay = 3
-          start_connection
-        end
-      end
+      @ws.start
     end
 
 
@@ -514,13 +498,9 @@ module SelfSDK
       a.device = @device_id
       a.offset = @offset
 
-      send_raw a
+      @ws.send a
 
       @auth_id = nil
-    end
-
-    def send_raw(msg)
-      @ws.send(msg.to_fb.bytes)
     end
 
     # Marks a message as arrived.
@@ -559,27 +539,6 @@ module SelfSDK
       end
       SelfSDK.logger.debug "offset written #{offset}"
       @offset = offset
-    end
-
-    def migrate_old_storage_format
-      # Move the offset file
-      old_offset_file = "#{@raw_storage_dir}/#{@jwt.id}:#{@device_id}.offset"
-      if File.file?(old_offset_file)
-        File.open(old_offset_file, 'rb') do |f|
-          offset = f.read.unpack('q')[0]
-          write_offset(offset)
-        end
-        File.delete(old_offset_file)
-      end
-      
-      # Move all pickle files
-      crypto_path = "#{@storage_dir}/keys/#{@jwt.key_id}"
-      FileUtils.mkdir_p crypto_path unless File.exist? crypto_path
-      Dir[File.join(@raw_storage_dir, "*.pickle")].each do |file|
-        filename = File.basename(file, ".pickle")
-        File.rename file, "#{crypto_path}/#{filename}.pickle"
-      end
-        
     end
 
     def select_priority(mtype)
