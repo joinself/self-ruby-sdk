@@ -30,6 +30,7 @@ module SelfSDK
         raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
 
         # 1b-v) store the account to a file
+        FileUtils.mkdir_p(@storage_folder)
         File.write(account_path, @account.to_pickle(storage_key))
       end
     end

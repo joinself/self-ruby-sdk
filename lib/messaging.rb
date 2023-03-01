@@ -67,7 +67,6 @@ module SelfSDK
     # This is kind of a hack to catch some corner cases where
     # the websocket client is not aware it has been disconnected.
     def ping
-      SelfSDK.logger.debug "ping"
       @ws.ping 'ping'
     end
 
@@ -190,6 +189,10 @@ module SelfSDK
         mark_as_acknowledged(k)
         mark_as_arrived(k)
       end
+    end
+
+    def close
+      @ws.close
     end
 
     # Checks if the session with a specified identity / device is already created.
