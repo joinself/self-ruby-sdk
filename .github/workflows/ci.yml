@@ -7,25 +7,51 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-jobs:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
-  test:
-    name: Test
+jobs:
+  license-compliance:
+    uses: joinself/github-workflows-public/.github/workflows/license-compliance.yml@main
+    with:
+      container-image: joinself/license-finder:ruby-2.7.3
+    secrets: inherit
+  secret-scan:
+    uses: joinself/github-workflows-public/.github/workflows/secret-scan.yml@main
+    with:
+    secrets: inherit
+  build:
+    needs: [license-compliance, secret-scan]
     runs-on: ubuntu-latest
     container:
-      image: ruby:2.7.3
+      image: ruby:2.7.3-buster
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Test
+      - name: Setup job
+        uses: joinself/github-actions-public/setup-job@main
+      - name: Build
+        shell: bash
         run: |
-          apt-get update
-          apt-get install -y curl libsodium-dev cmake build-essential
-          curl -o /tmp/libself-olm_0.1.17_amd64.deb https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb
-          curl -o /tmp/libself-omemo_0.1.3_amd64.deb https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb
-          apt-get -y install /tmp/libself-olm_0.1.17_amd64.deb /tmp/libself-omemo_0.1.3_amd64.deb
-          cd /tmp && git clone https://github.com/google/flatbuffers.git
-          cd /tmp/flatbuffers && git checkout v2.0.0 && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && make install
-          cd ${GITHUB_WORKSPACE}
+          . ${GITHUB_WORKSPACE}/.ci/env
+          version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
           bundle install
-          rake test
+          bundle exec rake test
+          gem build selfsdk.gemspec
+          gem install selfsdk-${version}.gem
+      - name: Upload artifacts
+        if: ${{ false }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts
+          path: artifacts.tar.gz
+          retention-days: 1
+      - name: Failure notification
+        if: ${{ github.ref == 'refs/heads/main-disabled' && failure() }}
+        uses: joinself/github-actions-public/failure-notification@main
+        with:
+          slack-webhook: ${{ secrets.SLACK_WEBHOOK_CI_ALERTS }}
+  publish:
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+    needs: build
+    uses: joinself/github-workflows-public/.github/workflows/publish-rubygems.yml@main
+    secrets: inherit
