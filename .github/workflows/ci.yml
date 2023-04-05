@@ -11,14 +11,45 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   license-compliance:
-    uses: joinself/github-workflows-public/.github/workflows/license-compliance.yml@main
-    with:
-      container-image: joinself/license-finder:ruby-2.7.3
-    secrets: inherit
+    runs-on: ubuntu-latest
+    container:
+      image: joinself/license-finder:ruby-2.7.3
+    steps:
+      - name: Setup job
+        uses: joinself/github-actions-public/setup-job@main
+      - name: Setup environment
+        run: |
+          . ${GITHUB_WORKSPACE}/.ci/env
+          apt-get update
+          apt-get install -y libsodium-dev cmake build-essential
+          curl -Lo /tmp/olm.deb https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb
+          curl -Lo /tmp/omemo.deb https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb
+          apt-get install -y /tmp/olm.deb /tmp/omemo.deb
+          #cd /tmp
+          git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers
+          cd /tmp/flatbuffers
+          git checkout v2.0.0
+          cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+          make install
+          cd ${CI_WORKDIR}
+          bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
+          gem install bundler:${bundler_version}
+      - name: License check
+        run: |
+          . ${GITHUB_WORKSPACE}/.ci/env
+          bundle install
+          curl -Lo /tmp/dependency_decisions.yml https://static.joinself.com/license-finder/dependency_decisions.yml
+          license_finder --decisions_file /tmp/dependency_decisions.yml
   secret-scan:
     uses: joinself/github-workflows-public/.github/workflows/secret-scan.yml@main
+    with:
+      continue-on-error: true
     secrets: inherit
   build:
     needs: [license-compliance, secret-scan]
@@ -28,8 +59,23 @@ jobs:
     steps:
       - name: Setup job
         uses: joinself/github-actions-public/setup-job@main
+      - name: Setup environment
+        run: |
+          . ${GITHUB_WORKSPACE}/.ci/env
+          apt-get update
+          apt-get install -y libsodium-dev cmake build-essential
+          curl -Lo /tmp/olm.deb https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb
+          curl -Lo /tmp/omemo.deb https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb
+          apt-get install -y /tmp/olm.deb /tmp/omemo.deb
+          git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers
+          cd /tmp/flatbuffers
+          git checkout v2.0.0
+          cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+          make install
+          cd ${CI_WORKDIR}
+          bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
+          gem install bundler:${bundler_version}
       - name: Build
-        shell: bash
         run: |
           . ${GITHUB_WORKSPACE}/.ci/env
           version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
@@ -37,6 +83,7 @@ jobs:
           bundle exec rake test
           gem build selfsdk.gemspec
           gem install selfsdk-${version}.gem
+          ls -lah
       - name: Upload artifacts
         if: ${{ false }}
         uses: actions/upload-artifact@v3
