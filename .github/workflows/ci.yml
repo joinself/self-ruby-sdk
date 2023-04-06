@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: artifacts
-          path: artifacts.tar.gz
+          path: *.gem
           retention-days: 1
       - name: Failure notification
         if: ${{ github.ref == 'refs/heads/main-disabled' && failure() }}
@@ -97,8 +97,7 @@ jobs:
         with:
           slack-webhook: ${{ secrets.SLACK_WEBHOOK_CI_ALERTS }}
   publish:
-    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+    #if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
     needs: build
     uses: joinself/github-workflows-public/.github/workflows/publish-rubygems.yml@main
     secrets: inherit
-
