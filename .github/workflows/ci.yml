@@ -98,3 +98,4 @@ jobs:
     needs: build
     uses: joinself/github-workflows-public/.github/workflows/publish-rubygems.yml@main
     secrets: inherit
+
