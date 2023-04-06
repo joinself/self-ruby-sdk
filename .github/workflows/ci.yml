@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: artifacts
-          path: *.gem
+          path: ./*.gem
           retention-days: 1
       - name: Failure notification
         if: ${{ github.ref == 'refs/heads/main-disabled' && failure() }}
