@@ -85,7 +85,6 @@ jobs:
           gem install selfsdk-${version}.gem
           ls -lah
       - name: Upload artifacts
-        if: ${{ false }}
         uses: actions/upload-artifact@v3
         with:
           name: artifacts
