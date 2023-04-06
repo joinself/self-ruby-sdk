@@ -31,7 +31,6 @@ jobs:
           curl -Lo /tmp/olm.deb https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb
           curl -Lo /tmp/omemo.deb https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb
           apt-get install -y /tmp/olm.deb /tmp/omemo.deb
-          #cd /tmp
           git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers
           cd /tmp/flatbuffers
           git checkout v2.0.0
@@ -83,7 +82,6 @@ jobs:
           bundle exec rake test
           gem build selfsdk.gemspec
           gem install selfsdk-${version}.gem
-          ls -lah
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -91,7 +89,7 @@ jobs:
           path: ./*.gem
           retention-days: 1
       - name: Failure notification
-        if: ${{ github.ref == 'refs/heads/main-disabled' && failure() }}
+        if: ${{ github.ref == 'refs/heads/main' && failure() }}
         uses: joinself/github-actions-public/failure-notification@main
         with:
           slack-webhook: ${{ secrets.SLACK_WEBHOOK_CI_ALERTS }}
@@ -100,4 +98,3 @@ jobs:
     needs: build
     uses: joinself/github-workflows-public/.github/workflows/publish-rubygems.yml@main
     secrets: inherit
-
