@@ -4,15 +4,13 @@ on:
   workflow_dispatch:
 
 jobs:
-
   docker:
-    name: Docker
     runs-on: ubuntu-latest
     env:
       IMAGE_TAG: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build and publish
         run: |
           docker build -t ${IMAGE_TAG} .
