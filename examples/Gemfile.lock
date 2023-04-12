@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    async (1.30.3)
+    async (1.31.0)
       console (~> 1.10)
       nio4r (~> 2.3)
       timers (~> 4.1)
@@ -13,21 +13,22 @@ GEM
     dotenv (2.7.6)
     ed25519 (1.3.0)
     eventmachine (1.2.7)
-    faye-websocket (0.11.1)
+    faye-websocket (0.11.2)
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
     fiber-local (1.0.0)
-    google-protobuf (3.21.12)
+    google-protobuf (3.22.2)
+    google-protobuf (3.22.2-arm64-darwin)
     httparty (0.21.0)
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
-    jwt (2.6.0)
+    jwt (2.7.0)
     logger (1.5.3)
     method_source (1.0.0)
     mini_mime (1.1.2)
     multi_xml (0.6.0)
     net-ntp (2.1.3)
-    nio4r (2.5.8)
+    nio4r (2.5.9)
     pastel (0.8.0)
       tty-color (~> 0.5)
     pry (0.14.1)
@@ -42,7 +43,7 @@ GEM
     self_crypto (0.0.8)
     self_msgproto (0.0.10)
       rice
-    selfsdk (0.0.209)
+    selfsdk (0.0.212)
       async
       ed25519
       eventmachine
