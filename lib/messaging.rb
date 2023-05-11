@@ -70,7 +70,10 @@ module SelfSDK
       @ws.ping 'ping'
     end
 
-    def send(message)
+    def send_msg(message)
+      p message
+      p message.to_fb
+      p message.to_fb.bytes
       @ws.send(message.to_fb.bytes)
     end
   end
@@ -251,7 +254,7 @@ module SelfSDK
         a.id = SecureRandom.uuid
         a.command = SelfMsg::AclCommandLIST
 
-        @ws.send a
+        @ws.send_msg a
       end
     end
 
@@ -309,7 +312,7 @@ module SelfSDK
           timeout: SelfSDK::Time.now + @ack_timeout,
         }
       end
-      @ws.send msg
+      @ws.send_msg msg
       SelfSDK.logger.debug "waiting for acknowledgement #{uuid}"
       @mon.synchronize do
         @acks[uuid][:waiting_cond].wait_while do
@@ -501,7 +504,7 @@ module SelfSDK
       a.device = @device_id
       a.offset = @offset
 
-      @ws.send a
+      @ws.send_msg a
 
       @auth_id = nil
     end
