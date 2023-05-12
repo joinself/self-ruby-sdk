@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Setup job
         uses: joinself/github-actions-public/setup-job@main
-      - name: Setup environment
+      - name: Build
         shell: bash
         run: |
           . ${GITHUB_WORKSPACE}/.ci/env
