@@ -1,0 +1,33 @@
+name: _license-compliance
+
+on:
+  workflow_call:
+
+jobs:
+  license-compliance:
+    runs-on: ubuntu-latest
+    container:
+      image: joinself/license-finder:ruby-2.7.3
+    steps:
+      - name: Setup job
+        uses: joinself/github-actions-public/setup-job@main
+      - name: License check
+        shell: bash
+        run: |
+          . ${GITHUB_WORKSPACE}/.ci/env
+          apt-get update
+          apt-get install -y libsodium-dev cmake build-essential
+          curl -Lo /tmp/olm.deb https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb
+          curl -Lo /tmp/omemo.deb https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb
+          apt-get install -y /tmp/olm.deb /tmp/omemo.deb
+          git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers
+          cd /tmp/flatbuffers
+          git checkout v2.0.0
+          cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+          make install
+          cd ${CI_WORKDIR}
+          bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
+          gem install bundler:${bundler_version}
+          bundle install
+          curl -Lo /tmp/dependency_decisions.yml https://static.joinself.com/license-finder/dependency_decisions.yml
+          license_finder --decisions_file /tmp/dependency_decisions.yml
