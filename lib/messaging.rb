@@ -70,10 +70,9 @@ module SelfSDK
       @ws.ping 'ping'
     end
 
-    def send_msg(message)
-      p message
-      p message.to_fb
-      p message.to_fb.bytes
+    def send(message)
+      raise "client is not started, refer to start method on the main client" if @ws.nil?
+
       @ws.send(message.to_fb.bytes)
     end
   end
@@ -254,7 +253,7 @@ module SelfSDK
         a.id = SecureRandom.uuid
         a.command = SelfMsg::AclCommandLIST
 
-        @ws.send_msg a
+        @ws.send a
       end
     end
 
@@ -312,7 +311,7 @@ module SelfSDK
           timeout: SelfSDK::Time.now + @ack_timeout,
         }
       end
-      @ws.send_msg msg
+      @ws.send msg
       SelfSDK.logger.debug "waiting for acknowledgement #{uuid}"
       @mon.synchronize do
         @acks[uuid][:waiting_cond].wait_while do
@@ -504,7 +503,7 @@ module SelfSDK
       a.device = @device_id
       a.offset = @offset
 
-      @ws.send_msg a
+      @ws.send a
 
       @auth_id = nil
     end
