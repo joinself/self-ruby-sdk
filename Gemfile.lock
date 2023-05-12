@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.212)
+    selfsdk (0.0.213)
       async
       ed25519
       eventmachine
@@ -39,8 +39,8 @@ GEM
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
     fiber-local (1.0.0)
-    google-protobuf (3.22.2)
-    google-protobuf (3.22.2-x86_64-linux)
+    google-protobuf (3.23.0)
+    google-protobuf (3.23.0-x86_64-linux)
     hashdiff (1.0.0)
     httparty (0.21.0)
       mini_mime (>= 1.0.0)
@@ -65,7 +65,7 @@ GEM
     rainbow (3.0.0)
     rake (13.0.6)
     rexml (3.2.5)
-    rice (4.0.4)
+    rice (4.1.0)
     rqrcode (2.1.2)
       chunky_png (~> 1.0)
       rqrcode_core (~> 1.0)
