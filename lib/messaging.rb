@@ -71,6 +71,8 @@ module SelfSDK
     end
 
     def send(message)
+      raise "client is not started, refer to start method on the main client" if @ws.nil?
+
       @ws.send(message.to_fb.bytes)
     end
   end
