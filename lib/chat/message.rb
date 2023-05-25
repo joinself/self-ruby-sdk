@@ -5,13 +5,15 @@
 module SelfSDK
   module Chat
     class Message
-      attr_accessor :gid, :body, :from, :payload, :recipients, :objects
+      attr_accessor :gid, :body, :from, :payload, :recipients, :objects, :rid, :cid
 
       def initialize(chat, recipients, payload, auth_token, self_url)
         @chat = chat
         @recipients = recipients
         @recipients = [@recipients] if @recipients.is_a? String
         @gid = payload[:gid] if payload.key? :gid
+        @rid = payload[:rid] if payload.key? :rid
+        @cid = payload[:cid] if payload.key? :cid
         @payload = payload
         @payload[:jti] = SecureRandom.uuid unless @payload.include?(:jti)
         @body = @payload[:msg]
@@ -69,8 +71,7 @@ module SelfSDK
       # @param body [string] the new message body.
       #
       # @return ChatMessage
-      def respond(body)
-        opts = {}
+      def respond(body, opts = {})
         opts[:aud] = @payload[:gid] if @payload.key? :gid
         opts[:gid] = @payload[:gid] if @payload.key? :gid
         opts[:rid] = @payload[:jti]
