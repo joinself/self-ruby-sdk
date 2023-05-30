@@ -35,6 +35,8 @@ module SelfSDK
         payload[:gid] = opts[:gid] if opts.key? :gid
         payload[:rid] = opts[:rid] if opts.key? :rid
         payload[:objects] = opts[:objects] if opts.key? :objects
+        payload[:cid] = opts[:cid] if opts.key? :cid
+        payload[:data] = opts[:data] if opts.key? :data
 
         m = SelfSDK::Chat::Message.new(self, recipients, payload, @jwt.auth_token, @self_url)
         _req = send(m.recipients, m.payload)
