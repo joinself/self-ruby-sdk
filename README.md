@@ -1,43 +1,58 @@
-![Self logo](https://media-exp1.licdn.com/dms/image/C4E0BAQHiKfIfzq6P0w/company-logo_200_200/0?e=2159024400&v=beta&t=JDd8UXJlMG7AKpLNAP5nDYd75gQZT8E8s98xSc0jRO0)
-
-By [Self](https://www.joinself.com/).
+# Self Ruby SDK
 
 [![CI](https://github.com/joinself/self-ruby-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/joinself/self-ruby-sdk/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/selfsdk.svg)](https://badge.fury.io/rb/selfsdk)
 
-This gem provides a toolset to interact with self network from your ruby code.
+The official Self SDK for Ruby.
+
+This SDK provides a toolset to interact with Self network from your ruby code.
 
 ## Installation
 
-### Requirements
+### Dependencies
 
+- [Ruby](https://www.ruby-lang.org/) 3.0 or later
+- [Self OLM](https://github.com/joinself/self-olm)
 - [Self OMEMO](https://github.com/joinself/self-omemo)
-- [Flatbuffers](https://github.com/google/flatbuffers)
+- [Flatbuffers](https://flatbuffers.dev/)
 
 ##### Debian/Ubuntu
 ```bash
-curl -LO https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo_0.4.0_amd64.deb
-apt install -y ./self-omemo_0.4.0_amd64.deb
+apt install -y libsodium-dev
+curl -O https://download.joinself.com/olm/libself-olm_0.1.39_amd64.deb
+curl -O https://download.joinself.com/omemo/libself-omemo_0.1.23_amd64.deb
+apt install -y ./libself-olm_0.1.39_amd64.deb ./libself-omemo_0.1.23_amd64.deb
+
+apt install -y cmake g++
+git clone https://github.com/google/flatbuffers.git
+cd flatbuffers
+git checkout v2.0.0
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+make install
 ```
 
 ##### CentOS/RedHat
 ```bash
-rpm -Uvh https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo-0.4.0-1.x86_64.rpm
+yum install -y libsodium
+rpm -Uvh https://download.joinself.com/olm/libself-olm-0.1.39-1.x86_64.rpm
+rpm -Uvh https://download.joinself.com/omemo/libself-omemo-0.1.23-1.x86_64.rpm
 ```
 
 ##### Fedora
 ```bash
-dnf install -y https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo-0.4.0-1.x86_64.rpm
+dnf install -y libsodium
+dnf install -y https://download.joinself.com/olm/libself-olm-0.1.39-1.x86_64.rpm
+dnf install -y https://download.joinself.com/omemo/libself-omemo-0.1.23-1.x86_64.rpm
 ```
 
 ##### MacOS - AMD64
 ```bash
 brew tap joinself/crypto
-brew install libself-omemo
+brew install libself-olm libself-omemo
 ```
 
 ##### MacOS - ARM64
-Brew on M1 macs currently lacks environment variables needed for the SDK to find the `omemo` library, so you will need to add some additional configuration to your system:
+Brew on M1 macs currently lacks environment variables needed for the SDK to find the `olm` and `omemo` libraries, so you will need to add some additional configuration to your system:
 
 In your `~/.zshrc`, add:
 ```bash
@@ -50,7 +65,7 @@ You should then be able to run:
 ```bash
 source ~/.zshrc
 brew tap joinself/crypto
-brew install --build-from-source libself-omemo
+brew install --build-from-source libself-olm libself-omemo
 ```
 
 Note, you may also need to create `/usr/local/lib` if it does not exist:
@@ -58,119 +73,109 @@ Note, you may also need to create `/usr/local/lib` if it does not exist:
 sudo mkdir /usr/local/lib
 ```
 
-## Usage
+### Install
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'selfsdk'
+```bash
+gem install selfsdk
 ```
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install selfsdk
-
-## Requirements
-
-In order to use this gem you'll need to get your `app_id` and `app_api_key` from [self developer portal](https://developer.self.net).
-
 ## Usage
 
-You can instantiate an app with the command above.
+### Register Application
+
+Before the SDK can be used you must first register an application on the Self Developer Portal. Once registered, the portal will generate credentials for the application that the SDK will use to authenticate against the Self network.
+
+Self provides two isolated networks:
+
+[Developer Portal (production network)](https://developer.joinself.com) - Suitable for production services  
+[Developer Portal (sandbox network)](https://developer.sandbox.joinself.com) - Suitable for testing and experimentation
+
+Register your application using one of the links above ([further information](https://docs.joinself.com/quickstart/app-setup/)).
+
+### Examples
+
+#### Client Setup
+
 ```ruby
-# Require selfsdk gem
 require 'selfsdk'
-# setup client connection
-@client = SelfSDK::App.new(ENV['SELF_APP_ID'], ENV['SELF_APP_DEVICE_SECRET'], ENV['STORAGE_KEY'], ENV['STORAGE_DIR'])
-# start the client
+
+@client = SelfSDK::App.new("<application-id>", "<application-secret-key>", "random-secret-string", "/data")
+
 @client.start
 ```
 
-At this point your app will be able to interact with self network, find below some useful features.
+#### Authentication
 
-### Authenticate
+Authentication allows your users to authenticate or register on your app.
 
-Authenticate allows your users to authenticate or register on your app. You can use a blocking, and a non-blocking approach:
-
+Blocking:
 ```ruby
-# This is a blocking approach to self authentication.
-# send an authentication request
-auth = @client.authentication.request("1112223334")
-# check if the auth response is accepted
+auth = @client.authentication.request("<self-id>")
 puts "You are now authenticated 🤘" if auth.accepted?
-end
 ```
+
+Non-blocking:
 ```ruby
-# This is a non-blocking approach to self authentication.
-# send an authentication request
-@client.authentication.request "1112223334" do |auth|
+@client.authentication.request "<self-id>" do |auth|
   puts "You are now authenticated 🤘" if auth.accepted?
 end
 ```
 
-### Process incoming messages
+#### Process Incoming Messages
 
 Other peers on self network can send you messages, this client offers you a subscription model to process them by type.
+
 ```ruby
 @client.authentication.subscribe do |auth|
   if auth.accepted?
     puts "#{auth.id} has accepted your auth request"
   else
-  puts "#{auth.id} has rejected your auth request"
+    puts "#{auth.id} has rejected your auth request"
+  end
 end
 ```
 
-### Information or fact requests
+#### Information or Fact Requests
 
 You can request some information to other peers on the network. Same as with authentication you can do this using blocking and non-blocking approaches.
+
+Blocking:
 ```ruby
-# Blocking approach to fact request.
-# request name and email values to 1112223334
-res = @client.fact.request("1112223334", [:display_name, :email_address])
-# print the returned values
+res = @client.fact.request("<self-id>", [:display_name, :email_address])
 puts "Hello #{res.attestation_values_for(:display_name).first}"
 ```
+
+Non-blocking:
 ```ruby
-# Non-blocking approach to fact request.
-# request name and email values to 1112223334
-@client.fact.request("1112223334", [:display_name, :email_address]) do |res|
-  # print the returned values
+@client.fact.request("<self-id>", [:display_name, :email_address]) do |res|
   puts "Hello #{res.attestation_values_for(:display_name).first}"
 end
 ```
 
-### ACL management
+#### ACL Management
 
-Even when your app is created you set its default permissions so `Everyone` or `Just you` can interact with the app, this client offers some methods to manage this permissions, and in fact, who can interact with your app.
+ACL's control who can and can't interact with the application. When registering your application you can set a default ACL to allow `Everyone` or `Just you`.
 
-#### List ACL
+List ACL's:
 ```ruby
 @app.messaging.allowed_connections
 ```
-#### Allow new connections
+
+Allow connection from a specific identity:
 ```ruby
-@app.messaging.permit_connection "1112223334"
+@app.messaging.permit_connection "<self-id>"
 ```
-#### Block incoming connections from the specified identity
+
+Block connection from specific identity:
 ```ruby
-@app.messaging.revoke_connection "1112223334"
+@app.messaging.revoke_connection "<self-id>"
 ```
 
 ## Documentation
 
-You can find general documentation for Self on [self docs site](https://docs.joinself.com/) and specifically for this library on [rubydoc](https://www.rubydoc.info/gems/selfsdk/).
-
-## Examples
-
-This gem comes with some examples built to help you have an idea of how or what to build on top of this library.
-- [ACL management](examples/acl.rb)
-- [Async registration](examples/async_registration.rb)
-- [Sync registration](examples/sync_registration.rb)
-- [Identity](examples/identity.rb)
+- [SDK documentation](https://www.rubydoc.info/gems/selfsdk)
+- [General documentation](https://docs.joinself.com/)
+- [Examples](examples)
 
 ## Development
 
@@ -186,12 +191,14 @@ This project uses semantic versioning https://semver.org/. To create a new versi
 
 Generates the valid sources based on a json file (config/sources.json) instead of have them hardcoded on the gem.
 
+## Support
+
+Looking for help? Reach out to us at [support@joinself.zendesk.com](mailto:support@joinself.zendesk.com)
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/joinself/self-ruby-sdk.
-
+See [Contributing](CONTRIBUTING.md).
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](LICENSE).
+See [License](LICENSE).
