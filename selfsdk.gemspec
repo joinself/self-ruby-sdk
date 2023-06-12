@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.summary = 'joinself sdk'
   s.authors = ["Self Group Ltd."]
   s.homepage = "https://www.joinself.com/"
+  s.required_ruby_version = '~> 3'
   s.files = [
     "lib/selfsdk.rb",
     "lib/client.rb",
