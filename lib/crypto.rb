@@ -11,6 +11,7 @@ module SelfSDK
       @storage_folder = "#{storage_folder}/#{@client.jwt.key_id}"
       @lock_strategy = true
       @mode = "r+"
+      @keys = {}
 
       if File.exist?(account_path)
         # 1a) if alice's account file exists load the pickle from the file
@@ -23,7 +24,8 @@ module SelfSDK
         @account.gen_otk(100)
 
         # 1b-iii) convert those keys to json
-        keys = @account.otk['curve25519'].map{|k,v| {id: k, key: v}}.to_json
+        @keys = @account.otk['curve25519'].map{|k,v| {id: k, key: v}}
+        keys = @keys.to_json
 
         # 1b-iv) post those keys to POST /v1/identities/<selfid>/devices/1/pre_keys/
         res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
@@ -61,6 +63,8 @@ module SelfSDK
           end
           session_with_bob = get_outbound_session_with_bob(locks[session_file_name], r[:id], r[:device_id])
         rescue => e
+          puts "exception #{e}"
+          puts "exception #{e.backtrace}"
           ::SelfSDK.logger.warn("- [crypto]   there is a problem adding group participant #{r[:id]}:#{r[:device_id]}, skipping...")
           ::SelfSDK.logger.warn("- [crypto] #{e}")
           next
@@ -117,7 +121,7 @@ module SelfSDK
       gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
 
       # 9) add all recipients and their sessions
-      ::SelfSDK.logger.debug("- [crypto] add all recipients and their sessions #{@sender}:#{@sender_device}")
+      ::SelfSDK.logger.debug("- [crypto] add all recipients and their sessions #{sender}:#{sender_device}")
       gs.add_participant("#{sender}:#{sender_device}", session_with_bob)
 
       # 10) decrypt the message ciphertext
