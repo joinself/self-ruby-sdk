@@ -124,15 +124,12 @@ module SelfSDK
       @raw_storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
       @storage_dir = "#{@raw_storage_dir}/apps/#{@jwt.id}/devices/#{@device_id}"
       FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
-      @offset_file = "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
-      @offset = read_offset
       @source = SelfSDK::Sources.new("#{__dir__}/sources.json")
-
+      @storage = SelfSDK::Storage.new(@client.jwt.id, @device_id, @storage_dir, storage_key)
       unless options.include? :no_crypto
-        crypto_path = "#{@storage_dir}/keys"
-        FileUtils.mkdir_p crypto_path unless File.exist? crypto_path
-        @encryption_client = Crypto.new(@client, @device_id, crypto_path, storage_key)
+        @encryption_client = Crypto.new(@client, @device_id, @storage, storage_key)
       end
+      @offset = @storage.account_get_offset
 
       @ws = if options.include? :ws
               options[:ws]
@@ -481,19 +478,19 @@ module SelfSDK
 
     def parse_and_write_offset(input)
       msg = SelfSDK::Messages.parse(input, self)
-      write_offset(input.offset)
+      @storage.account_set_offset(input.offset)
       # Avoid catching any other decryption errors.
       msg
     rescue SelfSDK::Messages::UnmappedMessage => e
       # this is an ummapped message, let's ignore it but write the offset.
-      write_offset(input.offset)
+      @storage.account_set_offset(input.offset)
       nil
     end
 
     # Authenticates current client on the websocket server.
     def authenticate
       @auth_id = SecureRandom.uuid if @auth_id.nil?
-      @offset = read_offset
+      @offset = @storage.account_get_offset
 
       SelfSDK.logger.debug "authenticating with offset (#{@offset})"
 
@@ -527,23 +524,6 @@ module SelfSDK
         @acks[id][:waiting] = false
         @acks[id][:waiting_cond].broadcast
       end
-    end
-
-    def read_offset
-      return 0 unless File.exist? @offset_file
-
-      File.open(@offset_file, 'rb') do |f|
-        return f.read.to_i
-      end
-    end
-
-    def write_offset(offset)
-      File.open(@offset_file, 'wb') do |f|
-        f.flock(File::LOCK_EX)
-        f.write(offset.to_s.rjust(19, "0"))
-      end
-      SelfSDK.logger.debug "offset written #{offset}"
-      @offset = offset
     end
 
     def select_priority(mtype)
