@@ -70,6 +70,7 @@ class SelfCryptoTest < Minitest::Test
 
       body2 = "hello world 2"
       encrypted_body = alice.encrypt(body2, [{ id: john_id, device_id: john_device }])
+
       decrypted_body = john.decrypt(encrypted_body, alice_id, alice_device)
       assert_equal body2, decrypted_body
     end
