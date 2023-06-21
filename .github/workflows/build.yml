@@ -16,7 +16,7 @@ jobs:
         run: |
           . ${GITHUB_WORKSPACE}/.ci/env
           apt-get update
-          apt-get install -y curl cmake build-essential
+          apt-get install -y cmake build-essential
           curl -Lo /tmp/self-omemo.deb https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo_0.4.0_amd64.deb
           dpkg -i /tmp/self-omemo.deb
           git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers
