@@ -12,12 +12,12 @@ module SelfSDK
       @lock_strategy = true
       @mode = "r+"
       @storage_folder = storage_folder
-      @storage = SelfSDK::Storage.new(@client.jwt.id, @device, "#{storage_folder}/#{@client.jwt.key_id}")
+      @storage = SelfSDK::Storage.new(@client.jwt.id, @device, storage_folder, @client.jwt.key_id)
       @keys = {}
 
-      if @storage.exist?(account_path)
+      if @storage.account_exists?
         # 1a) if alice's account file exists load the pickle from the file
-        @account = SelfCrypto::Account.from_pickle(@storage.read(account_path), @storage_key)
+        @account = SelfCrypto::Account.from_pickle(@storage.account_olm, @storage_key)
       else
         # 1b-i) if create a new account for alice if one doesn't exist already
         @account = SelfCrypto::Account.from_seed(@client.jwt.key)
@@ -34,7 +34,7 @@ module SelfSDK
         raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
 
         # 1b-v) store the account to a file
-        @storage.write(account_path, @account.to_pickle(storage_key))
+        @storage.account_create(@account.to_pickle(storage_key))
       end
     end
 
@@ -51,7 +51,7 @@ module SelfSDK
         recipients.each do |r|
           sid = @storage.sid(r[:id], r[:device_id])
 
-          session_with_bob = get_outbound_session_with_bob(tx.read(sid), r[:id], r[:device_id])
+          session_with_bob = get_outbound_session_with_bob(tx.session_offset(sid), r[:id], r[:device_id])
           ::SelfSDK.logger.debug("- [crypto]   adding group participant #{r[:id]}:#{r[:device_id]}")
           gs.add_participant("#{r[:id]}:#{r[:device_id]}", session_with_bob)
           sessions[sid] = session_with_bob
@@ -71,7 +71,7 @@ module SelfSDK
         ::SelfSDK.logger.debug("- [crypto] storing sessions")
         sessions.each do |sid, session_with_bob|
           pickle = session_with_bob.to_pickle(@storage_key)
-          tx.write(sid, pickle)
+          tx.session_update(sid, pickle)
         end
 
         ct
@@ -84,7 +84,7 @@ module SelfSDK
 
       @storage.tx [{ id: sender, device_id: sender_device }] do |tx|
         ::SelfSDK.logger.debug("- [crypto] loading sessions")
-        session_with_bob = get_inbound_session_with_bob(tx.read(sid), message)
+        session_with_bob = get_inbound_session_with_bob(tx.session_offset(sid), message)
 
         # 8) create a group session and set the identity of the account you're using
         ::SelfSDK.logger.debug("- [crypto] create a group session and set the identity of the account #{@client.jwt.id}:#{@device}")
@@ -102,7 +102,7 @@ module SelfSDK
         ::SelfSDK.logger.debug("- [crypto] store the session to a file")
 
         pickle = session_with_bob.to_pickle(@storage_key)
-        tx.write(sid, pickle)
+        tx.session_update(sid, pickle)
         pt
       end
     end
@@ -176,14 +176,10 @@ module SelfSDK
           raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
         end
 
-        @storage.write(account_path, @account.to_pickle(@storage_key))
+        @storage.account_create(@account.to_pickle(@storage_key))
       end
 
       session_with_bob
-    end
-
-    def account_path
-      "#{@storage_folder}/account.pickle"
     end
   end
 

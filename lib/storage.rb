@@ -46,7 +46,7 @@ module SelfSDK
       end
     end
 
-    def write(sid, pickle)
+    def session_update(sid, pickle)
       if @entries.key? sid
         # @entries[sid] = Entry.new(sid)
         @entries[sid].write(pickle)
@@ -55,7 +55,7 @@ module SelfSDK
       end
     end
 
-    def read(sid)
+    def session_offset(sid)
       return nil unless @entries.key? sid
 
       @entries[sid].read
@@ -83,10 +83,11 @@ module SelfSDK
   end
 
   class Storage
-    def initialize(app_id, app_device, key_prefix)
+    def initialize(app_id, app_device, storage_folder, key_id)
       @app_id = app_id
       @app_device = app_device
-      @key_prefix = key_prefix
+      @key_prefix = "#{storage_folder}/#{key_id}"
+      @storage_folder = storage_folder
       FileUtils.mkdir_p(@key_prefix)
     end
 
@@ -112,6 +113,36 @@ module SelfSDK
 
     def sid(selfid, device)
       "#{@key_prefix}/#{selfid}:#{device}-session.pickle"
+    end
+
+    def account_exists?
+      exist? account_path
+    end
+
+    def account_create(olm, offset = nil)
+      write(account_path, olm) unless olm.nil?
+    end
+
+    def account_update(olm, offset = nil)
+      write(account_path, olm) unless olm.nil?
+    end
+
+    def account_olm
+      read account_path
+    end
+
+    def session_create(sid, olm)
+      write(sid, olm)
+    end
+
+    def session_update(sid, olm)
+      write(sid, olm)
+    end
+
+    private
+
+    def account_path
+      "#{@storage_folder}/account.pickle"
     end
   end
 end
