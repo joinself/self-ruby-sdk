@@ -16,10 +16,9 @@ jobs:
         run: |
           . ${GITHUB_WORKSPACE}/.ci/env
           apt-get update
-          apt-get install -y libsodium-dev cmake build-essential
-          curl -Lo /tmp/olm.deb https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb
-          curl -Lo /tmp/omemo.deb https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb
-          apt-get install -y /tmp/olm.deb /tmp/omemo.deb
+          apt-get install -y curl cmake build-essential
+          curl -Lo /tmp/self-omemo.deb https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo_0.4.0_amd64.deb
+          dpkg -i /tmp/self-omemo.deb
           git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers
           cd /tmp/flatbuffers
           git checkout v2.0.0
