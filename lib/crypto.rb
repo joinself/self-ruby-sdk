@@ -5,14 +5,13 @@ require_relative 'storage'
 
 module SelfSDK
   class Crypto
-    def initialize(client, device, storage_folder, storage_key)
+    def initialize(client, device, storage, storage_key)
       @client = client
       @device = device
       @storage_key = storage_key
       @lock_strategy = true
       @mode = "r+"
-      @storage_folder = storage_folder
-      @storage = SelfSDK::Storage.new(@client.jwt.id, @device, storage_folder, @client.jwt.key_id)
+      @storage = storage
       @keys = {}
 
       if @storage.account_exists?

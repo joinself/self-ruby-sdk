@@ -86,9 +86,14 @@ module SelfSDK
     def initialize(app_id, app_device, storage_folder, key_id)
       @app_id = app_id
       @app_device = app_device
-      @key_prefix = "#{storage_folder}/#{key_id}"
-      @storage_folder = storage_folder
+
+      @storage_folder = "#{storage_folder}/keys"
+      FileUtils.mkdir_p @storage_folder unless File.exist? @storage_folder
+
+      @key_prefix = "#{@storage_folder}/#{key_id}"
       FileUtils.mkdir_p(@key_prefix)
+
+      @offset_file = "#{@storage_folder}/#{@app_id}:#{@app_device}.offset"
     end
 
     def tx(recipients = [])
@@ -131,6 +136,23 @@ module SelfSDK
       read account_path
     end
 
+    def account_get_offset
+      return 0 unless File.exist? @offset_file
+
+      File.open(@offset_file, 'rb') do |f|
+        return f.read.to_i
+      end
+    end
+
+    def account_set_offset(offset)
+      File.open(@offset_file, 'wb') do |f|
+        f.flock(File::LOCK_EX)
+        f.write(offset.to_s.rjust(19, "0"))
+      end
+      SelfSDK.logger.debug "offset written #{offset}"
+      @offset = offset
+    end
+
     def session_create(sid, olm)
       write(sid, olm)
     end
@@ -143,6 +165,10 @@ module SelfSDK
 
     def account_path
       "#{@storage_folder}/account.pickle"
+    end
+
+    def offset_path(sid)
+      "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
     end
   end
 end

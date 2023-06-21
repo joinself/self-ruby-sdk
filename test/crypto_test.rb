@@ -16,7 +16,7 @@ class SelfCryptoTest < Minitest::Test
 
     let(:alice_storage_dir)  { "/tmp/test_alice" }
     let(:john_storage_dir)  { "/tmp/test_john" }
-    let(:storage_key)  { "kk" }
+    let(:storage_key) { "kk" }
 
     let(:alice_id) { "alice" }
     let(:alice_device) { "1" }
@@ -30,7 +30,8 @@ class SelfCryptoTest < Minitest::Test
         assert_equal "/v1/apps/#{alice_id}/devices/#{alice_device}/pre_keys", url
       end.and_return(double("response", status: 200, body: {"success": true}.to_json, code: 200))
 
-      SelfSDK::Crypto.new(alice_client, alice_device, alice_storage_dir, storage_key)
+      alice_storage = SelfSDK::Storage.new(alice_id, alice_device, alice_storage_dir, storage_key)
+      SelfSDK::Crypto.new(alice_client, alice_device, alice_storage, storage_key)
     end
 
     let(:john_id) { "john" }
@@ -46,7 +47,8 @@ class SelfCryptoTest < Minitest::Test
         assert_equal "/v1/apps/#{john_id}/devices/#{john_device}/pre_keys", url
       end.and_return(double("response", status: 200, body: {"success": true}.to_json, code: 200))
 
-      SelfSDK::Crypto.new(john_client, john_device, john_storage_dir, storage_key)
+      john_storage = SelfSDK::Storage.new(john_id, john_device, john_storage_dir, storage_key)
+      SelfSDK::Crypto.new(john_client, john_device, john_storage, storage_key)
     end
 
     def teardown
