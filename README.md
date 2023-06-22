@@ -12,16 +12,13 @@ This SDK provides a toolset to interact with Self network from your ruby code.
 ### Dependencies
 
 - [Ruby](https://www.ruby-lang.org/) 3.0 or later
-- [Self OLM](https://github.com/joinself/self-olm)
 - [Self OMEMO](https://github.com/joinself/self-omemo)
 - [Flatbuffers](https://flatbuffers.dev/)
 
 ##### Debian/Ubuntu
 ```bash
-apt install -y libsodium-dev
-curl -O https://download.joinself.com/olm/libself-olm_0.1.39_amd64.deb
-curl -O https://download.joinself.com/omemo/libself-omemo_0.1.23_amd64.deb
-apt install -y ./libself-olm_0.1.39_amd64.deb ./libself-omemo_0.1.23_amd64.deb
+curl -LO https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo_0.4.0_amd64.deb
+apt install -y ./self-omemo_0.4.0_amd64.deb
 
 apt install -y cmake g++
 git clone https://github.com/google/flatbuffers.git
@@ -33,26 +30,22 @@ make install
 
 ##### CentOS/RedHat
 ```bash
-yum install -y libsodium
-rpm -Uvh https://download.joinself.com/olm/libself-olm-0.1.39-1.x86_64.rpm
-rpm -Uvh https://download.joinself.com/omemo/libself-omemo-0.1.23-1.x86_64.rpm
+rpm -Uvh https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo-0.4.0-1.x86_64.rpm
 ```
 
 ##### Fedora
 ```bash
-dnf install -y libsodium
-dnf install -y https://download.joinself.com/olm/libself-olm-0.1.39-1.x86_64.rpm
-dnf install -y https://download.joinself.com/omemo/libself-omemo-0.1.23-1.x86_64.rpm
+dnf install -y https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo-0.4.0-1.x86_64.rpm
 ```
 
 ##### MacOS - AMD64
 ```bash
 brew tap joinself/crypto
-brew install libself-olm libself-omemo
+brew install libself-omemo
 ```
 
 ##### MacOS - ARM64
-Brew on M1 macs currently lacks environment variables needed for the SDK to find the `olm` and `omemo` libraries, so you will need to add some additional configuration to your system:
+Brew on M1 macs currently lacks environment variables needed for the SDK to find the `omemo` library, so you will need to add some additional configuration to your system:
 
 In your `~/.zshrc`, add:
 ```bash
@@ -65,7 +58,7 @@ You should then be able to run:
 ```bash
 source ~/.zshrc
 brew tap joinself/crypto
-brew install --build-from-source libself-olm libself-omemo
+brew install --build-from-source libself-omemo
 ```
 
 Note, you may also need to create `/usr/local/lib` if it does not exist:
@@ -99,7 +92,13 @@ Register your application using one of the links above ([further information](ht
 ```ruby
 require 'selfsdk'
 
-@client = SelfSDK::App.new("<application-id>", "<application-secret-key>", "random-secret-string", "/data")
+@client = SelfSDK::App.new(
+  "<application-id>",
+  "<application-secret-key>",
+  "random-secret-string",
+  "/data",
+  env: :sandbox  # optional (defaults to production)
+)
 
 @client.start
 ```
@@ -116,7 +115,7 @@ puts "You are now authenticated 🤘" if auth.accepted?
 
 Non-blocking:
 ```ruby
-@client.authentication.request "<self-id>" do |auth|
+@client.authentication.request("<self-id>") do |auth|
   puts "You are now authenticated 🤘" if auth.accepted?
 end
 ```
@@ -141,14 +140,14 @@ You can request some information to other peers on the network. Same as with aut
 
 Blocking:
 ```ruby
-res = @client.fact.request("<self-id>", [:display_name, :email_address])
-puts "Hello #{res.attestation_values_for(:display_name).first}"
+res = @client.facts.request("<self-id>", [:phone_number])
+puts "Requested phone number is #{res.attestation_values_for(:phone_number).first}"
 ```
 
 Non-blocking:
 ```ruby
-@client.fact.request("<self-id>", [:display_name, :email_address]) do |res|
-  puts "Hello #{res.attestation_values_for(:display_name).first}"
+@client.facts.request("<self-id>", [:phone_number]) do |res|
+  puts "Requested phone number is #{res.attestation_values_for(:phone_number).first}"
 end
 ```
 
@@ -158,17 +157,17 @@ ACL's control who can and can't interact with the application. When registering 
 
 List ACL's:
 ```ruby
-@app.messaging.allowed_connections
+@client.messaging.allowed_connections
 ```
 
 Allow connection from a specific identity:
 ```ruby
-@app.messaging.permit_connection "<self-id>"
+@client.messaging.permit_connection "<self-id>"
 ```
 
 Block connection from specific identity:
 ```ruby
-@app.messaging.revoke_connection "<self-id>"
+@client.messaging.revoke_connection "<self-id>"
 ```
 
 ## Documentation
