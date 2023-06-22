@@ -28,16 +28,6 @@ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
 make install
 ```
 
-##### CentOS/RedHat
-```bash
-rpm -Uvh https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo-0.4.0-1.x86_64.rpm
-```
-
-##### Fedora
-```bash
-dnf install -y https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo-0.4.0-1.x86_64.rpm
-```
-
 ##### MacOS - AMD64
 ```bash
 brew tap joinself/crypto
