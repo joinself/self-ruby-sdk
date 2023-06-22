@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
     "lib/acl.rb",
     "lib/sources.rb",
     "lib/source_definition.rb",
+    "lib/storage.rb",
     "lib/messages/",
     "lib/messages/base.rb",
     "lib/messages/fact.rb",
@@ -73,6 +74,7 @@ Gem::Specification.new do |s|
   s.add_dependency "net-ntp"
   s.add_dependency "rqrcode"
   s.add_dependency "jwt"
+  s.add_dependency "sqlite3"
   s.add_development_dependency 'bundler', '~> 2.3', '>= 2.3.13'
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry"

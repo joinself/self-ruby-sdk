@@ -51,6 +51,11 @@ class SelfCryptoTest < Minitest::Test
       SelfSDK::Crypto.new(john_client, john_device, john_storage, storage_key)
     end
 
+    def setup
+      FileUtils.rm_rf(alice_storage_dir)
+      FileUtils.rm_rf(john_storage_dir)
+    end
+
     def teardown
       FileUtils.rm_rf(alice_storage_dir)
       FileUtils.rm_rf(john_storage_dir)

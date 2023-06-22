@@ -129,7 +129,7 @@ module SelfSDK
       unless options.include? :no_crypto
         @encryption_client = Crypto.new(@client, @device_id, @storage, storage_key)
       end
-      @offset = @storage.account_get_offset
+      @offset = @storage.account_offset
 
       @ws = if options.include? :ws
               options[:ws]
@@ -490,7 +490,7 @@ module SelfSDK
     # Authenticates current client on the websocket server.
     def authenticate
       @auth_id = SecureRandom.uuid if @auth_id.nil?
-      @offset = @storage.account_get_offset
+      @offset = @storage.account_offset
 
       SelfSDK.logger.debug "authenticating with offset (#{@offset})"
 
