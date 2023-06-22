@@ -481,7 +481,7 @@ module SelfSDK
       @storage.account_set_offset(input.offset)
       # Avoid catching any other decryption errors.
       msg
-    rescue SelfSDK::Messages::UnmappedMessage => e
+    rescue SelfSDK::Messages::UnmappedMessage
       # this is an ummapped message, let's ignore it but write the offset.
       @storage.account_set_offset(input.offset)
       nil

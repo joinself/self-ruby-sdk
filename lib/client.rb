@@ -99,7 +99,7 @@ module SelfSDK
           next if body[:error_id] == 'token_expired'
 
           break
-        rescue StandardError => e
+        rescue StandardError
           # retry if the server is down
         end
         sleep 2
