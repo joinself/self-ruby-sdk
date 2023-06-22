@@ -14,26 +14,28 @@ module SelfSDK
       @storage = storage
       @keys = {}
 
-      if @storage.account_exists?
-        # 1a) if alice's account file exists load the pickle from the file
-        @account = SelfCrypto::Account.from_pickle(@storage.account_olm, @storage_key)
-      else
-        # 1b-i) if create a new account for alice if one doesn't exist already
-        @account = SelfCrypto::Account.from_seed(@client.jwt.key)
+      @storage.tx do
+        if @storage.account_exists?
+          # 1a) if alice's account file exists load the pickle from the file
+          @account = SelfCrypto::Account.from_pickle(@storage.account_olm, @storage_key)
+        else
+          # 1b-i) if create a new account for alice if one doesn't exist already
+          @account = SelfCrypto::Account.from_seed(@client.jwt.key)
 
-        # 1b-ii) generate some keys for alice and publish them
-        @account.gen_otk(100)
+          # 1b-ii) generate some keys for alice and publish them
+          @account.gen_otk(100)
 
-        # 1b-iii) convert those keys to json
-        @keys = @account.otk['curve25519'].map{|k,v| {id: k, key: v}}
-        keys = @keys.to_json
+          # 1b-iii) convert those keys to json
+          @keys = @account.otk['curve25519'].map{|k,v| {id: k, key: v}}
+          keys = @keys.to_json
 
-        # 1b-iv) post those keys to POST /v1/identities/<selfid>/devices/1/pre_keys/
-        res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
-        raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
+          # 1b-iv) post those keys to POST /v1/identities/<selfid>/devices/1/pre_keys/
+          res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
+          raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
 
-        # 1b-v) store the account to a file
-        @storage.account_create(@account.to_pickle(storage_key))
+          # 1b-v) store the account to a file
+          @storage.account_create(@account.to_pickle(@storage_key))
+        end
       end
     end
 
@@ -45,12 +47,13 @@ module SelfSDK
       gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
 
       sessions = {}
-      @storage.tx(recipients) do |tx|
+      ct = ""
+      @storage.tx do
         gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
         recipients.each do |r|
           sid = @storage.sid(r[:id], r[:device_id])
 
-          session_with_bob = get_outbound_session_with_bob(tx.session_offset(sid), r[:id], r[:device_id])
+          session_with_bob = get_outbound_session_with_bob(@storage.session_get_olm(sid), r[:id], r[:device_id])
           ::SelfSDK.logger.debug("- [crypto]   adding group participant #{r[:id]}:#{r[:device_id]}")
           gs.add_participant("#{r[:id]}:#{r[:device_id]}", session_with_bob)
           sessions[sid] = session_with_bob
@@ -70,20 +73,20 @@ module SelfSDK
         ::SelfSDK.logger.debug("- [crypto] storing sessions")
         sessions.each do |sid, session_with_bob|
           pickle = session_with_bob.to_pickle(@storage_key)
-          tx.session_update(sid, pickle)
+          @storage.session_update(sid, pickle)
         end
-
-        ct
       end
+      ct
     end
 
     def decrypt(message, sender, sender_device)
       ::SelfSDK.logger.debug("- [crypto] decrypting a message")
       sid = @storage.sid(sender, sender_device)
 
-      @storage.tx [{ id: sender, device_id: sender_device }] do |tx|
+      pt = ""
+      @storage.tx do
         ::SelfSDK.logger.debug("- [crypto] loading sessions")
-        session_with_bob = get_inbound_session_with_bob(tx.session_offset(sid), message)
+        session_with_bob = get_inbound_session_with_bob(@storage.session_get_olm(sid), message)
 
         # 8) create a group session and set the identity of the account you're using
         ::SelfSDK.logger.debug("- [crypto] create a group session and set the identity of the account #{@client.jwt.id}:#{@device}")
@@ -101,9 +104,9 @@ module SelfSDK
         ::SelfSDK.logger.debug("- [crypto] store the session to a file")
 
         pickle = session_with_bob.to_pickle(@storage_key)
-        tx.session_update(sid, pickle)
-        pt
+        @storage.session_update(sid, pickle)
       end
+      pt
     end
 
     private
