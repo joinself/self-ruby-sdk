@@ -2,6 +2,7 @@
 
 # frozen_string_literal: true
 require_relative '../../lib/selfsdk'
+# require 'selfsdk'
 
 def setup_sdk
   SelfSDK.logger = ::Logger.new($stdout).tap do |log|

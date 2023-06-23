@@ -50,6 +50,7 @@ module SelfSDK
     # @option opts [String] :messaging_url The messaging self provider url.
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [Symbol] :env The environment to be used, defaults to ":production".
+    # @option opts [String] :storage  the library used to persist session data.
     def initialize(app_id, app_key, storage_key, storage_dir, opts = {})
       app_key = cleanup_key(app_key)
 
@@ -61,9 +62,12 @@ module SelfSDK
       messaging_url = messaging_url(opts)
       @started = false
       unless messaging_url.nil?
+        device_id = opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE)
+        storage = opts.fetch(:storage, SelfSDK::Storage.new(@client.jwt.id, device_id, storage_dir, storage_key))
         @messaging_client = MessagingClient.new(messaging_url,
                                                 @client,
                                                 storage_key,
+                                                storage,
                                                 storage_dir: storage_dir,
                                                 auto_reconnect: opts.fetch(:auto_reconnect, MessagingClient::DEFAULT_AUTO_RECONNECT),
                                                 device_id: opts.fetch(:device_id, MessagingClient::DEFAULT_DEVICE))

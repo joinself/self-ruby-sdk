@@ -80,7 +80,6 @@ module SelfSDK
   class MessagingClient
     DEFAULT_DEVICE="1"
     DEFAULT_AUTO_RECONNECT=true
-    DEFAULT_STORAGE_DIR="./.self_storage"
 
     PRIORITIES = { 
       'chat.invite':                 SelfSDK::Messages::PRIORITY_VISIBLE,
@@ -104,12 +103,12 @@ module SelfSDK
     #
     # @param url [string] self-messaging url
     # @params client [Object] SelfSDK::Client object
-    # @option opts [string] :storage_dir  the folder where encryption sessions and settings will be stored
+    # @option opts [string] :storage  the library used to persist session data.
     # @params storage_key [String] seed to encrypt messaging
     # @params storage_folder [String] folder to perist messaging encryption
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
-    def initialize(url, client, storage_key, options = {})
+    def initialize(url, client, storage_key, storage, options = {})
       @mon = Monitor.new
       @messages = {}
       @acks = {}
@@ -121,11 +120,9 @@ module SelfSDK
       @timeout = 120 # seconds
       @auth_id = SecureRandom.uuid
       @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
-      @raw_storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
-      @storage_dir = "#{@raw_storage_dir}/apps/#{@jwt.id}/devices/#{@device_id}"
-      FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
       @source = SelfSDK::Sources.new("#{__dir__}/sources.json")
-      @storage = SelfSDK::Storage.new(@client.jwt.id, @device_id, @storage_dir, storage_key)
+      @storage = storage
+
       unless options.include? :no_crypto
         @encryption_client = Crypto.new(@client, @device_id, @storage, storage_key)
       end

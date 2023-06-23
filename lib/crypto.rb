@@ -52,6 +52,7 @@ module SelfSDK
         gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
         recipients.each do |r|
           sid = @storage.sid(r[:id], r[:device_id])
+          next if sid == @storage.app_id
 
           session_with_bob = get_outbound_session_with_bob(@storage.session_get_olm(sid), r[:id], r[:device_id])
           ::SelfSDK.logger.debug("- [crypto]   adding group participant #{r[:id]}:#{r[:device_id]}")
