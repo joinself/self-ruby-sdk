@@ -3,17 +3,21 @@ require 'sqlite3'
 
 module SelfSDK
   class Storage
+    attr_accessor :app_id
+
     def initialize(app_id, app_device, storage_folder, _key_id)
       @app_id = sid(app_id, app_device)
 
       # Create the storage folder if it does not exist
-      create_directory(storage_folder)
+      create_directory_skel("#{storage_folder}/identities/")
 
       # Create the database
-      @db = SQLite3::Database.new(File.join(storage_folder, 'self.db'))
+      @db = SQLite3::Database.new(File.join("#{storage_folder}/identities/", 'self.db'))
       set_pragmas
       create_accounts_table
       create_sessions_table
+      m = StorageMigrator.new(@db, "#{storage_folder}/apps", @app_id)
+      m.migrate
     end
 
     def tx
@@ -21,10 +25,10 @@ module SelfSDK
       yield
       @db.commit
     rescue SQLite3::Exception => e
-      puts "Exception occurred"
-      puts e
-      puts e.backtrace
       @db.rollback
+    rescue => e
+      @db.rollback
+      raise e
     end
 
     def account_exists?
@@ -45,16 +49,16 @@ module SelfSDK
 
     def account_olm
       row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = ?;", [ @app_id ]).first
-      return nil unless row && row['olm_account']
+      return nil unless row
 
-      row['olm_account']
+      row.first
     end
 
     def account_offset
       row = @db.execute("SELECT offset FROM accounts WHERE as_identifier = ?;", [ @app_id ]).first
-      return nil unless row && row['offset']
+      return nil unless row
 
-      row['offset']
+      row.first
     end
 
     def account_set_offset(offset)
@@ -75,7 +79,7 @@ module SelfSDK
     end
 
     def session_get_olm(sid)
-      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = ? AND with_identifier = ?", [ @app_id, sid ]).first
+      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = \"#{@app_id}\" AND with_identifier = \"#{sid}\"").first
       return nil if row.nil?
 
       row.first
@@ -88,8 +92,8 @@ module SelfSDK
     private
 
     # Create a folder if it does not exist
-    def create_directory(dir)
-      Dir.mkdir(dir, 0744)
+    def create_directory_skel(storage_folder)
+      FileUtils.mkdir_p storage_folder unless File.exist? storage_folder
     rescue Errno::ENOENT
       raise ERR_INVALID_DIRECTORY
     rescue
@@ -142,6 +146,95 @@ module SelfSDK
       @db.execute_batch(session_table_statement)
     rescue SQLite3::Exception => e
       puts "Exception occurred: #{e}"
+    end
+  end
+
+  class StorageMigrator
+    def initialize(db, storage_folder, app_id)
+      @db = db
+      # Old versions of the sdk using that same storage folder shouldn't be affected in any way
+
+      @base_path = "#{storage_folder}/#{app_id.split(':').first}"
+      @app_id = app_id
+    end
+
+    def migrate
+      return unless File.exist?(@base_path)
+
+      # Parse the account information.
+      accounts = parse_accounts
+
+      persist_accounts(accounts)
+
+      # Depreciate the base path.
+      File.rename("#{@base_path}", "#{@base_path}-depreciated")
+    end
+
+    private
+
+    def parse_accounts
+      accounts = {}
+
+      Dir.glob(File.join(@base_path, "**/*")).each do |path|
+        if File.directory?(path)
+          next
+        end
+
+        case File.extname(path)
+        when ".offset"
+          file_name = File.basename(path, ".offset")
+          offset = File.read(path)[0, 19].to_i
+
+          accounts[file_name] = {} unless accounts.key? file_name
+          accounts[file_name][:offset] = offset
+        when ".pickle"
+          file_name = File.basename(path, ".pickle")
+          content = File.read(path)
+
+          if file_name == "account"
+            accounts[@app_id] = {} unless accounts.key? @app_id
+
+            accounts[@app_id][:account] = content
+          else
+            if accounts.key? @app_id
+              accounts[@app_id][:sessions] = [] unless accounts[@app_id].key? :sessions
+              accounts[@app_id][:sessions] << {
+                with: file_name.sub("-session", ""),
+                session: content
+              }
+              next
+            end
+
+            accounts[@app_id][:account] = content
+          end
+        end
+      end
+
+      accounts
+    end
+
+    def persist_accounts(accounts)
+      @db.transaction
+      accounts.each do |inbox_id, account|
+        @db.execute(
+          "INSERT INTO accounts (as_identifier, offset, olm_account) VALUES ($1, $2, $3)",
+          [inbox_id, account[:offset], account[:account]]
+        )
+
+        account[:sessions].each do |session|
+          @db.execute(
+            "INSERT INTO sessions (as_identifier, with_identifier, olm_session) VALUES ($1, $2, $3)",
+            [inbox_id, session[:with], session[:session]]
+          )
+        end
+      end
+
+      @db.commit
+    rescue SQLite3::Exception => e
+      puts "Exception occurred"
+      puts e
+      puts e.backtrace
+      @db.rollback
     end
   end
 end
