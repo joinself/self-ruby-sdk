@@ -28,4 +28,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: build
     uses: joinself/github-workflows-public/.github/workflows/publish-rubygems.yml@main
+    with:
+      gem-name: selfsdk
+      gem-version-file: ./lib/version.rb
     secrets: inherit
