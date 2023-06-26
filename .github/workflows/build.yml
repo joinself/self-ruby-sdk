@@ -26,6 +26,7 @@ jobs:
           make install
           cd ${CI_WORKDIR}
           version=$(grep 'VERSION = ' ./lib/version.rb | tr -d '"' | awk '{print $3}')
+          gem install bundler -v 2.3.13
           bundle install
           bundle exec rake test
           gem build selfsdk.gemspec

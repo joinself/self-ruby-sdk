@@ -25,6 +25,7 @@ jobs:
           cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
           make install
           cd ${CI_WORKDIR}
+          gem install bundler -v 2.3.13
           bundle install
           curl -Lo /tmp/dependency_decisions.yml https://static.joinself.com/license-finder/dependency_decisions.yml
           license_finder --decisions_file /tmp/dependency_decisions.yml
