@@ -7,7 +7,7 @@ jobs:
   license-compliance:
     runs-on: ubuntu-latest
     container:
-      image: joinself/license-finder:ruby-2.7.3
+      image: joinself/license-finder:ruby-3.1.2
     steps:
       - name: Setup job
         uses: joinself/github-actions-public/setup-job@main
