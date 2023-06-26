@@ -15,18 +15,16 @@ jobs:
         shell: bash
         run: |
           . ${GITHUB_WORKSPACE}/.ci/env
-          apt-get update
-          apt-get install -y cmake build-essential
           curl -Lo /tmp/self-omemo.deb https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo_0.4.0_amd64.deb
           dpkg -i /tmp/self-omemo.deb
+          apt-get update
+          apt-get install -y cmake build-essential
           git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers
           cd /tmp/flatbuffers
           git checkout v2.0.0
           cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
           make install
           cd ${CI_WORKDIR}
-          bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1 | sed 's/ //g')
-          gem install bundler:${bundler_version}
           bundle install
           curl -Lo /tmp/dependency_decisions.yml https://static.joinself.com/license-finder/dependency_decisions.yml
           license_finder --decisions_file /tmp/dependency_decisions.yml
