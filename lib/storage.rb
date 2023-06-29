@@ -191,9 +191,8 @@ module SelfSDK
           file_name = File.basename(path, ".pickle")
           content = File.read(path)
 
+          accounts[@app_id] = {} unless accounts.key? @app_id
           if file_name == "account"
-            accounts[@app_id] = {} unless accounts.key? @app_id
-
             accounts[@app_id][:account] = content
           else
             if accounts.key? @app_id
@@ -204,7 +203,6 @@ module SelfSDK
               }
               next
             end
-
             accounts[@app_id][:account] = content
           end
         end
