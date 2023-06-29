@@ -13,6 +13,7 @@ require_relative 'messages/message'
 module SelfSDK
   class WebsocketClient
     ON_DEMAND_CLOSE_CODE=3999
+    CONNECTION_SUPERCEDED=1011
 
     attr_accessor :ws
 
@@ -42,7 +43,7 @@ module SelfSDK
       @ws.on :close do |event|
         SelfSDK.logger.debug "connection closed detected : #{event.code} #{event.reason}"
 
-        if event.code != ON_DEMAND_CLOSE_CODE
+        if not [ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
           raise StandardError('websocket connection closed') if !@auto_reconnect
 
           if !@reconnection_delay.nil?
@@ -59,6 +60,7 @@ module SelfSDK
 
     # Sends a closing message to the websocket client.
     def close
+      SelfSDK.logger.debug "connection closed by the client"
       @ws.close(ON_DEMAND_CLOSE_CODE, "connection closed by the client")
     end
 
@@ -357,7 +359,8 @@ module SelfSDK
 
       SelfSDK.logger.debug " - notifying by type"
       SelfSDK.logger.debug " - #{message.typ}"
-      SelfSDK.logger.debug " - #{message}"
+      SelfSDK.logger.debug " - #{message.body.to_json}"
+      SelfSDK.logger.debug " - #{message.payload}"
       SelfSDK.logger.debug " - #{@type_observer.keys.join(',')}"
 
       # Return if there is no observer setup for this kind of message
@@ -376,11 +379,11 @@ module SelfSDK
 
     def subscribe(type, &block)
       type = @source.message_type(type) if type.is_a? Symbol
+      SelfSDK.logger.debug "Subscribing to messages by type: #{type}"
       @type_observer[type] = { block: block }
     end
 
     private
-
 
     # Cleans expired messages
     def clean_timeouts
