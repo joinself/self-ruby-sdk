@@ -32,7 +32,7 @@ module SelfSDK
     end
 
     def account_exists?
-      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = ?;", [ @app_id ]).first
+      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = \"#{@app_id}\"").first
       return true if row
 
       false
