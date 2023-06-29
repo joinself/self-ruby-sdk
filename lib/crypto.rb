@@ -17,11 +17,11 @@ module SelfSDK
       @storage.tx do
         if @storage.account_exists?
           # 1a) if alice's account file exists load the pickle from the file
-          puts '----------------'
-          puts '----------------'
-          puts @storage.account_olm
-          puts '----------------'
-          puts '----------------'
+          ::SelfSDK.logger.info('-----------')
+          ::SelfSDK.logger.info('-----------')
+          ::SelfSDK.logger.info(@storage.account_olm)
+          ::SelfSDK.logger.info('-----------')
+          ::SelfSDK.logger.info('-----------')
           @account = SelfCrypto::Account.from_pickle(@storage.account_olm, @storage_key)
         else
           # 1b-i) if create a new account for alice if one doesn't exist already
