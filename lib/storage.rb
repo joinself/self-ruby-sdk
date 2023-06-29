@@ -33,9 +33,7 @@ module SelfSDK
 
     def account_exists?
       row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = \"#{@app_id}\"").first
-      return true if row
-
-      false
+      !row.nil?
     end
 
     def account_create(olm)
