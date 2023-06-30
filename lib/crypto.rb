@@ -163,6 +163,8 @@ module SelfSDK
         session_with_bob = @account.inbound_session(m)
 
         # 7b-iii) remove the session's prekey from the account
+        ::SelfSDK.logger.debug "- [crypto] removing one time keys for bob #{session_with_bob}"
+        ::SelfSDK.logger.debug "- [crypto] current one time keys #{current_one_time_keys}"
         @account.remove_one_time_keys(session_with_bob)
 
         current_one_time_keys = @account.otk['curve25519']
