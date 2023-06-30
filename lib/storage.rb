@@ -41,7 +41,7 @@ module SelfSDK
     rescue
     end
 
-    def account_update(olm, offset = nil)
+    def account_update(olm)
       @db.execute("UPDATE accounts SET olm_account = ? WHERE as_identifier = ?", [ olm, @app_id ])
     end
 

@@ -31,7 +31,7 @@ module SelfSDK
              else
                 envelope = input
                 issuer = input.sender.split(":")
-                messaging.encryption_client.decrypt(input.ciphertext, issuer.first, issuer.last)
+                messaging.encryption_client.decrypt(input.ciphertext, issuer.first, issuer.last, input.offset)
              end
 
       jwt = JSON.parse(body, symbolize_names: true)

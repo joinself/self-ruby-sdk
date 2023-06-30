@@ -457,7 +457,7 @@ module SelfSDK
     end
 
     def process_incomming_message(input)
-      message = parse_and_write_offset(input)
+      message = parse(input)
 
       if @messages.include? message.id
         message.validate! @messages[message.id][:original_message]
@@ -476,14 +476,10 @@ module SelfSDK
       nil
     end
 
-    def parse_and_write_offset(input)
+    def parse(input)
       msg = SelfSDK::Messages.parse(input, self)
-      @storage.account_set_offset(input.offset)
-      # Avoid catching any other decryption errors.
       msg
     rescue SelfSDK::Messages::UnmappedMessage
-      # this is an ummapped message, let's ignore it but write the offset.
-      @storage.account_set_offset(input.offset)
       nil
     end
 

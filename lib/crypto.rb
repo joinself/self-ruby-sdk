@@ -81,7 +81,7 @@ module SelfSDK
       ct
     end
 
-    def decrypt(message, sender, sender_device)
+    def decrypt(message, sender, sender_device, offset)
       ::SelfSDK.logger.debug("- [crypto] decrypting a message")
       sid = @storage.sid(sender, sender_device)
 
@@ -108,7 +108,12 @@ module SelfSDK
 
         pickle = session_with_bob.to_pickle(@storage_key)
         @storage.session_update(sid, pickle)
+        @storage.account_set_offset(offset)
       end
+      pt
+    rescue => e
+      require 'pry'; binding.pry
+      @storage.account_set_offset(offset)
       pt
     end
 
@@ -164,7 +169,6 @@ module SelfSDK
 
         # 7b-iii) remove the session's prekey from the account
         ::SelfSDK.logger.debug "- [crypto] removing one time keys for bob #{session_with_bob}"
-        ::SelfSDK.logger.debug "- [crypto] current one time keys #{current_one_time_keys}"
         @account.remove_one_time_keys(session_with_bob)
 
         current_one_time_keys = @account.otk['curve25519']
@@ -182,8 +186,6 @@ module SelfSDK
           res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys.to_json)
           raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
         end
-
-        @storage.account_create(@account.to_pickle(@storage_key))
       end
 
       session_with_bob
