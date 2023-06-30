@@ -82,7 +82,7 @@ module SelfSDK
     end
 
     def decrypt(message, sender, sender_device, offset)
-      ::SelfSDK.logger.debug("- [crypto] decrypting a message")
+      ::SelfSDK.logger.debug("- [crypto] decrypting a message #{message}")
       sid = @storage.sid(sender, sender_device)
 
       pt = ""
@@ -157,6 +157,8 @@ module SelfSDK
         session_with_bob = SelfCrypto::Session.from_pickle(pickle, @storage_key)
       end
 
+      ::SelfSDK.logger.debug("- [crypto] pickle nil? #{pickle.nil?}")
+
       ::SelfSDK.logger.debug("- [crypto] getting one time message for #{@client.jwt.id}:#{@device}")
 
       # 7b-i) if you have not previously sent or received a message to/from bob,
@@ -165,6 +167,9 @@ module SelfSDK
       m = SelfCrypto::GroupMessage.new(message.to_s).get_message("#{@client.jwt.id}:#{@device}")
 
       ::SelfSDK.logger.debug("- [crypto] one time message #{m}")
+      ::SelfSDK.logger.debug("- [crypto] session is nil? #{session_with_bob.nil?}")
+      ::SelfSDK.logger.debug("- [crypto] is prekey message? #{m.instance_of?(SelfCrypto::PreKeyMessage)}")
+      ::SelfSDK.logger.debug("- [crypto] session matches? #{session_with_bob.will_receive?(m)}") unless session_with_bob.nil?
 
       # if there is no session, create one
       # if there is an existing session and we are sent a one time key message, check
