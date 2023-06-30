@@ -157,10 +157,14 @@ module SelfSDK
         session_with_bob = SelfCrypto::Session.from_pickle(pickle, @storage_key)
       end
 
+      ::SelfSDK.logger.debug("- [crypto] getting one time message for #{@client.jwt.id}:#{@device}")
+
       # 7b-i) if you have not previously sent or received a message to/from bob,
       #       you should extract the initial message from the group message intended
       #       for your account id.
       m = SelfCrypto::GroupMessage.new(message.to_s).get_message("#{@client.jwt.id}:#{@device}")
+
+      ::SelfSDK.logger.debug("- [crypto] one time message #{m}")
 
       # if there is no session, create one
       # if there is an existing session and we are sent a one time key message, check
