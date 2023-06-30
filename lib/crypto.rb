@@ -112,6 +112,8 @@ module SelfSDK
       end
       pt
     rescue => e
+      ::SelfSDK.logger.debug("- [crypto] #{e.message}")
+      ::SelfSDK.logger.debug("- [crypto] #{e.backtrace}")
       @storage.account_set_offset(offset)
       pt
     end
