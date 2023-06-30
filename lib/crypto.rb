@@ -112,7 +112,6 @@ module SelfSDK
       end
       pt
     rescue => e
-      require 'pry'; binding.pry
       @storage.account_set_offset(offset)
       pt
     end
