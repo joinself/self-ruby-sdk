@@ -359,7 +359,6 @@ module SelfSDK
 
       SelfSDK.logger.debug " - notifying by type"
       SelfSDK.logger.debug " - #{message.typ}"
-      SelfSDK.logger.debug " - #{message.body.to_json}"
       SelfSDK.logger.debug " - #{message.payload}"
       SelfSDK.logger.debug " - #{@type_observer.keys.join(',')}"
 
