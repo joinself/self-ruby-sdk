@@ -196,6 +196,7 @@ module SelfSDK
           res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys.to_json)
           raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
         end
+        ::SelfSDK.logger.debug "- [crypto] updating account with removed keys"
         @storage.account_update(@account.to_pickle(@storage_key))
       end
 

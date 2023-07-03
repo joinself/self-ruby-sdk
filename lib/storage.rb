@@ -32,7 +32,7 @@ module SelfSDK
     end
 
     def account_exists?
-      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = \"#{@app_id}\"").first
+      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = ?", [@app_id]).first
       !row.nil?
     end
 
@@ -46,14 +46,14 @@ module SelfSDK
     end
 
     def account_olm
-      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = \"#{app_id}\";").first
+      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = ?;", [@app_id]).first
       return nil unless row
 
       row.first
     end
 
     def account_offset
-      row = @db.execute("SELECT offset FROM accounts WHERE as_identifier = \"#{@app_id}\";").first
+      row = @db.execute("SELECT offset FROM accounts WHERE as_identifier = ?;", @app_id).first
       return nil unless row
 
       row.first
@@ -68,7 +68,7 @@ module SelfSDK
     end
 
     def session_update(sid, olm)
-      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = \"#{@app_id}\" AND with_identifier = \"#{sid}\"").first
+      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = ? AND with_identifier = ?", [@app_id, sid]).first
       if row.nil?
         session_create(sid, olm)
       else
@@ -77,7 +77,7 @@ module SelfSDK
     end
 
     def session_get_olm(sid)
-      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = \"#{@app_id}\" AND with_identifier = \"#{sid}\"").first
+      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = ? AND with_identifier = ?", [@app_id, sid]).first
       return nil if row.nil?
 
       row.first
