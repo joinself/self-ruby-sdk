@@ -169,7 +169,6 @@ module SelfSDK
       ::SelfSDK.logger.debug("- [crypto] one time message #{m}")
       ::SelfSDK.logger.debug("- [crypto] session is nil? #{session_with_bob.nil?}")
       ::SelfSDK.logger.debug("- [crypto] is prekey message? #{m.instance_of?(SelfCrypto::PreKeyMessage)}")
-      ::SelfSDK.logger.debug("- [crypto] session matches? #{session_with_bob.will_receive?(m)}") unless session_with_bob.nil?
 
       # if there is no session, create one
       # if there is an existing session and we are sent a one time key message, check
@@ -197,6 +196,7 @@ module SelfSDK
           res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys.to_json)
           raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
         end
+        @storage.account_update(@account.to_pickle(@storage_key))
       end
 
       session_with_bob
