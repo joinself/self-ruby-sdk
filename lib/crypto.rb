@@ -87,7 +87,7 @@ module SelfSDK
 
       pt = ""
       @storage.tx do
-        ::SelfSDK.logger.debug("- [crypto] loading sessions")
+        ::SelfSDK.logger.debug("- [crypto] loading sessions for #{sid}")
         ::SelfSDK.logger.debug("- [crypto] #{@account.one_time_keys["curve25519"]}")
         session_with_bob = get_inbound_session_with_bob(@storage.session_get_olm(sid), message)
 
