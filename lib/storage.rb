@@ -113,7 +113,7 @@ module SelfSDK
       accounts_table_statement = <<~SQL
         CREATE TABLE IF NOT EXISTS accounts (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          as_identifier INTEGER NOT NULL,
+          as_identifier TEXT NOT NULL,
           offset INTEGER NOT NULL,
           olm_account BLOB NOT NULL
         );
@@ -133,8 +133,8 @@ module SelfSDK
       session_table_statement = <<~SQL
         CREATE TABLE IF NOT EXISTS sessions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          as_identifier INTEGER NOT NULL,
-          with_identifier INTEGER NOT NULL,
+          as_identifier TEXT NOT NULL,
+          with_identifier TEXT NOT NULL,
           olm_session BLOB NOT NULL
         );
         CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_with_identifier
