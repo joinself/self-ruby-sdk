@@ -13,6 +13,7 @@ module SelfSDK
       @mode = "r+"
       @storage = storage
       @keys = {}
+      @mutex = Mutex.new
 
       @storage.tx do
         ::SelfSDK.logger.debug('Checking if account exists...')
@@ -49,7 +50,7 @@ module SelfSDK
 
       sessions = {}
       ct = ""
-      @storage.tx do
+      tx do
         gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
         recipients.each do |r|
           sid = @storage.sid(r[:id], r[:device_id])
@@ -86,7 +87,7 @@ module SelfSDK
       sid = @storage.sid(sender, sender_device)
 
       pt = ""
-      @storage.tx do
+      tx do
         ::SelfSDK.logger.debug("- [crypto] loading sessions for #{sid}")
         ::SelfSDK.logger.debug("- [crypto] #{@account.one_time_keys["curve25519"]}")
         session_with_bob = get_inbound_session_with_bob(@storage.session_get_olm(sid), message)
@@ -202,6 +203,13 @@ module SelfSDK
 
       session_with_bob
     end
-  end
 
+    def tx
+      @mutex.lock
+      @storage.tx do
+        yield
+      end
+      @mutex.unlock
+    end
+  end
 end
