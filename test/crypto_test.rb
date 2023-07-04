@@ -72,13 +72,13 @@ class SelfCryptoTest < Minitest::Test
 
       body = "hello world"
       encrypted_body = john.encrypt(body, [{ id: alice_id, device_id: alice_device }])
-      decrypted_body = alice.decrypt(encrypted_body, john_id, john_device)
+      decrypted_body = alice.decrypt(encrypted_body, john_id, john_device, 0)
       assert_equal body, decrypted_body
 
       body2 = "hello world 2"
       encrypted_body = alice.encrypt(body2, [{ id: john_id, device_id: john_device }])
 
-      decrypted_body = john.decrypt(encrypted_body, alice_id, alice_device)
+      decrypted_body = john.decrypt(encrypted_body, alice_id, alice_device, 0)
       assert_equal body2, decrypted_body
     end
 
@@ -93,13 +93,13 @@ class SelfCryptoTest < Minitest::Test
       50.times do |i|
         body = "hello world #{i}"
         encrypted_body = john.encrypt(body, [{ id: alice_id, device_id: alice_device }])
-        decrypted_body = alice.decrypt(encrypted_body, john_id, john_device)
+        decrypted_body = alice.decrypt(encrypted_body, john_id, john_device, 0)
         assert_equal body, decrypted_body  
       end
 
       body2 = "response"
       encrypted_body = alice.encrypt(body2, [{ id: john_id, device_id: john_device }])
-      decrypted_body = john.decrypt(encrypted_body, alice_id, alice_device)
+      decrypted_body = john.decrypt(encrypted_body, alice_id, alice_device, 0)
       assert_equal body2, decrypted_body
     end
   end

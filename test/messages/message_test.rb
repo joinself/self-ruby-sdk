@@ -63,7 +63,7 @@ class SelfSDKTest < Minitest::Test
       let(:encryption_client) { double("encryption_client") }
       let(:input) { double("input",
         ciphertext: '{"protected": "header", "payload":"identities.facts.query.req"}',
-        sender: "1112223334") }
+        sender: "1112223334" ) }
       let(:typ) { "identities.facts.query.req" }
       let(:client) { double("client") }
       let(:body) { '{"typ":"identities.facts.query.req","exp":"'+exp+'","iat":"'+iat+'"}' }
@@ -74,9 +74,10 @@ class SelfSDKTest < Minitest::Test
         expect(messaging).to receive(:client).and_return(client)
         expect(messaging).to receive(:jwt).and_return(jwt)
         expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
-        expect(encryption_client).to receive(:decrypt).with("{\"protected\": \"header\", \"payload\":\"identities.facts.query.req\"}", "1112223334", "1112223334").and_return("{\"protected\": \"header\", \"payload\":\"identities.facts.query.req\"}")
+        expect(encryption_client).to receive(:decrypt).with("{\"protected\": \"header\", \"payload\":\"identities.facts.query.req\"}", "1112223334", "1112223334", 0).and_return("{\"protected\": \"header\", \"payload\":\"identities.facts.query.req\"}")
         expect(client).to receive(:jwt).and_return(jwt)
         expect(client).to receive(:public_key).and_return(double(raw_public_key: "pk1"))
+        expect(input).to receive(:offset).and_return(0)
         res = SelfSDK::Messages.parse(input, messaging)
         assert_equal res.class, SelfSDK::Messages::FactRequest
       end
