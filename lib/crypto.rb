@@ -116,7 +116,7 @@ module SelfSDK
       ::SelfSDK.logger.debug("- [crypto] original message:  #{message}")
       ::SelfSDK.logger.debug("- [crypto] exception message: #{e.message}")
       ::SelfSDK.logger.debug("- [crypto] exception backtrace: #{e.backtrace}")
-      @storage.account_set_offset(offset)
+      # @storage.account_set_offset(offset)
       pt
     end
 
