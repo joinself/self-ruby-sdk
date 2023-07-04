@@ -209,6 +209,7 @@ module SelfSDK
       @storage.tx do
         yield
       end
+    ensure
       @mutex.unlock
     end
   end
