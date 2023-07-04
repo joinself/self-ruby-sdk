@@ -32,52 +32,52 @@ module SelfSDK
     end
 
     def account_exists?
-      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = ?", [@app_id]).first
+      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = ?", [@app_id.encode("UTF-8")]).first
       !row.nil?
     end
 
     def account_create(olm)
-      @db.execute("INSERT INTO accounts (as_identifier, offset, olm_account) VALUES (?, ?, ?);", [ @app_id, 0, olm ])
+      @db.execute("INSERT INTO accounts (as_identifier, offset, olm_account) VALUES (?, ?, ?);", [ @app_id.encode("UTF-8"), 0, olm.encode("UTF-8") ])
     rescue
     end
 
     def account_update(olm)
-      @db.execute("UPDATE accounts SET olm_account = ? WHERE as_identifier = ?", [ olm, @app_id ])
+      @db.execute("UPDATE accounts SET olm_account = ? WHERE as_identifier = ?", [ olm.encode("UTF-8"), @app_id.encode("UTF-8") ])
     end
 
     def account_olm
-      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = ?;", [@app_id]).first
+      row = @db.execute("SELECT olm_account FROM accounts WHERE as_identifier = ?;", [@app_id.encode("UTF-8")]).first
       return nil unless row
 
       row.first
     end
 
     def account_offset
-      row = @db.execute("SELECT offset FROM accounts WHERE as_identifier = ?;", @app_id).first
+      row = @db.execute("SELECT offset FROM accounts WHERE as_identifier = ?;", @app_id.encode("UTF-8")).first
       return nil unless row
 
       row.first
     end
 
     def account_set_offset(offset)
-      @db.execute("UPDATE accounts SET offset = ? WHERE as_identifier = ?;", [ offset, @app_id ])
+      @db.execute("UPDATE accounts SET offset = ? WHERE as_identifier = ?;", [ offset, @app_id.encode("UTF-8") ])
     end
 
     def session_create(sid, olm)
-      @db.execute("INSERT INTO sessions (as_identifier, with_identifier, olm_session) VALUES (?, ?, ?);", [ @app_id, sid, olm ])
+      @db.execute("INSERT INTO sessions (as_identifier, with_identifier, olm_session) VALUES (?, ?, ?);", [ @app_id.encode("UTF-8"), sid.encode("UTF-8"), olm.encode("UTF-8") ])
     end
 
     def session_update(sid, olm)
-      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = ? AND with_identifier = ?", [@app_id, sid]).first
+      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = ? AND with_identifier = ?", [@app_id.encode("UTF-8"), sid.encode("UTF-8")]).first
       if row.nil?
         session_create(sid, olm)
       else
-        @db.execute("UPDATE sessions SET olm_session = ? WHERE as_identifier = ? AND with_identifier = ?;", [ olm, @app_id, sid ])
+        @db.execute("UPDATE sessions SET olm_session = ? WHERE as_identifier = ? AND with_identifier = ?;", [ olm.encode("UTF-8"), @app_id.encode("UTF-8"), sid.encode("UTF-8") ])
       end
     end
 
     def session_get_olm(sid)
-      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = ? AND with_identifier = ?", [@app_id, sid]).first
+      row = @db.execute("SELECT olm_session FROM sessions WHERE as_identifier = ? AND with_identifier = ?", [@app_id.encode("UTF-8"), sid.encode("UTF-8")]).first
       return nil if row.nil?
 
       row.first
