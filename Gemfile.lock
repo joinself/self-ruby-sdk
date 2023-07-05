@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    selfsdk (0.0.216)
+    selfsdk (0.0.214)
       async
       ed25519
       eventmachine
@@ -41,7 +41,6 @@ GEM
       websocket-driver (>= 0.5.1)
     fiber-local (1.0.0)
     google-protobuf (3.23.2)
-    google-protobuf (3.23.2-x86_64-linux)
     hashdiff (1.0.0)
     httparty (0.21.0)
       mini_mime (>= 1.0.0)
@@ -133,4 +132,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   2.4.15
+   2.3.13
