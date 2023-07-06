@@ -13,7 +13,7 @@ class SelfSDKTest < Minitest::Test
   describe "selfsdk" do
     let(:seed)    { "JDAiDNIZ0b7QOK3JNFp6ZDFbkhDk+N3NJh6rQ2YvVFI" }
     let(:app_id)  { "o9mpng9m2jv" }
-    let(:messaging_client) { double("messaging", device_id: "1", list_acl_rules:["*"] ) }
+    let(:messaging_client) { double("messaging", device_id: "1" ) }
     let(:app) do
       a = SelfSDK::App.new(app_id, seed, "", "", messaging_url: nil)
       a.messaging_client = messaging_client

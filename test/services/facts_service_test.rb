@@ -69,7 +69,6 @@ class SelfSDKTest < Minitest::Test
       end
 
       it ":test_non_blocking_request" do
-        expect(messaging_service).to receive(:is_permitted?).and_return(true)
         expect(messaging).to receive(:set_observer).once
         expect(messaging).to receive(:device_id).and_return("1").once
         expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
@@ -89,7 +88,6 @@ class SelfSDKTest < Minitest::Test
       end
 
       it ":test_blocking_request" do
-        expect(messaging_service).to receive(:is_permitted?).and_return(true)
         expect(messaging).to receive(:device_id).twice.and_return("1")
         expect(messaging).to receive(:send_and_wait_for_response).once.and_return("response")
         expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
@@ -107,7 +105,6 @@ class SelfSDKTest < Minitest::Test
       end
 
       it ":test_intermediary_request" do
-        expect(messaging_service).to receive(:is_permitted?).and_return(true)
         expect(messaging).to receive(:set_observer).once
         expect(messaging).to receive(:device_id).and_return("1").once
         expect(messaging).to receive(:encryption_client).and_return(encryption_client).once
