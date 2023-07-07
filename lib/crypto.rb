@@ -61,8 +61,6 @@ module SelfSDK
           gs.add_participant("#{r[:id]}:#{r[:device_id]}", session_with_bob)
           sessions[sid] = session_with_bob
         rescue => e
-          puts "exception #{e}"
-          puts "exception #{e.backtrace}"
           ::SelfSDK.logger.warn("- [crypto]   there is a problem adding group participant #{r[:id]}:#{r[:device_id]}, skipping...")
           ::SelfSDK.logger.warn("- [crypto] #{e}")
           next
@@ -113,10 +111,10 @@ module SelfSDK
       end
       pt
     rescue => e
-      ::SelfSDK.logger.debug("- [crypto] original message:  #{message}")
-      ::SelfSDK.logger.debug("- [crypto] exception message: #{e.message}")
-      ::SelfSDK.logger.debug("- [crypto] exception backtrace: #{e.backtrace}")
-      # @storage.account_set_offset(offset)
+      ::SelfSDK.logger.debug("- [crypto] ERROR DECRYPTING: original message:  #{message}")
+      ::SelfSDK.logger.debug("- [crypto] ERROR DECRYPTING: exception message: #{e.message}")
+      ::SelfSDK.logger.debug("- [crypto] ERROR DECRYPTING: exception backtrace: #{e.backtrace}")
+      @storage.account_set_offset(offset)
       pt
     end
 
@@ -159,7 +157,6 @@ module SelfSDK
       end
 
       ::SelfSDK.logger.debug("- [crypto] pickle nil? #{pickle.nil?}")
-
       ::SelfSDK.logger.debug("- [crypto] getting one time message for #{@client.jwt.id}:#{@device}")
 
       # 7b-i) if you have not previously sent or received a message to/from bob,
