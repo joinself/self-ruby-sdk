@@ -32,37 +32,6 @@ module SelfSDK
         @client.subscribe(type, &block)
       end
 
-      # Permits incoming messages from the a identity.
-      #
-      # @param [String] selfid to be allowed.
-      # @return [Boolean] success / failure
-      def permit_connection(selfid)
-        acl.allow selfid
-      end
-
-      # Lists app allowed connections.
-      # @return [Array] array of self ids allowed to connect to your app.
-      def allowed_connections
-        acl.list
-      end
-
-      # Checks if you're permitting messages from a specific self identifier
-      # @return [Boolean] yes|no
-      def is_permitted?(id)
-        conns = allowed_connections
-        return true if conns.include? "*"
-        return true if conns.include? id
-        return false
-      end
-
-      # Revokes incoming messages from the given identity.
-      #
-      # @param [String] selfid to be denied
-      # @return [Boolean] success / failure
-      def revoke_connection(selfid)
-        acl.deny selfid
-      end
-
       # Gets the device id for the authenticated app.
       #
       # @return [String] device_id of the running app.
@@ -101,10 +70,6 @@ module SelfSDK
       end
 
       private
-
-      def acl
-        @acl ||= ACL.new(@client)
-      end
     end
   end
 end

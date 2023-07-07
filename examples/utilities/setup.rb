@@ -21,8 +21,6 @@ def setup_sdk
                          storage_dir,
                          opts).start
 
-  app.messaging.permit_connection("*")
-
   myapp = app.identity.get(ENV["SELF_APP_ID"])
   box = TTY::Box.frame(padding: 3, align: :left, title: {top_left: "#{myapp[:publisher][:name]}::#{myapp[:name]}"} ) do
     c = "\xE2\x9C\x94".green

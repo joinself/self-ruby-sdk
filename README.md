@@ -143,23 +143,6 @@ puts "Hello #{res.attestation_values_for(:display_name).first}"
 end
 ```
 
-### ACL management
-
-Even when your app is created you set its default permissions so `Everyone` or `Just you` can interact with the app, this client offers some methods to manage this permissions, and in fact, who can interact with your app.
-
-#### List ACL
-```ruby
-@app.messaging.allowed_connections
-```
-#### Allow new connections
-```ruby
-@app.messaging.permit_connection "1112223334"
-```
-#### Block incoming connections from the specified identity
-```ruby
-@app.messaging.revoke_connection "1112223334"
-```
-
 ## Documentation
 
 You can find general documentation for Self on [self docs site](https://docs.joinself.com/) and specifically for this library on [rubydoc](https://www.rubydoc.info/gems/selfsdk/).
@@ -167,7 +150,6 @@ You can find general documentation for Self on [self docs site](https://docs.joi
 ## Examples
 
 This gem comes with some examples built to help you have an idea of how or what to build on top of this library.
-- [ACL management](examples/acl.rb)
 - [Async registration](examples/async_registration.rb)
 - [Sync registration](examples/sync_registration.rb)
 - [Identity](examples/identity.rb)

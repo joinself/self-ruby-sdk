@@ -242,17 +242,6 @@ module SelfSDK
       end
     end
 
-    # Sends a command to list ACL rules.
-    def list_acl_rules
-      wait_for 'acl_list' do
-        a = SelfMsg::Acl.new
-        a.id = SecureRandom.uuid
-        a.command = SelfMsg::AclCommandLIST
-
-        @ws.send a
-      end
-    end
-
     # Sends a message and waits for the response
     #
     # @params msg [SelfMsg::Message] message object to be sent
@@ -409,7 +398,6 @@ module SelfSDK
       @ws.start
     end
 
-
     # Process an event when it arrives through the websocket connection.
     def on_message(event)
       data = event.data.pack('c*')
@@ -434,25 +422,9 @@ module SelfSDK
         @messages[hdr.id][:response] = {error: e.error}
         mark_as_acknowledged(hdr.id)
         mark_as_arrived(hdr.id)
-      when SelfMsg::MsgTypeACL
-        SelfSDK.logger.debug "#{hdr.id} ACL received"
-        a = SelfMsg::Acl.new(data: data)
-        process_incomming_acl a
       end
     rescue TypeError
       SelfSDK.logger.debug "invalid array message"
-    end
-
-    def process_incomming_acl(input)
-      list = JSON.parse(input.payload)
-
-      @messages['acl_list'][:response] = list
-      mark_as_arrived 'acl_list'
-    rescue StandardError => e
-      p "Error processing incoming ACL #{input.id} #{input.payload}"
-      SelfSDK.logger.debug e
-      SelfSDK.logger.debug e.backtrace
-      nil
     end
 
     def process_incomming_message(input)

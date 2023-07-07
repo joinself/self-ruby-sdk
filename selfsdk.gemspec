@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
     "lib/ntptime.rb",
     "lib/authenticated.rb",
     "lib/signature_graph.rb",
-    "lib/acl.rb",
     "lib/sources.rb",
     "lib/source_definition.rb",
     "lib/storage.rb",
