@@ -1,0 +1,76 @@
+GIT
+  remote: https://github.com/joinself/self-ruby-sdk.git
+  revision: 0d57736d9043e7b9495c3d1db04789adc27c8652
+  branch: crypto_test
+  specs:
+    selfsdk (0.0.216)
+      async
+      ed25519
+      eventmachine
+      faye-websocket
+      google-protobuf (~> 3.19)
+      httparty
+      jwt
+      logger
+      net-ntp
+      rqrcode
+      self_crypto
+      self_msgproto
+      sqlite3
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    async (1.31.0)
+      console (~> 1.10)
+      nio4r (~> 2.3)
+      timers (~> 4.1)
+    chunky_png (1.4.0)
+    coderay (1.1.3)
+    console (1.17.2)
+      fiber-annotation
+      fiber-local
+    ed25519 (1.3.0)
+    eventmachine (1.2.7)
+    faye-websocket (0.11.2)
+      eventmachine (>= 0.12.0)
+      websocket-driver (>= 0.5.1)
+    fiber-annotation (0.2.0)
+    fiber-local (1.0.0)
+    google-protobuf (3.23.3-arm64-darwin)
+    httparty (0.21.0)
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
+    jwt (2.7.1)
+    logger (1.5.3)
+    method_source (1.0.0)
+    mini_mime (1.1.2)
+    multi_xml (0.6.0)
+    net-ntp (2.1.3)
+    nio4r (2.5.9)
+    pry (0.14.1)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
+    rice (4.1.0)
+    rqrcode (2.2.0)
+      chunky_png (~> 1.0)
+      rqrcode_core (~> 1.0)
+    rqrcode_core (1.2.0)
+    self_crypto (0.0.13)
+    self_msgproto (0.0.10)
+      rice
+    sqlite3 (1.6.3-arm64-darwin)
+    timers (4.3.5)
+    websocket-driver (0.7.5)
+      websocket-extensions (>= 0.1.0)
+    websocket-extensions (0.1.5)
+
+PLATFORMS
+  arm64-darwin-21
+
+DEPENDENCIES
+  pry
+  selfsdk!
+
+BUNDLED WITH
+   2.3.13

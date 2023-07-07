@@ -1,37 +1,43 @@
 # Copyright 2020 Self Group Ltd. All Rights Reserved.
 
 require 'self_crypto'
+require_relative 'storage'
 
 module SelfSDK
   class Crypto
-    def initialize(client, device, storage_folder, storage_key)
+    def initialize(client, device, storage, storage_key)
       @client = client
       @device = device
       @storage_key = storage_key
-      @storage_folder = "#{storage_folder}/#{@client.jwt.key_id}"
       @lock_strategy = true
       @mode = "r+"
+      @storage = storage
+      @keys = {}
+      @mutex = Mutex.new
 
-      if File.exist?(account_path)
-        # 1a) if alice's account file exists load the pickle from the file
-        @account = SelfCrypto::Account.from_pickle(File.read(account_path), @storage_key)
-      else
-        # 1b-i) if create a new account for alice if one doesn't exist already
-        @account = SelfCrypto::Account.from_seed(@client.jwt.key)
+      @storage.tx do
+        ::SelfSDK.logger.debug('Checking if account exists...')
+        if @storage.account_exists?
+          # 1a) if alice's account file exists load the pickle from the file
+          @account = SelfCrypto::Account.from_pickle(@storage.account_olm, @storage_key)
+        else
+          # 1b-i) if create a new account for alice if one doesn't exist already
+          @account = SelfCrypto::Account.from_seed(@client.jwt.key)
 
-        # 1b-ii) generate some keys for alice and publish them
-        @account.gen_otk(100)
+          # 1b-ii) generate some keys for alice and publish them
+          @account.gen_otk(100)
 
-        # 1b-iii) convert those keys to json
-        keys = @account.otk['curve25519'].map{|k,v| {id: k, key: v}}.to_json
+          # 1b-iii) convert those keys to json
+          @keys = @account.otk['curve25519'].map{|k,v| {id: k, key: v}}
+          keys = @keys.to_json
 
-        # 1b-iv) post those keys to POST /v1/identities/<selfid>/devices/1/pre_keys/
-        res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
-        raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
+          # 1b-iv) post those keys to POST /v1/identities/<selfid>/devices/1/pre_keys/
+          res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys)
+          raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
 
-        # 1b-v) store the account to a file
-        FileUtils.mkdir_p(@storage_folder)
-        File.write(account_path, @account.to_pickle(storage_key))
+          # 1b-v) store the account to a file
+          @storage.account_create(@account.to_pickle(@storage_key))
+        end
       end
     end
 
@@ -43,119 +49,79 @@ module SelfSDK
       gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
 
       sessions = {}
-      locks = {}
-      ::SelfSDK.logger.debug('- [crypto] managing sessions with all recipients')
+      ct = ""
+      tx do
+        gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
+        recipients.each do |r|
+          sid = @storage.sid(r[:id], r[:device_id])
+          next if sid == @storage.app_id
 
-      recipients.each do |r|
-        f = nil
-        next if r[:id] == @client.jwt.id && r[:device_id] == @device
-
-        session_file_name = session_path(r[:id], r[:device_id])
-        session_with_bob = nil
-
-        begin
-          if File.exist?(session_file_name)
-            # Lock the session file
-            locks[session_file_name] = File.open(session_file_name, @mode)
-            locks[session_file_name].flock(File::LOCK_EX)
-          end
-          session_with_bob = get_outbound_session_with_bob(locks[session_file_name], r[:id], r[:device_id])
+          session_with_bob = get_outbound_session_with_bob(@storage.session_get_olm(sid), r[:id], r[:device_id])
+          ::SelfSDK.logger.debug("- [crypto]   adding group participant #{r[:id]}:#{r[:device_id]}")
+          gs.add_participant("#{r[:id]}:#{r[:device_id]}", session_with_bob)
+          sessions[sid] = session_with_bob
         rescue => e
           ::SelfSDK.logger.warn("- [crypto]   there is a problem adding group participant #{r[:id]}:#{r[:device_id]}, skipping...")
           ::SelfSDK.logger.warn("- [crypto] #{e}")
           next
         end
 
-        ::SelfSDK.logger.debug("- [crypto]   adding group participant #{r[:id]}:#{r[:device_id]}")
-        gs.add_participant("#{r[:id]}:#{r[:device_id]}", session_with_bob)
-        sessions[session_file_name] = session_with_bob
-      end
+        # 5) encrypt a message
+        ::SelfSDK.logger.debug("- [crypto] group encrypting message")
+        ct = gs.encrypt(message).to_s
 
-      # 5) encrypt a message
-      ::SelfSDK.logger.debug("- [crypto] group encrypting message")
-      ct = gs.encrypt(message).to_s
-
-      # 6) store the session to a file
-      ::SelfSDK.logger.debug("- [crypto] storing sessions")
-      sessions.each do |session_file_name, session_with_bob|
-        pickle = session_with_bob.to_pickle(@storage_key)
-        if locks[session_file_name]
-          locks[session_file_name].rewind
-          locks[session_file_name].write(pickle)
-          locks[session_file_name].truncate(locks[session_file_name].pos)
-        else
-          File.write(session_file_name, pickle)
+        # 6) store the session to a file
+        ::SelfSDK.logger.debug("- [crypto] storing sessions")
+        sessions.each do |sid, session_with_bob|
+          pickle = session_with_bob.to_pickle(@storage_key)
+          @storage.session_update(sid, pickle)
         end
       end
-
       ct
-    ensure
-      locks.each do |session_file_name, lock|
-        # Unlock the file
-        if lock
-          lock.flock(File::LOCK_UN)
-        end
-      end
     end
 
-    def decrypt(message, sender, sender_device)
-      f = nil
-      ::SelfSDK.logger.debug("- [crypto] decrypting a message")
-      session_file_name = session_path(sender, sender_device)
+    def decrypt(message, sender, sender_device, offset)
+      ::SelfSDK.logger.debug("- [crypto] decrypting a message #{message}")
+      sid = @storage.sid(sender, sender_device)
 
-      if File.exist?(session_file_name)
-        # Lock the session file
-        f = File.open(session_file_name, @mode)
-        f.flock(File::LOCK_EX)
+      pt = ""
+      tx do
+        ::SelfSDK.logger.debug("- [crypto] loading sessions for #{sid}")
+        ::SelfSDK.logger.debug("- [crypto] #{@account.one_time_keys["curve25519"]}")
+        session_with_bob = get_inbound_session_with_bob(@storage.session_get_olm(sid), message)
+
+        # 8) create a group session and set the identity of the account you're using
+        ::SelfSDK.logger.debug("- [crypto] create a group session and set the identity of the account #{@client.jwt.id}:#{@device}")
+        gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
+
+        # 9) add all recipients and their sessions
+        ::SelfSDK.logger.debug("- [crypto] add all recipients and their sessions #{sender}:#{sender_device}")
+        gs.add_participant("#{sender}:#{sender_device}", session_with_bob)
+
+        # 10) decrypt the message ciphertext
+        ::SelfSDK.logger.debug("- [crypto] decrypt the message ciphertext")
+        pt = gs.decrypt("#{sender}:#{sender_device}", message).to_s
+
+        # 11) store the session to a file
+        ::SelfSDK.logger.debug("- [crypto] store the session to a file")
+
+        pickle = session_with_bob.to_pickle(@storage_key)
+        @storage.session_update(sid, pickle)
+        @storage.account_set_offset(offset)
       end
-
-      ::SelfSDK.logger.debug("- [crypto] loading sessions")
-      session_with_bob = get_inbound_session_with_bob(f, message)
-
-      # 8) create a group session and set the identity of the account you're using
-      ::SelfSDK.logger.debug("- [crypto] create a group session and set the identity of the account #{@client.jwt.id}:#{@device}")
-      gs = SelfCrypto::GroupSession.new("#{@client.jwt.id}:#{@device}")
-
-      # 9) add all recipients and their sessions
-      ::SelfSDK.logger.debug("- [crypto] add all recipients and their sessions #{@sender}:#{@sender_device}")
-      gs.add_participant("#{sender}:#{sender_device}", session_with_bob)
-
-      # 10) decrypt the message ciphertext
-      ::SelfSDK.logger.debug("- [crypto] decrypt the message ciphertext")
-      pt = gs.decrypt("#{sender}:#{sender_device}", message).to_s
-
-      # 11) store the session to a file
-      ::SelfSDK.logger.debug("- [crypto] store the session to a file")
-
-      pickle = session_with_bob.to_pickle(@storage_key)
-      if !f.nil?
-        f.rewind
-        f.write(pickle)
-        f.truncate(f.pos)
-      else
-        File.write(session_file_name, pickle)
-      end
-
       pt
-    ensure
-      # Unlock the session file
-      f&.flock(File::LOCK_UN)
-      f&.close
+    rescue => e
+      ::SelfSDK.logger.debug("- [crypto] ERROR DECRYPTING: original message:  #{message}")
+      ::SelfSDK.logger.debug("- [crypto] ERROR DECRYPTING: exception message: #{e.message}")
+      ::SelfSDK.logger.debug("- [crypto] ERROR DECRYPTING: exception backtrace: #{e.backtrace}")
+      @storage.account_set_offset(offset)
+      pt
     end
 
     private
 
-    def account_path
-      "#{@storage_folder}/account.pickle"
-    end
-
-    def session_path(selfid, device)
-      "#{@storage_folder}/#{selfid}:#{device}-session.pickle"
-    end
-
-    def get_outbound_session_with_bob(f, recipient, recipient_device)
-      if !f.nil?
-        pickle = f.read
+    def get_outbound_session_with_bob(pickle, recipient, recipient_device)
+      if !pickle.nil?
         # 2a) if bob's session file exists load the pickle from the file
         session_with_bob = SelfCrypto::Session.from_pickle(pickle, @storage_key)
       else
@@ -184,17 +150,23 @@ module SelfSDK
       session_with_bob
     end
 
-    def get_inbound_session_with_bob(f, message)
-      if !f.nil?
-        pickle = f.read
+    def get_inbound_session_with_bob(pickle, message)
+      if !pickle.nil?
         # 7a) if carol's session file exists load the pickle from the file
         session_with_bob = SelfCrypto::Session.from_pickle(pickle, @storage_key)
       end
+
+      ::SelfSDK.logger.debug("- [crypto] pickle nil? #{pickle.nil?}")
+      ::SelfSDK.logger.debug("- [crypto] getting one time message for #{@client.jwt.id}:#{@device}")
 
       # 7b-i) if you have not previously sent or received a message to/from bob,
       #       you should extract the initial message from the group message intended
       #       for your account id.
       m = SelfCrypto::GroupMessage.new(message.to_s).get_message("#{@client.jwt.id}:#{@device}")
+
+      ::SelfSDK.logger.debug("- [crypto] one time message #{m}")
+      ::SelfSDK.logger.debug("- [crypto] session is nil? #{session_with_bob.nil?}")
+      ::SelfSDK.logger.debug("- [crypto] is prekey message? #{m.instance_of?(SelfCrypto::PreKeyMessage)}")
 
       # if there is no session, create one
       # if there is an existing session and we are sent a one time key message, check
@@ -204,6 +176,7 @@ module SelfSDK
         session_with_bob = @account.inbound_session(m)
 
         # 7b-iii) remove the session's prekey from the account
+        ::SelfSDK.logger.debug "- [crypto] removing one time keys for bob #{session_with_bob}"
         @account.remove_one_time_keys(session_with_bob)
 
         current_one_time_keys = @account.otk['curve25519']
@@ -221,12 +194,20 @@ module SelfSDK
           res = @client.post("/v1/apps/#{@client.jwt.id}/devices/#{@device}/pre_keys", keys.to_json)
           raise 'unable to push prekeys, please try in a few minutes' if res.code != 200
         end
-
-        File.write(account_path, @account.to_pickle(@storage_key))
+        ::SelfSDK.logger.debug "- [crypto] updating account with removed keys"
+        @storage.account_update(@account.to_pickle(@storage_key))
       end
 
       session_with_bob
     end
 
+    def tx
+      @mutex.lock
+      @storage.tx do
+        yield
+      end
+    ensure
+      @mutex.unlock
+    end
   end
 end

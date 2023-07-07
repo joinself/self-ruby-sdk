@@ -19,7 +19,8 @@ class SelfSDKTest < Minitest::Test
     let(:storage_dir) { "/tmp/#{SecureRandom.uuid}" }
 
     let(:messaging_client) do
-      SelfSDK::MessagingClient.new("", client, "", storage_dir: storage_dir, ws: ws, no_crypto: true)
+      storage = SelfSDK::Storage.new(jwt.id, "1", storage_dir, "storage_key")
+      SelfSDK::MessagingClient.new("", client, "", storage, ws: ws, no_crypto: true)
     end
 
     def test_notify_observer_type

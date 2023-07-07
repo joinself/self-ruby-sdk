@@ -1,0 +1,4 @@
+source 'https://rubygems.org'
+
+gem 'selfsdk', git: 'https://github.com/joinself/self-ruby-sdk.git', branch: 'crypto_test'
+gem 'pry'

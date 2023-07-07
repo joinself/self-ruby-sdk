@@ -13,6 +13,7 @@ require_relative 'messages/message'
 module SelfSDK
   class WebsocketClient
     ON_DEMAND_CLOSE_CODE=3999
+    CONNECTION_SUPERCEDED=1011
 
     attr_accessor :ws
 
@@ -42,7 +43,7 @@ module SelfSDK
       @ws.on :close do |event|
         SelfSDK.logger.debug "connection closed detected : #{event.code} #{event.reason}"
 
-        if event.code != ON_DEMAND_CLOSE_CODE
+        if not [ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
           raise StandardError('websocket connection closed') if !@auto_reconnect
 
           if !@reconnection_delay.nil?
@@ -59,6 +60,7 @@ module SelfSDK
 
     # Sends a closing message to the websocket client.
     def close
+      SelfSDK.logger.debug "connection closed by the client"
       @ws.close(ON_DEMAND_CLOSE_CODE, "connection closed by the client")
     end
 
@@ -80,7 +82,6 @@ module SelfSDK
   class MessagingClient
     DEFAULT_DEVICE="1"
     DEFAULT_AUTO_RECONNECT=true
-    DEFAULT_STORAGE_DIR="./.self_storage"
 
     PRIORITIES = { 
       'chat.invite':                 SelfSDK::Messages::PRIORITY_VISIBLE,
@@ -104,12 +105,12 @@ module SelfSDK
     #
     # @param url [string] self-messaging url
     # @params client [Object] SelfSDK::Client object
-    # @option opts [string] :storage_dir  the folder where encryption sessions and settings will be stored
+    # @option opts [string] :storage  the library used to persist session data.
     # @params storage_key [String] seed to encrypt messaging
     # @params storage_folder [String] folder to perist messaging encryption
     # @option opts [Bool] :auto_reconnect Automatically reconnects to websocket if connection is lost (defaults to true).
     # @option opts [String] :device_id The device id to be used by the app defaults to "1".
-    def initialize(url, client, storage_key, options = {})
+    def initialize(url, client, storage_key, storage, options = {})
       @mon = Monitor.new
       @messages = {}
       @acks = {}
@@ -121,18 +122,13 @@ module SelfSDK
       @timeout = 120 # seconds
       @auth_id = SecureRandom.uuid
       @device_id = options.fetch(:device_id, DEFAULT_DEVICE)
-      @raw_storage_dir = options.fetch(:storage_dir, DEFAULT_STORAGE_DIR)
-      @storage_dir = "#{@raw_storage_dir}/apps/#{@jwt.id}/devices/#{@device_id}"
-      FileUtils.mkdir_p @storage_dir unless File.exist? @storage_dir
-      @offset_file = "#{@storage_dir}/#{@jwt.id}:#{@device_id}.offset"
-      @offset = read_offset
       @source = SelfSDK::Sources.new("#{__dir__}/sources.json")
+      @storage = storage
 
       unless options.include? :no_crypto
-        crypto_path = "#{@storage_dir}/keys"
-        FileUtils.mkdir_p crypto_path unless File.exist? crypto_path
-        @encryption_client = Crypto.new(@client, @device_id, crypto_path, storage_key)
+        @encryption_client = Crypto.new(@client, @device_id, @storage, storage_key)
       end
+      @offset = @storage.account_offset
 
       @ws = if options.include? :ws
               options[:ws]
@@ -352,7 +348,7 @@ module SelfSDK
 
       SelfSDK.logger.debug " - notifying by type"
       SelfSDK.logger.debug " - #{message.typ}"
-      SelfSDK.logger.debug " - #{message}"
+      SelfSDK.logger.debug " - #{message.payload}"
       SelfSDK.logger.debug " - #{@type_observer.keys.join(',')}"
 
       # Return if there is no observer setup for this kind of message
@@ -371,6 +367,7 @@ module SelfSDK
 
     def subscribe(type, &block)
       type = @source.message_type(type) if type.is_a? Symbol
+      SelfSDK.logger.debug "Subscribing to messages by type: #{type}"
       @type_observer[type] = { block: block }
     end
 
@@ -431,7 +428,7 @@ module SelfSDK
     end
 
     def process_incomming_message(input)
-      message = parse_and_write_offset(input)
+      message = parse(input)
 
       if @messages.include? message.id
         message.validate! @messages[message.id][:original_message]
@@ -450,21 +447,17 @@ module SelfSDK
       nil
     end
 
-    def parse_and_write_offset(input)
+    def parse(input)
       msg = SelfSDK::Messages.parse(input, self)
-      write_offset(input.offset)
-      # Avoid catching any other decryption errors.
       msg
-    rescue SelfSDK::Messages::UnmappedMessage => e
-      # this is an ummapped message, let's ignore it but write the offset.
-      write_offset(input.offset)
+    rescue SelfSDK::Messages::UnmappedMessage
       nil
     end
 
     # Authenticates current client on the websocket server.
     def authenticate
       @auth_id = SecureRandom.uuid if @auth_id.nil?
-      @offset = read_offset
+      @offset = @storage.account_offset
 
       SelfSDK.logger.debug "authenticating with offset (#{@offset})"
 
@@ -498,23 +491,6 @@ module SelfSDK
         @acks[id][:waiting] = false
         @acks[id][:waiting_cond].broadcast
       end
-    end
-
-    def read_offset
-      return 0 unless File.exist? @offset_file
-
-      File.open(@offset_file, 'rb') do |f|
-        return f.read.to_i
-      end
-    end
-
-    def write_offset(offset)
-      File.open(@offset_file, 'wb') do |f|
-        f.flock(File::LOCK_EX)
-        f.write(offset.to_s.rjust(19, "0"))
-      end
-      SelfSDK.logger.debug "offset written #{offset}"
-      @offset = offset
     end
 
     def select_priority(mtype)
