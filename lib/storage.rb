@@ -9,10 +9,10 @@ module SelfSDK
       @app_id = sid(app_id, app_device)
 
       # Create the storage folder if it does not exist
-      create_directory_skel("#{storage_folder}/identities/")
+      create_directory_skel("#{storage_folder}/identities/#{app_id}/devices/#{app_device}")
 
       # Create the database
-      @db = SQLite3::Database.new(File.join("#{storage_folder}/identities/", 'self.db'))
+      @db = SQLite3::Database.new(File.join("#{storage_folder}/identities/#{app_id}/devices/#{app_device}/", 'self.db'))
       set_pragmas
       create_accounts_table
       create_sessions_table
