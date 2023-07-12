@@ -12,3 +12,4 @@ self_storage
 _support/sources
 .env
 qr.png
+Gemfile.lock
