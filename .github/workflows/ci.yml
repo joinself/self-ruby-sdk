@@ -32,4 +32,3 @@ jobs:
       gem-name: selfsdk
       gem-version-file: ./lib/version.rb
     secrets: inherit
-
