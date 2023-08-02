@@ -85,7 +85,7 @@ module SelfSDK
 
     PRIORITIES = { 
       'chat.invite':                 SelfSDK::Messages::PRIORITY_VISIBLE,
-      'chat.join':                   SelfSDK::Messages::PRIORITY_INVISIBLE,
+      'chat.join':                   SelfSDK::Messages::PRIORITY_VISIBLE,
       'chat.message':                SelfSDK::Messages::PRIORITY_VISIBLE,
       'chat.message.delete':         SelfSDK::Messages::PRIORITY_INVISIBLE,
       'chat.message.delivered':      SelfSDK::Messages::PRIORITY_INVISIBLE,
