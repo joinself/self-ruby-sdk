@@ -11,8 +11,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl libsodium-dev netbase && \
-    curl https://download.joinself.com/olm/libself-olm_0.1.17_amd64.deb -o /tmp/libself-olm_0.1.17_amd64.deb && \
-    curl https://download.joinself.com/omemo/libself-omemo_0.1.3_amd64.deb -o /tmp/libself-omemo_0.1.3_amd64.deb && \
-    apt-get install -y --no-install-recommends /tmp/libself-olm_0.1.17_amd64.deb /tmp/libself-omemo_0.1.3_amd64.deb && \
+    apt-get install -y --no-install-recommends curl netbase && \
+    curl -Lo /tmp/self-omemo.deb https://github.com/joinself/self-omemo/releases/download/0.4.0/self-omemo_0.4.0_amd64.deb && \
+    apt-get install -y --no-install-recommends /tmp/self-omemo.deb && \
     rm -rf /var/lib/apt/lists/* /tmp/*
