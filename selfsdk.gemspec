@@ -49,6 +49,7 @@ Gem::Specification.new do |s|
     "lib/messages/document_sign_resp.rb",
     "lib/messages/connection_request.rb",
     "lib/messages/connection_response.rb",
+    "lib/messages/unknown.rb",
     "lib/services/auth.rb",
     "lib/services/facts.rb",
     "lib/services/requester.rb",

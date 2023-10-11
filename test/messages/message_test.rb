@@ -15,14 +15,24 @@ class SelfSDKTest < Minitest::Test
       double("messaging", jwt: jwt)
     end
 
-    describe "invalid message type" do
-      let(:input) { '{"payload":"test_invalid"}' }
-      let(:typ) { "invalid" }
-      def test_parse_invalid_message
-        expect(jwt).to receive(:decode).with("test_invalid").and_return('{"typ":"invalid"}').once
-        _{ SelfSDK::Messages.parse(input, messaging) }.must_raise StandardError
+    describe "invalid.message" do
+      let(:input) { '{"protected": "header", "payload":"invalid.message"}' }
+      let(:typ) { "invalid.message" }
+      let(:client) { double("client") }
+      let(:body) { '{"typ":"invalid.message","exp":"'+exp+'","iat":"'+iat+'"}' }
+      def test_parse_identity_info_req
+        expect(jwt).to receive(:decode).with("header").and_return('{"kid":"kid"}').once
+        expect(jwt).to receive(:decode).with("invalid.message").and_return(body).twice
+        expect(jwt).to receive(:verify).and_return(true)
+        expect(messaging).to receive(:client).and_return(client)
+        expect(messaging).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:jwt).and_return(jwt)
+        expect(client).to receive(:public_key).and_return(double(raw_public_key: "pk1"))
+        res = SelfSDK::Messages.parse(input, messaging)
+        assert_equal res.class, SelfSDK::Messages::Unknown
       end
     end
+
 
     describe "identities.facts.query.req" do
       let(:input) { '{"protected": "header", "payload":"identities.facts.query.req"}' }

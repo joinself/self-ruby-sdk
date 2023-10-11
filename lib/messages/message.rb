@@ -18,6 +18,7 @@ require_relative "voice_busy"
 require_relative "voice_summary"
 require_relative "document_sign_resp"
 require_relative "connection_response"
+require_relative "unknown"
 
 module SelfSDK
   module Messages
@@ -87,7 +88,8 @@ module SelfSDK
         m = VoiceSummary.new(messaging)
         m.parse(body, envelope)
       else
-        raise UnmappedMessage.new("Invalid message type #{payload[:typ]}.")
+        m = Unknown.new(messaging)
+        m.parse(body, envelope)
       end
       return m
     end
