@@ -196,7 +196,7 @@ Generates the valid sources based on a json file (config/sources.json) instead o
 
 ## Support
 
-Looking for help? Reach out to us at [support@joinself.zendesk.com](mailto:support@joinself.zendesk.com)
+Looking for help? Reach out to us at [support@joinself.com](mailto:support@joinself.com)
 
 ## Contributing
 
