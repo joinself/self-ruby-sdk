@@ -11,6 +11,7 @@ module SelfSDK
 			"phone_number"
 		],
 		"passport" => [
+			"photo",
 			"document_number",
 			"surname",
 			"given_names",

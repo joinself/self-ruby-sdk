@@ -7,7 +7,7 @@ require_relative '../ntptime'
 module SelfSDK
   module Messages
     class Attestation
-      attr_accessor :verified, :origin, :source, :value, :operator, :expected_value, :fact_name, :to, :audience
+      attr_accessor :verified, :origin, :source, :value, :operator, :expected_value, :fact_name, :to, :audience, :objects
 
       def initialize(messaging)
         @messaging = messaging
@@ -30,11 +30,13 @@ module SelfSDK
           payload[:facts].each do |f|
             if f[:key] == name.to_s
               @value = f[:value]
+              @objects = f[:objects]
               break
             end
           end
         else
           @value = payload[name]
+          @objects = []
         end
       end
 
