@@ -144,14 +144,14 @@ You can request some information to other peers on the network. Same as with aut
 
 Blocking:
 ```ruby
-res = @client.facts.request("<self-id>", [:phone_number])
-puts "Requested phone number is #{res.attestation_values_for(:phone_number).first}"
+res = @client.facts.request("<self-id>", [:unverified_phone_number])
+puts "Requested phone number is #{res.attestation_values_for(:unverified_phone_number).first}"
 ```
 
 Non-blocking:
 ```ruby
-@client.facts.request("<self-id>", [:phone_number]) do |res|
-  puts "Requested phone number is #{res.attestation_values_for(:phone_number).first}"
+@client.facts.request("<self-id>", [:unverified_phone_number]) do |res|
+  puts "Requested phone number is #{res.attestation_values_for(:unverified_phone_number).first}"
 end
 ```
 
