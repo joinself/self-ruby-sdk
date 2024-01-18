@@ -8,9 +8,10 @@ module SelfSDK
 			"document_number",
 			"display_name",
 			"email_address",
-			"phone_number"
+			"unverified_phone_number"
 		],
 		"passport" => [
+			"photo",
 			"document_number",
 			"surname",
 			"given_names",
