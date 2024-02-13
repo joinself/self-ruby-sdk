@@ -19,6 +19,7 @@ module SelfSDK
 
     def initialize(url, auto_reconnect, authentication_hook, process_message_hook)
       @url = url
+      @connected = false
       @reconnection_delay = nil
       @auto_reconnect = auto_reconnect
       @authentication_hook = authentication_hook
@@ -27,6 +28,8 @@ module SelfSDK
 
     # Creates a websocket connection and sets up its callbacks.
     def start
+      @connected = true
+
       SelfSDK.logger.debug "starting listener"
       @ws = Faye::WebSocket::Client.new(@url)
       SelfSDK.logger.debug "initialized"
@@ -37,10 +40,14 @@ module SelfSDK
       end
 
       @ws.on :message do |event|
+        return if !@connected
+        
         @process_message_hook.call(event)
       end
 
       @ws.on :close do |event|
+        return if !@connected
+
         SelfSDK.logger.debug "connection closed detected : #{event.code} #{event.reason}"
 
         if not [ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
@@ -61,6 +68,7 @@ module SelfSDK
     # Sends a closing message to the websocket client.
     def close
       SelfSDK.logger.debug "connection closed by the client"
+      @connected = false
       @ws.close(ON_DEMAND_CLOSE_CODE, "connection closed by the client")
     end
 
