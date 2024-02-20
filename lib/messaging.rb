@@ -13,7 +13,6 @@ require_relative 'messages/message'
 module SelfSDK
   class WebsocketClient
     ON_DEMAND_CLOSE_CODE=3999
-    CONNECTION_SUPERCEDED=1011
 
     attr_accessor :ws
 
@@ -28,11 +27,10 @@ module SelfSDK
 
     # Creates a websocket connection and sets up its callbacks.
     def start
-      @connected = true
-
       SelfSDK.logger.debug "starting listener"
       @ws = Faye::WebSocket::Client.new(@url)
       SelfSDK.logger.debug "initialized"
+      @connected = true
 
       @ws.on :open do |_event|
         SelfSDK.logger.debug "websocket connection established"
@@ -46,21 +44,19 @@ module SelfSDK
       end
 
       @ws.on :close do |event|
-        return if !@connected
+        if @connected
+          if ![ON_DEMAND_CLOSE_CODE].include? event.code
+            raise StandardError('websocket connection closed') if !@auto_reconnect
 
-        SelfSDK.logger.debug "connection closed detected : #{event.code} #{event.reason}"
+            if !@reconnection_delay.nil?
+              SelfSDK.logger.debug "waiting #{@reconnection_delay} before "
+              sleep @reconnection_delay
+            end
 
-        if not [ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
-          raise StandardError('websocket connection closed') if !@auto_reconnect
-
-          if !@reconnection_delay.nil?
-            SelfSDK.logger.debug "websocket connection closed (#{event.code}) #{event.reason}"
-            sleep @reconnection_delay
+            @reconnection_delay = 3
             SelfSDK.logger.debug "reconnecting..."
+            start
           end
-
-          @reconnection_delay = 3
-          start
         end
       end
     end
