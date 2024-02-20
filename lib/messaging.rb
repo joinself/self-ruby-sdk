@@ -13,7 +13,6 @@ require_relative 'messages/message'
 module SelfSDK
   class WebsocketClient
     ON_DEMAND_CLOSE_CODE=3999
-    CONNECTION_SUPERCEDED=1011
 
     attr_accessor :ws
 
@@ -50,7 +49,7 @@ module SelfSDK
         if @connected
           SelfSDK.logger.debug "[B] connection closed detected : #{event.code} #{event.reason}"
 
-          if ![ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
+          if ![ON_DEMAND_CLOSE_CODE].include? event.code
             SelfSDK.logger.info "[DEBUG CONNECTION] non on demand or superceded ws close detected"
             raise StandardError('websocket connection closed') if !@auto_reconnect
             SelfSDK.logger.info "[DEBUG CONNECTION] auto reconnecting"
