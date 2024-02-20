@@ -51,7 +51,7 @@ module SelfSDK
 
         SelfSDK.logger.debug "[B] connection closed detected : #{event.code} #{event.reason}"
 
-        return if if [ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
+        return if [ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
 
         SelfSDK.logger.info "[DEBUG CONNECTION] non on demand or superceded ws close detected"
         raise StandardError('websocket connection closed') if !@auto_reconnect
