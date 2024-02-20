@@ -47,24 +47,24 @@ module SelfSDK
       @ws.on :close do |event|
         SelfSDK.logger.info "[DEBUG CONNECTION] close event detected : #{event.code} #{event.reason}"
         SelfSDK.logger.debug "[A] connection closed detected : #{event.code} #{event.reason}"
-        return if !@connected
+        if @connected
+          SelfSDK.logger.debug "[B] connection closed detected : #{event.code} #{event.reason}"
 
-        SelfSDK.logger.debug "[B] connection closed detected : #{event.code} #{event.reason}"
+          if ![ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
+            SelfSDK.logger.info "[DEBUG CONNECTION] non on demand or superceded ws close detected"
+            raise StandardError('websocket connection closed') if !@auto_reconnect
+            SelfSDK.logger.info "[DEBUG CONNECTION] auto reconnecting"
 
-        return if [ON_DEMAND_CLOSE_CODE, CONNECTION_SUPERCEDED].include? event.code
+            if !@reconnection_delay.nil?
+              SelfSDK.logger.debug "waiting #{@reconnection_delay} before "
+              sleep @reconnection_delay
+            end
 
-        SelfSDK.logger.info "[DEBUG CONNECTION] non on demand or superceded ws close detected"
-        raise StandardError('websocket connection closed') if !@auto_reconnect
-        SelfSDK.logger.info "[DEBUG CONNECTION] auto reconnecting"
-
-        if !@reconnection_delay.nil?
-          SelfSDK.logger.debug "waiting #{@reconnection_delay} before "
-          sleep @reconnection_delay
+            @reconnection_delay = 3
+            SelfSDK.logger.debug "reconnecting..."
+            start
+          end
         end
-
-        @reconnection_delay = 3
-        SelfSDK.logger.debug "reconnecting..."
-        start
       end
     end
 
