@@ -46,6 +46,7 @@ Gem::Specification.new do |s|
     "lib/messages/voice_busy.rb",
     "lib/messages/voice_summary.rb",
     "lib/messages/message.rb",
+    "lib/messages/generic.rb",
     "lib/messages/document_sign_resp.rb",
     "lib/messages/connection_request.rb",
     "lib/messages/connection_response.rb",
