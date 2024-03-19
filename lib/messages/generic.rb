@@ -17,9 +17,12 @@ module SelfSDK
         @to = @payload[:sub]
         @audience = payload[:aud]
         @expires = @payload[:exp]
+        @typ = @payload[:typ]
+        @body = @payload[:msg]
 
         if envelope
           issuer = envelope.sender.split(":")
+          @from = issuer.first
           @from_device = issuer.last
         end
       end
