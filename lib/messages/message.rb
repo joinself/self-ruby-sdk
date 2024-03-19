@@ -18,12 +18,13 @@ require_relative "voice_busy"
 require_relative "voice_summary"
 require_relative "document_sign_resp"
 require_relative "connection_response"
+require_relative "generic"
 
 module SelfSDK
   module Messages
     class UnmappedMessage < StandardError
     end
-    
+
     def self.parse(input, messaging, original=nil)
       envelope = nil
       body = if input.is_a? String
@@ -87,7 +88,8 @@ module SelfSDK
         m = VoiceSummary.new(messaging)
         m.parse(body, envelope)
       else
-        raise UnmappedMessage.new("Invalid message type #{payload[:typ]}.")
+        m = Generic.new(messaging)
+        m.parse(body, envelope)
       end
       return m
     end
