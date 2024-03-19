@@ -3,5 +3,5 @@
 # frozen_string_literal: true
 
 module SelfSDK
-  VERSION = "0.0.222"
+  VERSION = "0.0.223"
 end
