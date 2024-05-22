@@ -17,8 +17,6 @@ jobs:
     secrets: inherit
   secret-scan:
     uses: joinself/github-workflows-public/.github/workflows/secret-scan.yml@main
-    with:
-      continue-on-error: true
     secrets: inherit
   build:
     needs: [license-compliance, secret-scan]

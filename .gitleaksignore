@@ -1,0 +1,6 @@
+3db12add01d414b83b56021738aecfee1f8e272c:test/crypto_test.rb:self-key-legacy:24
+3db12add01d414b83b56021738aecfee1f8e272c:test/crypto_test.rb:self-key-legacy:39
+61cce7894d47c7207dab1f121bbb400de6dcd543:test/crypto_test.rb:self-key-legacy:24
+61cce7894d47c7207dab1f121bbb400de6dcd543:test/crypto_test.rb:self-key-legacy:38
+1c32fe48a004438aa2bd21ab199a11e51c592266:test/client_test.rb:jwt:33
+1c32fe48a004438aa2bd21ab199a11e51c592266:test/client_test.rb:jwt:50
