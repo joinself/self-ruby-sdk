@@ -74,12 +74,14 @@ module SelfSDK
       end
 
       def to_payload
+        k = build_key(@key, @nonce)
         {
           name: @name,
           link: @link,
-          key: build_key(@key, @nonce),
+          key: k,
           mime: @mime,
-          expires: @expires
+          expires: @expires,
+          public: (k == "")
         }
       end
 
