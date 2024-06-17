@@ -39,7 +39,7 @@ class SelfSDKTest < Minitest::Test
 
         assert_equal "display_name", parsed_fact[:fact]
         assert_equal "==", parsed_fact[:operator]
-        assert_equal 1, parsed_fact[:attestations].length
+        assert_equal nil, parsed_fact[:attestations]
         assert_equal "lol", parsed_fact[:expected_value]
       end
     end
