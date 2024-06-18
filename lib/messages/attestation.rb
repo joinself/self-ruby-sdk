@@ -7,34 +7,35 @@ require_relative '../ntptime'
 module SelfSDK
   module Messages
     class Attestation
-      attr_accessor :verified, :origin, :source, :value, :operator, :expected_value, :fact_name, :to, :audience
+      attr_accessor :verified, :origin, :source, :value, :operator, :expected_value, :fact_name, :to, :audience, :payload
 
       def initialize(messaging)
         @messaging = messaging
       end
 
       def parse(name, attestation)
-        payload = JSON.parse(@messaging.jwt.decode(attestation[:payload]), symbolize_names: true)
-        @origin = payload[:iss]
-        @to = payload[:sub]
-        @audience = payload[:aud]
-        @source = payload[:source]
+        @payload = JSON.parse(@messaging.jwt.decode(attestation[:payload]), symbolize_names: true)
+        @origin = @payload[:iss]
+        @to = @payload[:sub]
+        @audience = @payload[:aud]
+        @source = @payload[:source]
         header = JSON.parse(@messaging.jwt.decode(attestation[:protected]), symbolize_names: true)
         @verified = valid_signature?(attestation, header[:kid])
-        @expected_value = payload[:expected_value]
-        @operator = payload[:operator]
+        @expected_value = @payload[:expected_value]
+        @operator = @payload[:operator]
         @fact_name = name.to_s
-        if payload[name].nil?
-          return if payload[:facts].nil?
 
-          payload[:facts].each do |f|
+        if @payload[name].nil?
+          return if @payload[:facts].nil?
+
+          @payload[:facts].each do |f|
             if f[:key] == name.to_s
               @value = f[:value]
               break
             end
           end
         else
-          @value = payload[name]
+          @value = @payload[name]
         end
       end
 

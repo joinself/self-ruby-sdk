@@ -35,6 +35,9 @@ module SelfSDK
         payload[:facts].each do |f|
           begin
             fact = SelfSDK::Messages::Fact.new(@messaging)
+            if f[:fact] == 'photo'
+              f[:fact] = :image_hash
+            end
             fact.parse(f)
             @facts.push(fact)
           rescue StandardError => e
@@ -45,10 +48,12 @@ module SelfSDK
           issuer = envelope.sender.split(":")
           @from_device = issuer.last
         end
+
       end
 
       def fact(name)
         name = @messaging.source.normalize_fact_name(name)
+        name = "image_hash" if name == 'photo'
         @facts.select{|f| f.name == name}.first
       end
 
@@ -59,8 +64,8 @@ module SelfSDK
       end
 
       def attestation_values_for(name)
-        a = attestations_for(name)
-        a.map{|a| a.value}
+        aa = attestations_for(name)
+        aa.map{|a| a.value}
       end
 
       def validate!(original)
@@ -91,6 +96,16 @@ module SelfSDK
 
       def auth_response?
         @auth == true
+      end
+
+      def object(hash)
+        payload[:objects].each do |o|
+          if o[:image_hash] == hash
+            return SelfSDK::Chat::FileObject.new(
+              @messaging.client.jwt.auth_token,
+              @messaging.client.self_url).build_from_object(o)
+          end
+        end
       end
     end
   end

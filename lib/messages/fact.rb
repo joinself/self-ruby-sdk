@@ -31,7 +31,7 @@ module SelfSDK
         fact[:attestations]&.each do |a|
             attestation = SelfSDK::Messages::Attestation.new(@messaging)
             attestation.parse(fact[:fact].to_sym, a)
-            @attestations.push(attestation)
+            @attestations.push(attestation) unless attestation.value.nil?
           end
       end
 
