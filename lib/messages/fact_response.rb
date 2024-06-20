@@ -57,9 +57,22 @@ module SelfSDK
         @facts.select{|f| f.name == name}.first
       end
 
+
+      # Returns an attestation by name
+      #
+      # @param name [String] the name of the fact to retrieve the attestation for
+      # @return [Object, nil] the first attestation of the fact, or nil if no fact is found
+      def attestation(name)
+        f = fact(name)
+        return nil if f.nil?
+
+        f.attestations.first
+      end
+
       def attestations_for(name)
         f = fact(name)
         return [] if f.nil?
+
         f.attestations
       end
 

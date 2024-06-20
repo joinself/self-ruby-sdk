@@ -22,7 +22,7 @@ puts 'connecting...'
 
 # Create a custom fact and send it to the user.
 puts 'issuing custom facts'
-my_group = SelfSDK::Services::Facts::Group.new("Trip to Venice", "plane") 
+my_group = SelfSDK::Services::Facts::Group.new("Trip to Venice", "plane")
 my_fact = SelfSDK::Services::Facts::Fact.new(
   "confirmation_code",
   "CD128763",
@@ -48,8 +48,7 @@ begin
     end
 
     # Response comes in form of facts easy to access with facts method
-    attestations = res.attestation_values_for(my_fact.key.to_sym).join(", ")
-    puts "Your stored fact is #{attestations}!"
+    puts "Your stored fact is #{res.attestation(my_fact.key.to_sym).value}!"
     exit!
   end
 rescue => e

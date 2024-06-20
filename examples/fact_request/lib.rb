@@ -10,7 +10,7 @@ module FactRequest
 
     def help
       <<-MSG
-Your app can request certain bits of information to your 
+Your app can request certain bits of information to your
 connected users. To do this, you'll only need its _SelfID_
 and the fields you want to request you can find a list of
 updated valid fields [here](https://github.com/selfid-net/selfid-gem/blob/main/lib/sources.rb).
@@ -37,7 +37,7 @@ processing the response. This process is fully managed by
         # Send an fact request
         puts ""
         puts "we're sending an fact reuqest to #{user_id}'s device"
-        @client.facts.request(user, [:display_name, :email_address]) do |res|
+        @client.facts.request(user_id, [:display_name, :email_address]) do |res|
           # Information request has been rejected by the user
           if res.status == "rejected"
             puts 'Information request rejected'
@@ -45,8 +45,7 @@ processing the response. This process is fully managed by
           end
 
           # Response comes in form of facts easy to access with facts method
-          attestations = res.attestation_values_for(:display_name).join(", ")
-          puts "Hello #{attestations}!"
+          puts "Hello #{res.attestation(:display_name).value}!"
           condvar.signal
         end
       rescue => e
