@@ -10,9 +10,9 @@ module DlFactRequest
 
     def help
       <<-MSG
-Your app can request certain bits of information to your connected 
-users via Deep Link. To do this, you'll only need its _SelfID_ and 
-the fields you want to request you can find a list of updated valid 
+Your app can request certain bits of information to your connected
+users via Deep Link. To do this, you'll only need its _SelfID_ and
+the fields you want to request you can find a list of updated valid
 fields
       MSG
     end
@@ -41,8 +41,7 @@ fields
         # Information request has been rejected by the user
         if res.status == "accepted"
           # Response comes in form of facts easy to access with facts method
-          attestations = res.attestation_values_for(:display_name).join(", ")
-          puts "Retrieved facts : #{attestations}!"
+          puts "Retrieved facts : #{res.attestation(:display_name).value}!"
         else
           puts 'Information request rejected'
         end

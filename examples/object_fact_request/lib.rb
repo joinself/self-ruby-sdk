@@ -44,8 +44,7 @@ processing the response. This process is fully managed by
           end
 
           # Response comes in form of facts easy to access with facts method
-          attestations = res.attestation_values_for(:photo)
-          photo = res.object(attestations.first)
+          photo = res.object(res.attestation(:photo).value)
 
           path = "/tmp/tmp.jpg"
           # puts photo.original_issuer

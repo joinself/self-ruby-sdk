@@ -10,11 +10,11 @@ module IntermediaryRequest
 
     def help
       <<-MSG
-A zero knowledge information request allows you do assertions 
-on user's facts through _Self Intermediary_ without direct 
+A zero knowledge information request allows you do assertions
+on user's facts through _Self Intermediary_ without direct
 access to user's information.
 
-This prevents users to leak sensible information with untrusted 
+This prevents users to leak sensible information with untrusted
 peers and keep the trust on the platform.
       MSG
     end
@@ -41,7 +41,7 @@ peers and keep the trust on the platform.
           p "Request has timed out"
         elsif res.accepted? # The user accepts the intermediary request
           p "Request has been accepted"
-          p "Your assertion is #{res.attestation_values_for(:email_address).first}"
+          p "Your assertion is #{res.attestation(:email_address).value}"
         elsif res.rejected? # The user rejects the intermediary request
           p "Request has been rejected"
         elsif res.unauthorized? # You're not a connection for the specified user
