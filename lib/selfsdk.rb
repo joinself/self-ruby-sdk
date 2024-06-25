@@ -132,6 +132,12 @@ module SelfSDK
       @messaging_client.close
     end
 
+    def new_object(name, content, mime)
+      o = SelfSDK::Chat::FileObject.new(client.jwt.auth_token, client.self_url)
+      o.build_from_data(name, content, mime)
+      o
+    end
+
     protected
 
       def requester
@@ -152,9 +158,9 @@ module SelfSDK
 
       def cleanup_key(key)
         return key unless key.include? '_'
-  
+
         key.split('_').last
       end
-    
+
   end
 end

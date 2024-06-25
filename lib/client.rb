@@ -80,7 +80,7 @@ module SelfSDK
 
     def get(endpoint)
       safe_request do
-        HTTParty.get("#{@self_url}#{endpoint}", 
+        HTTParty.get("#{@self_url}#{endpoint}",
                      headers: {
                         'Content-Type'  => 'application/json',
                         'Authorization' => "Bearer #{@jwt.auth_token}"

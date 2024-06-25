@@ -6,7 +6,7 @@ require 'open-uri'
 module SelfSDK
   module Chat
     class FileObject
-      attr_accessor :name, :link, :mime, :content, :key, :nonce, :ciphertext
+      attr_accessor :name, :link, :mime, :content, :object_hash, :key, :nonce, :ciphertext
 
       def initialize(token, url)
         @token = token
@@ -17,6 +17,7 @@ module SelfSDK
         @key = SelfCrypto::Util.aead_xchacha20poly1305_ietf_keygen
         @nonce = SelfCrypto::Util.aead_xchacha20poly1305_ietf_nonce
         @content = data
+        @object_hash = calculate_hash(@content)
         @name = name
         @mime = mime
 
@@ -54,6 +55,7 @@ module SelfSDK
         end
 
         @content = ciphertext
+
         @key = nil
         @nonce = nil
         if input.key?(:key) && !input[:key].empty?
@@ -63,6 +65,11 @@ module SelfSDK
           @nonce = composed_key[:nonce]
 
           @content = SelfCrypto::Util.aead_xchacha20poly1305_ietf_decrypt(@key, @nonce, ciphertext)
+        end
+
+        @object_hash = calculate_hash(@content)
+        if @object_hash != input[:object_hash]
+          raise "File hash does not match the originally signed hash."
         end
 
         @name =  input[:name]
@@ -81,7 +88,8 @@ module SelfSDK
           key: k,
           mime: @mime,
           expires: @expires,
-          public: (k == "")
+          public: (k == ""),
+          object_hash: @object_hash
         }
       end
 
@@ -111,6 +119,12 @@ module SelfSDK
         { key: k[0, 32],
           nonce: k[32, (k.length - 32)] }
       end
+
+      def calculate_hash(ct)
+        d = Digest::SHA256.digest(ct)
+        Base64.urlsafe_encode64(d).gsub(/=+\Z/, '')
+      end
+
     end
   end
 end
