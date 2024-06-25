@@ -113,12 +113,13 @@ module SelfSDK
 
       def object(hash)
         payload[:objects].each do |o|
-          if o[:image_hash] == hash
+          if o[:object_hash] == hash || o[:image_hash] == hash
             return SelfSDK::Chat::FileObject.new(
               @messaging.client.jwt.auth_token,
               @messaging.client.self_url).build_from_object(o)
           end
         end
+        return nil
       end
     end
   end

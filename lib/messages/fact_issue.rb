@@ -25,6 +25,7 @@ module SelfSDK
         @from = @jwt.id
         @to = selfid
         @attestations = build_attestations!(facts)
+        @objects = build_objects(facts)
       end
 
       def body
@@ -42,6 +43,7 @@ module SelfSDK
         }
         # viewers
         b[:viewers] = @viewers unless @viewers.nil?
+        b[:objects] = @objects unless @objects.empty?
         b
       end
 
@@ -68,7 +70,8 @@ module SelfSDK
         raise 'facts must be provided in the form of an array' unless facts.kind_of?(Array)
 
         attestations = []
-        facts.each do |fact|
+        facts.each do |f|
+          fact = f.to_hash
           att = fact.transform_keys(&:to_sym)
           raise 'invalid attestation : does not provide a key' if !att.has_key?(:key) || att[:key].empty?
 
@@ -79,6 +82,16 @@ module SelfSDK
         end
 
         attestations
+      end
+
+      def build_objects(facts)
+        objects = []
+        facts.each do |fact|
+          if fact.respond_to? :object and !fact.object.nil?
+            objects << fact.object.to_payload
+          end
+        end
+        objects
       end
 
       def sign(source, facts)

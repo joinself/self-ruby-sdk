@@ -100,24 +100,26 @@ module SelfSDK
       # @param facts [Array<Fact>] facts to be sent to the user
       # @option opts [String] :viewers list of self identifiers for the user that will have access to this facts.
       def issue(selfid, facts, opts = {})
-        hased_facts = []
-        facts.each do |f|
-          hased_facts << f.to_hash
-        end
-
         SelfSDK.logger.info "issuing facts for #{selfid}"
         msg = SelfSDK::Messages::FactIssue.new(@requester.messaging)
-        msg.populate(selfid, hased_facts, opts)
+        msg.populate(selfid, facts, opts)
 
         msg.send_message
       end
 
       # Facts to be issued
       class Fact
-        attr_accessor :key, :value, :group
+        attr_accessor :key, :value, :group, :object
 
 
         def initialize(key, value, source, opts = {})
+          if value.is_a?(SelfSDK::Chat::FileObject)
+            @object = value
+            value = @object.object_hash
+          elsif !value.is_a?(String)
+            raise "supported values are strings and FileObject"
+          end
+
           @key = key
           @value = value
           @source = source
